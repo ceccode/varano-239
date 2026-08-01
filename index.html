@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="%APP_META_DESCRIPTION%" />
+    <meta name="theme-color" content="#14261f" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <title>%APP_TITLE% — %APP_SUBTITLE%</title>
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenuto">%APP_SKIP_LINK%</a>
+
+    <header class="site-header">
+      <div class="site-header__inner">
+        <p class="eyebrow">%APP_AGE_LABEL%</p>
+        <h1>%APP_TITLE%</h1>
+        <p class="subtitle">%APP_SUBTITLE%</p>
+        <nav aria-label="%APP_NAVIGATION_LABEL%">
+          <a href="#fonti">%APP_SOURCES_LINK%</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="contenuto" class="shell" tabindex="-1">
+      <section class="panel panel--primary" aria-labelledby="stato-progetto">
+        <h2 id="stato-progetto">%APP_STATUS_TITLE%</h2>
+        <p>%APP_DESCRIPTION%</p>
+        <div data-app-root></div>
+      </section>
+
+      <aside class="panel" aria-labelledby="sicurezza">
+        <h2 id="sicurezza">%APP_SAFETY_TITLE%</h2>
+        <p>%APP_SAFETY_BODY%</p>
+      </aside>
+
+      <section id="fonti" class="panel" aria-labelledby="titolo-fonti">
+        <h2 id="titolo-fonti">%APP_SOURCES_TITLE%</h2>
+        <p>%APP_SOURCES_BODY%</p>
+        <p>
+          <a
+            href="https://github.com/ceccode/varano-239/blob/main/docs/SOURCES.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            >%APP_SOURCES_DOCUMENT_LINK%</a
+          >
+        </p>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

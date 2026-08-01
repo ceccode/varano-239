@@ -1,0 +1,22 @@
+:root {
+  color-scheme: dark;
+  --color-background: #0d1713;
+  --color-surface: #14261f;
+  --color-surface-strong: #1b3329;
+  --color-text: #f4f1df;
+  --color-muted: #c8d1c9;
+  --color-accent: #ffcf5a;
+  --color-accent-ink: #1d1705;
+  --color-border: #567462;
+  --color-error: #ffb4a8;
+  --font-body:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  --space-1: 0.5rem;
+  --space-2: 0.75rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+  --radius: 0.75rem;
+  --content-width: 64rem;
+}
