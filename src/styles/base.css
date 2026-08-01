@@ -1,0 +1,66 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100vh;
+  background:
+    linear-gradient(145deg, rgb(255 207 90 / 8%), transparent 24rem),
+    var(--color-background);
+}
+
+h1,
+h2,
+p {
+  margin-block-start: 0;
+}
+
+h1,
+h2 {
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+h1 {
+  margin-block-end: var(--space-1);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 12vw, 4.5rem);
+  letter-spacing: -0.06em;
+}
+
+h2 {
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
+}
+
+p {
+  max-inline-size: 68ch;
+}
+
+a {
+  color: var(--color-accent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 0.16em;
+}
+
+:focus-visible {
+  outline: 0.2rem solid var(--color-accent);
+  outline-offset: 0.25rem;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}

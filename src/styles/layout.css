@@ -1,0 +1,114 @@
+.skip-link {
+  position: fixed;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  z-index: 10;
+  display: inline-flex;
+  min-block-size: 2.75rem;
+  align-items: center;
+  padding-inline: var(--space-3);
+  border-radius: 0.4rem;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: 700;
+  transform: translateY(calc(-100% - var(--space-5)));
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.site-header {
+  border-block-end: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.site-header__inner,
+.shell {
+  inline-size: min(calc(100% - 2rem), var(--content-width));
+  margin-inline: auto;
+}
+
+.site-header__inner {
+  padding-block: clamp(2.5rem, 10vw, 6rem);
+}
+
+.eyebrow {
+  margin-block-end: var(--space-2);
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  margin-block-end: var(--space-4);
+  color: var(--color-muted);
+  font-size: clamp(1.125rem, 4vw, 1.5rem);
+}
+
+nav a {
+  display: inline-flex;
+  min-block-size: 2.75rem;
+  align-items: center;
+}
+
+.shell {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-4) var(--space-5);
+}
+
+.panel {
+  padding: clamp(1rem, 5vw, 2rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.panel--primary {
+  background: var(--color-surface-strong);
+}
+
+.panel > :last-child {
+  margin-block-end: 0;
+}
+
+.app-status {
+  padding: var(--space-3);
+  border-inline-start: 0.25rem solid var(--color-accent);
+  background: var(--color-background);
+  color: var(--color-muted);
+}
+
+.bootstrap-error {
+  margin-block-start: var(--space-3);
+  padding: var(--space-3);
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius);
+  background: var(--color-background);
+}
+
+.bootstrap-error h2 {
+  color: var(--color-error);
+}
+
+@media (min-width: 48rem) {
+  .shell {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .panel--primary {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
