@@ -114,4 +114,11 @@ Leggi [CONTRIBUTING.md](./CONTRIBUTING.md) prima di aprire una issue o una pull 
 
 ## Licenza
 
-Il codice e la documentazione originali sono distribuiti con licenza [MIT](./LICENSE). Immagini, font, musica e altri asset devono essere originali oppure accompagnati da una licenza compatibile e da informazioni chiare sulla provenienza.
+Il progetto usa due licenze, spiegate in [LICENSING.md](./LICENSING.md):
+
+- il **codice** è software libero con licenza [GNU AGPL-3.0-only](./LICENSE): puoi studiarlo, modificarlo e ridistribuirlo, e chi pubblica una versione modificata (anche solo come sito) deve pubblicarne i sorgenti;
+- **storia, testi, pixel art, musica e level design** usano [CC BY-NC-SA 4.0](./LICENSE-CONTENT): condivisibili e modificabili citando l'autore, ma **non per scopi commerciali**. Poiché il gioco è inseparabile dai suoi contenuti, l'opera nel suo insieme non può essere venduta.
+
+Il nome **VARANO 2:39** e i personaggi non sono concessi in licenza: una versione derivata deve usare un nome proprio. Immagini, font, musica e altri asset devono essere originali oppure accompagnati da una licenza compatibile e da informazioni chiare sulla provenienza.
+
+Copyright © 2026 Francesco Falanga.

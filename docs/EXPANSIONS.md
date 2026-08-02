@@ -182,9 +182,9 @@ Un nuovo hook richiede una decisione architetturale soltanto se cambia la semant
 
 ### Capitolo `origins.tail-society`
 
-- Teoria: complotto più grande.
+- Teoria: la terza pista sull'origine, la più fantasiosa.
 - Derivazione reale: nessuna; pura leggenda.
-- Fiction: Società della Coda, dossier `2:39`, sigilli e piano del castello.
+- Fiction: soggetti, reperti e luoghi interamente inventati; i dettagli restano nei documenti di trama privati.
 - Innesto: `core.hook.before-castle`.
 
 Il pack non conferma una teoria. L'epilogo registra l'interpretazione scelta e mostra l'avviso che fuga, abbandono e complotto non sono dimostrati dalle fonti.

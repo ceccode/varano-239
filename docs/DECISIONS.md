@@ -109,7 +109,7 @@ Una nuova ADR può introdurre Phaser soltanto se:
 
 ## ADR-011 — Licenza e identità originali
 
-- Stato: **Accettata**
+- Stato: **Superata da ADR-027** per la parte sulla licenza; la regola sull'identità originale resta valida.
 - Data: 1 agosto 2026
 - Decisione: codice e documentazione originali MIT; asset originali o con licenza compatibile registrata; tutti gli umani inventati/compositi.
 - Perché: progetto gratuito e riusabile senza dipendere da materiale giornalistico o franchise esistenti.
@@ -263,3 +263,27 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Perché: la condivisione solo testuale non funzionava in modo affidabile (nessuna guardia su `navigator.share`/`clipboard`) e un'immagine è molto più condivisibile sui social locali.
 - Vincoli: la cartolina è generata in locale, non contiene dati personali e non viene caricata su alcun server; il punteggio non premia azioni letali (ADR-013) e resta salvato solo nel browser.
 - Conseguenza: `MiniGameRequest.onComplete` riporta un `LevelOutcome` (punti, indizi, tempo, respawn) invece del solo punteggio.
+
+## ADR-027 — Doppia licenza: codice AGPL, contenuti non commerciali
+
+- Stato: **Accettata**
+- Data: 2 agosto 2026
+- Sostituisce: ADR-011 per la parte sulla licenza.
+- Contesto: il proprietario vuole un progetto aperto, vuole essere citato e non vuole che altri vendano il gioco o ne facciano un business. «Open source» nella definizione OSI **obbliga** però a consentire l'uso commerciale: le due cose non stanno insieme in una licenza sola.
+- Decisione: separare programma e opera creativa.
+  - **Codice** (motore, reducer, fisica, adapter, build, test): `GNU AGPL-3.0-only` in `LICENSE`. Resta software libero a tutti gli effetti e chi pubblica una versione modificata, anche solo come sito, deve pubblicarne i sorgenti.
+  - **Contenuti** (storia, dialoghi, catalogo messaggi, pixel art, musica chiptune, level design, documentazione pubblica): `CC BY-NC-SA 4.0` in `LICENSE-CONTENT`, quindi attribuzione obbligatoria, condivisione con la stessa licenza e **nessun uso commerciale**.
+  - **Nome, titolo e personaggi**: nessuna licenza concessa. Una versione derivata deve usare un nome proprio.
+  - `LICENSING.md` è la mappa normativa e stabilisce che, nei file che contengono entrambe le cose, «come si comporta il programma» è codice mentre «cosa si vede, si legge e si ascolta» è contenuto.
+- Perché: il gioco è inseparabile dalla propria storia, grafica e musica, quindi vincolare i contenuti a `NonCommercial` impedisce di vendere l'opera pur lasciando il motore riusabile e realmente aperto.
+- Conseguenza: il titolare del copyright è **Francesco Falanga**; i testi di credits e termini nel gioco, il README e il registro asset dichiarano la doppia licenza. Le due licenze non sono combinabili in un'opera commerciale: chi vuole usare il gioco a fini commerciali deve chiedere un permesso esplicito.
+
+## ADR-028 — Documenti di trama fuori dal repository pubblico
+
+- Stato: **Accettata**
+- Data: 2 agosto 2026
+- Contesto: `STORY_TREATMENT.md`, `NARRATIVE.md`, `GAME_DESIGN.md` e la roadmap descrivono per intero la trama, i finali e le piste inventate sull'origine del Varano. Pubblicarli annulla la suspance che il gioco costruisce fra un livello e il successivo.
+- Decisione: quei documenti vivono in `docs/private/`, ignorata da git, e vengono rimossi anche dallo storico dei commit. Restano pubblici i documenti tecnici, editoriali e legali: architettura, modello dei contenuti, espansioni, qualità, privacy, fonti, asset, scouting del formato e questo registro.
+- Perché: la scelta è stata fatta quando il repository aveva un giorno di vita, zero fork e zero star, quindi la riscrittura della storia costava poco. `SOURCES.md` e `PRIVACY.md` restano pubblici perché il gioco li collega da credits e menù.
+- Limite noto e accettato: i testi del livello già pubblicato sono comunque leggibili nel bundle JavaScript. La riservatezza protegge la trama **non ancora uscita**, non il contenuto già distribuito. Dopo un force-push GitHub può mantenere per un periodo gli oggetti non più referenziati raggiungibili via SHA.
+- Conseguenza: `AGENTS.md` e `docs/README.md` indicano il percorso privato; i documenti privati non sono versionati, quindi vanno conservati a parte dal proprietario.

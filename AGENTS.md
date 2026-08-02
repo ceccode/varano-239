@@ -8,13 +8,15 @@ Leggere, nell'ordine:
 
 1. `README.md`
 2. `docs/README.md`
-3. `docs/ROADMAP.md`
+3. `docs/private/ROADMAP.md` (documento privato, non versionato)
 4. il documento funzionale relativo al milestone corrente
 5. `docs/ARCHITECTURE.md`
 6. `docs/QUALITY.md`
 7. le decisioni in `docs/DECISIONS.md`
 
-Per modifiche narrative o ai dossier, leggere inoltre `docs/SOURCES.md`, `docs/NARRATIVE.md` e `docs/CONTENT_MODEL.md` prima di intervenire.
+Per modifiche narrative o ai dossier, leggere inoltre `docs/SOURCES.md`, `docs/private/NARRATIVE.md` e `docs/CONTENT_MODEL.md` prima di intervenire.
+
+I documenti in `docs/private/` contengono trama, finali e colpi di scena: sono ignorati da git per non anticipare la storia (ADR-028). Non copiarne contenuti narrativi non ancora pubblicati nei documenti pubblici, nei messaggi di commit o nelle pull request.
 
 Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che si intendono soddisfare. Implementare la più piccola fetta verticale che produca valore verificabile.
 

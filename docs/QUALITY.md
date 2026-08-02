@@ -76,7 +76,7 @@ Veloci, senza DOM e senza rete:
 - `gentle` non raggiunge mai esiti postumi;
 - `killedByHunter` è raggiungibile soltanto con `hunter + evidence + complete`, dopo una conferma aggiuntiva e con almeno due alternative non letali;
 - ruoli o approcci diversi non possono causare direttamente la morte del Varano;
-- almeno un percorso porta a salvataggio, fuga, conquista, mistero e — soltanto in `complete` — prova postuma o abbattimento;
+- ogni famiglia di finale descritta nel game design privato è raggiungibile da almeno un percorso, e quelle con esito postumo soltanto in `complete`;
 - tutte le carte FATTO, TESTIMONIANZA e IPOTESI hanno fonti conformi;
 - ogni LEGGENDA ha un avviso di finzione e ogni SCONFESSATO una confutazione;
 - nessun indizio sull'origine o premio è esclusivo dell'abbattimento;
@@ -108,19 +108,17 @@ Per ciascuna feature verificare comportamento, non markup accidentale:
 
 Flussi minimi:
 
-1. nuova partita `gentle` come Varano fino al finale conquista;
-2. nuova partita `gentle` come Custode fino al salvataggio;
-3. nuova partita `complete` come Sindaco fino alla prova postuma;
-4. Cacciatore `complete + evidence`: annullamento sicuro della scelta letale e finale vivo;
-5. Cacciatore `complete + evidence`: conferma dell'abbattimento fuori campo e relativo epilogo;
-6. Custode, Sindaco e Varano senza accesso alla scelta letale;
-7. Dossier Origini completato, saltato e rimosso da un salvataggio compatibile;
-8. salvataggio, ricarica, ripresa e cancellazione dati;
-9. Modalità Storia con salto di ogni sfida;
-10. Modalità Calma e `prefers-reduced-motion` senza popup animati;
-11. percorso completo con sola tastiera;
-12. analytics configurati e non configurati come descritto in `PRIVACY.md`;
-13. archivio con apertura di una fonte esterna.
+1. una partita per ciascun ruolo fino al finale previsto dal game design privato;
+2. Cacciatore `complete + evidence`: annullamento sicuro della scelta letale e finale vivo;
+3. Cacciatore `complete + evidence`: conferma dell'abbattimento fuori campo e relativo epilogo;
+4. Custode, Sindaco e Varano senza accesso alla scelta letale;
+5. pacchetto opzionale completato, saltato e rimosso da un salvataggio compatibile;
+6. salvataggio, ricarica, ripresa e cancellazione dati;
+7. Modalità Storia con salto di ogni sfida;
+8. Modalità Calma e `prefers-reduced-motion` senza popup animati;
+9. percorso completo con sola tastiera;
+10. analytics configurati e non configurati come descritto in `PRIVACY.md`;
+11. apertura di una fonte esterna dal menù.
 
 Per M1R la suite verifica inoltre movimento reale con tastiera, pressione dei controlli touch, presenza del salto equivalente, assenza del loop real-time con movimento ridotto e salvataggio/ripresa dal `LevelNode`.
 

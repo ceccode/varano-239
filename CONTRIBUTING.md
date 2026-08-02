@@ -91,6 +91,8 @@ npm run check
 
 - Preferire immagini, sprite, font, musica ed effetti originali.
 - Registrare autore, fonte, licenza, modifiche e percorso di ogni asset di terze parti.
+- Aprendo una pull request accetti di rilasciare il tuo contributo con le licenze del progetto: AGPL-3.0-only per il codice e CC BY-NC-SA 4.0 per i contenuti (vedi [LICENSING.md](./LICENSING.md)).
+- I documenti di trama stanno in `docs/private/` e non sono versionati: non incollare nella pull request finali o colpi di scena non ancora pubblicati.
 - Non copiare fotografie giornalistiche, meme, stemmi, loghi o opere di videogiochi esistenti.
 - Citare un gioco come riferimento di genere non autorizza a riprodurne personaggi, livelli, grafica o musica.
 

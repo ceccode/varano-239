@@ -129,7 +129,7 @@ export const m1Messages = {
   "core.message.ui.menu.privacy": "Privacy",
   "core.message.ui.menu.terms": "Termini e condizioni",
   "core.message.ui.credits.body":
-    "VARANO 2:39 è un gioco gratuito e open source. Codice, testi, pixel art e musica chiptune sono originali e distribuiti con licenza MIT. Tutti i personaggi umani sono inventati o compositi; il Varano è il protagonista.",
+    "VARANO 2:39 è un gioco gratuito ideato, scritto e sviluppato da Francesco Falanga. Codice, testi, pixel art e musica chiptune sono originali: il codice è aperto con licenza AGPL-3.0, mentre storia, grafica e musica usano CC BY-NC-SA 4.0 (puoi condividere e modificare citando l’autore, ma non per scopi commerciali). Tutti i personaggi umani sono inventati o compositi; il Varano è il protagonista.",
   "core.message.ui.credits.link": "Codice sorgente su GitHub (nuova scheda)",
   "core.message.ui.credits.sources-link":
     "Fonti e note editoriali (nuova scheda)",
@@ -138,7 +138,7 @@ export const m1Messages = {
   "core.message.ui.privacy.link":
     "Leggi l’informativa completa su GitHub (nuova scheda)",
   "core.message.ui.terms.body":
-    "Gioco gratuito consigliato a un pubblico 12+, fornito «così com’è» e senza garanzie. Le scene giocabili sono LEGGENDA: una ricostruzione inventata che non attribuisce fatti o dichiarazioni a persone reali. Il gioco non è una guida alla ricerca dell’animale: non avvicinare o inseguire animali selvatici o esotici. Codice e testi sono distribuiti con licenza MIT.",
+    "Gioco gratuito consigliato a un pubblico 12+, fornito «così com’è» e senza garanzie. Le scene giocabili sono LEGGENDA: una ricostruzione inventata che non attribuisce fatti o dichiarazioni a persone reali. Il gioco non è una guida alla ricerca dell’animale: non avvicinare o inseguire animali selvatici o esotici. Il codice è distribuito con licenza AGPL-3.0; storia, grafica e musica con CC BY-NC-SA 4.0, quindi non è consentito venderlo o usarlo per scopi commerciali. Il nome VARANO 2:39 e i suoi personaggi non sono concessi in licenza.",
   "core.message.ui.options.role.legend": "Personaggio",
   "core.message.ui.options.role.hunter": "Cacciatore — Toni Pista",
   "core.message.ui.options.role.guardian": "Custode animalista — Marta Ramarro",

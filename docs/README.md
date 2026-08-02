@@ -4,10 +4,18 @@ Questa cartella contiene la specifica completa di **VARANO 2:39**. Il codice non
 
 ## Per iniziare
 
-1. [Game design](./GAME_DESIGN.md) — pubblico 12+, loop, ruoli, sensibilità, finali e profondità del mistero.
-2. [Trattamento della storia](./STORY_TREATMENT.md) — trama completa, Dossier Origini, Castello Bonoris ed epiloghi.
-3. [Specifica narrativa](./NARRATIVE.md) — personaggi, tono, testi approvati, atti e regole sulla morte.
-4. [Scouting del formato](./FORMAT_SCOUTING.md) — confronto fra platform, top-down, visual novel e point-and-click.
+1. [Scouting del formato](./FORMAT_SCOUTING.md) — confronto fra platform, top-down, visual novel e point-and-click.
+
+### Documenti di trama (privati)
+
+Game design, trattamento della storia, specifica narrativa e roadmap **non sono nel repository pubblico**: contengono trama, finali e colpi di scena, e pubblicarli annullerebbe la suspance del gioco (ADR-028). Vivono in `docs/private/`, ignorata da git:
+
+- `docs/private/GAME_DESIGN.md` — loop, ruoli, finali e profondità del mistero;
+- `docs/private/STORY_TREATMENT.md` — trama completa ed epiloghi;
+- `docs/private/NARRATIVE.md` — personaggi, tono, testi approvati e regole sulla morte;
+- `docs/private/ROADMAP.md` — milestone, priorità e acceptance criteria.
+
+Non essendo versionati, il proprietario li conserva a parte. Chi contribuisce dall'esterno lavora sui documenti pubblici e concorda i contenuti narrativi nella issue o nella pull request.
 
 ## Per implementare
 
@@ -16,7 +24,7 @@ Questa cartella contiene la specifica completa di **VARANO 2:39**. Il codice non
 7. [Espansioni](./EXPANSIONS.md) — come aggiungere misteri, capitoli e livelli senza plugin runtime.
 8. [Qualità](./QUALITY.md) — test, accessibilità, performance, sicurezza e checklist di rilascio.
 9. [Privacy](./PRIVACY.md) — dati locali e analytics minimali.
-10. [Roadmap](./ROADMAP.md) — milestone, priorità e acceptance criteria.
+10. [Licenze](../LICENSING.md) — quali parti sono codice AGPL e quali contenuti CC BY-NC-SA.
 
 ## Per verificare e contribuire
 
@@ -32,8 +40,8 @@ In caso di conflitto:
 
 1. `AGENTS.md`;
 2. ADR con stato Accettata in `DECISIONS.md`;
-3. requisiti P0 in `ROADMAP.md`;
-4. `GAME_DESIGN.md`, `NARRATIVE.md` e `EXPANSIONS.md`;
+3. requisiti P0 in `docs/private/ROADMAP.md`;
+4. `docs/private/GAME_DESIGN.md`, `docs/private/NARRATIVE.md` e `EXPANSIONS.md`;
 5. esempi non normativi negli altri documenti.
 
 ## Decisioni correnti essenziali

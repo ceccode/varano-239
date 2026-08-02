@@ -2,6 +2,8 @@
   "name": "varano-239",
   "version": "0.0.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSING.md",
+  "author": "Francesco Falanga",
   "type": "module",
   "engines": {
     "node": ">=24 <25"

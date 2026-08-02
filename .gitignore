@@ -35,3 +35,6 @@ pnpm-debug.log*
 # Operating systems
 .DS_Store
 Thumbs.db
+
+# Documenti di trama privati (ADR-028): contengono finali e colpi di scena
+docs/private/
