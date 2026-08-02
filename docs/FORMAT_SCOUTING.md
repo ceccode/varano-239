@@ -6,6 +6,12 @@ Realizzare l'MVP come **avventura narrativa point-and-click a scene pixel-art**,
 
 Questa scelta rende centrali storia, fonti e quattro prospettive; funziona su telefono senza controlli virtuali complessi; permette accessibilità tramite HTML; riduce asset, fisica e test necessari.
 
+## Riesame dopo M1
+
+Il primo prototipo DOM-first è risultato tecnicamente leggibile ma, nel playtest del proprietario del 1 agosto 2026, poco arcade, poco giocabile e poco coinvolgente. La domanda di milestone non è quindi superata.
+
+ADR-017 autorizza **M1R**, un confronto più netto: una corsa laterale 320×180 con movimento, salto, tre segnali e scorrimento. Resta un `LevelNode` isolato, facoltativo e saltabile; non usa asset, personaggi, livelli, suoni o identità di Super Mario Bros e non introduce un framework. Il suo esito deciderà se mantenere una struttura ibrida o rivedere ancora il formato prima di M2.
+
 ## Confronto
 
 Scala: 1 insufficiente, 5 ottimo. «Costo» misura quanto l'opzione è economica da produrre: 5 è il costo minore.
@@ -69,7 +75,7 @@ Non usare combinazioni arbitrarie di oggetti, pixel hunting o enigmi che richied
 Prima di produrre tutti gli asset, realizzare due prototipi usa-e-getta sullo stesso Atto 0:
 
 1. **Scena narrativa DOM-first**: campo di mais, tre hotspot, una carta fatto e un popup.
-2. **Micro-platform isolato**: il Varano attraversa dieci metri di roggia con un solo comando contestuale, non joystick virtuale.
+2. **Micro-platform isolato**: dopo il feedback su M1, il Varano attraversa il campo con movimento e salto espliciti; i controlli virtuali restano confinati al livello e la storia offre sempre un'alternativa equivalente.
 
 Farli provare ad almeno:
 

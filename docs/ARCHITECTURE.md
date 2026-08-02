@@ -478,6 +478,14 @@ export interface LevelRegistration<Config extends object> {
 
 `src/levels/registry.ts` registra adattatore e configurazioni insieme tramite una factory generica `defineLevel()`. È l'unico modulo che risolve la coppia `levelId`/`configId`; una coppia assente è un errore di contenuto in build e un errore recuperabile al bootstrap. Il risultato non viene memorizzato come oggetto separato: il reducer sceglie `completedNodeId` o `skippedNodeId` e il normale `RunState` persistito registra il nuovo nodo. DOM, timer, canvas, configurazioni e oggetti di framework non entrano mai nel salvataggio. Ogni mini-gioco deve avere un esito equivalente tramite «Salta sfida».
 
+### Implementazione M1P
+
+`core.level.campi-di-borgocoda` è l'adapter platformer del loop principale (ADR-018). Usa `requestAnimationFrame` con timestep fisso, rendering **canvas 2D** procedurale (base logica 320×180 scalata con `image-rendering: pixelated`) e una funzione fisica pura in TypeScript (`platformer-model.ts`: accelerazione, salto variabile, coyote time, jump buffer, piattaforme one-way, checkpoint con respawn morbido); non aggiunge dipendenze runtime o un framework. Il registro risolve la sola coppia `core.level.campi-di-borgocoda` / `core.level-config.campi-1` e il validatore ne controlla l'esistenza e le chiavi di messaggio.
+
+L'app è a schermo intero senza title screen (ADR-021): il controller avvia o riprende automaticamente la partita dalla fase transitoria `title`. HUD, barra narrativa, overlay a scheda (dialogo, Dossier, scelta, finale) e menù in-game (impostazioni, Archivio, credits, privacy, termini) restano nel DOM. L'audio chiptune è generato via WebAudio dietro `GameAudio` (ADR-019) e la musica parte solo dopo il primo input dell'utente.
+
+La posizione istantanea del personaggio e gli input appartengono alla sessione dell'adapter e non entrano nel salvataggio. `GameState` salva il `LevelNode`; una ripresa ricomincia la breve sfida. Il reducer riceve soltanto `MINIGAME_COMPLETED` o `MINIGAME_SKIPPED`, che portano allo stesso nodo narrativo in M1P.
+
 ## Gestione errori
 
 - Errori di contenuto fermano build e CI.

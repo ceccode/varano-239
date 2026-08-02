@@ -27,8 +27,8 @@ Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che 
 - Il Sindaco Eroe governa il comune totalmente fittizio di Borgocoda e guida soltanto la propria delegazione in un'esercitazione intercomunale inventata: non rappresenta il sindaco reale, non esercita autorità sulla Montichiari reale, non firma l'ordinanza reale e non ne riproduce voce, volto, biografia o citazioni.
 - Il Cacciatore, il fucile e ogni sua azione sono LEGGENDA dalla prima apparizione e non vengono presentati come parte delle ricerche documentate.
 - Le campagne sono versioni alternative: nessun finale inventato deve essere presentato come esito reale.
-- La sola azione letale diretta ammessa è `hunter + evidence + complete` nel nodo finale dedicato. Richiede conferma esplicita, avviene fuori campo e non include una meccanica di mira o uso realistico dell'arma.
-- In `gentle` il Varano resta sempre vivo e l'azione letale non deve comparire neppure come opzione disabilitata.
+- L'edizione è unica, 12+, con tono goliardico e scherzoso (ADR-022): nessuna scelta di sensibilità offerta al giocatore.
+- La sola azione letale diretta ammessa è `hunter + evidence` nel nodo finale dedicato. Richiede conferma esplicita, avviene fuori campo e non include una meccanica di mira o uso realistico dell'arma.
 - I finali con morte o corpo ritrovato sono mostrati con rispetto, senza dettagli o gag.
 - Nessun invito a cercare il rettile nel mondo reale; niente AR, coordinate precise o geolocalizzazione.
 - Fatti, testimonianze, ipotesi, leggende e piste sconfessate devono essere distinti visivamente e nei dati.

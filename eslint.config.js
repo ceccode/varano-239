@@ -20,6 +20,27 @@ export default defineConfig([
     },
   },
   {
+    files: ["public/sw.js"],
+    languageOptions: {
+      globals: {
+        self: "readonly",
+        caches: "readonly",
+        fetch: "readonly",
+        URL: "readonly",
+      },
+    },
+  },
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        Buffer: "readonly",
+        URL: "readonly",
+        console: "readonly",
+      },
+    },
+  },
+  {
     files: ["**/*.ts"],
     extends: [
       eslint.configs.recommended,

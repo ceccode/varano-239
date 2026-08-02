@@ -134,6 +134,7 @@ export interface DialogueLine {
   readonly textKey: MessageKey;
   readonly dialectTextKey?: MessageKey;
   readonly portraitAssetId?: AssetId;
+  readonly when?: readonly Condition[];
 }
 
 export interface BaseNode {
@@ -208,3 +209,8 @@ export type StoryNode =
   | LevelNode
   | ChapterEndNode
   | EndingNode;
+
+export interface StoryGraph {
+  readonly entryNodeId: NodeId;
+  readonly nodes: readonly StoryNode[];
+}

@@ -1,0 +1,883 @@
+import type { AssetDefinition } from "../../assets/manifest";
+import type { GameAction } from "../../core/actions";
+import { matchesConditions } from "../../core/conditions";
+import { completeSetup, type GameState } from "../../core/game-state";
+import type {
+  Approach,
+  MessageKey,
+  Role,
+  StoryGraph,
+  StoryNode,
+} from "../../core/model";
+interface GameContent {
+  readonly story: StoryGraph;
+  readonly assets: readonly AssetDefinition[];
+  readonly message: (key: MessageKey) => string;
+}
+
+export interface RenderGameAppOptions {
+  readonly document: Document;
+  readonly mount: HTMLElement;
+  readonly state: GameState;
+  readonly savedState: GameState | undefined;
+  readonly lastScore?: number | undefined;
+  readonly bestScore?: number | undefined;
+  readonly content: GameContent;
+  readonly dispatch: (action: GameAction) => void;
+  readonly onMenuToggled?: (open: boolean) => void;
+}
+
+interface RenderContext extends RenderGameAppOptions {
+  readonly screen: HTMLElement;
+}
+
+const repositoryUrl = "https://github.com/ceccode/varano-239";
+const privacyDocumentUrl = `${repositoryUrl}/blob/main/docs/PRIVACY.md`;
+const sourcesDocumentUrl = `${repositoryUrl}/blob/main/docs/SOURCES.md`;
+
+const roleObjectiveKeys: Readonly<Record<Role, MessageKey>> = {
+  hunter: "core.message.scene.objective.hunter",
+  guardian: "core.message.scene.objective.guardian",
+  mayor: "core.message.scene.objective.mayor",
+  varano: "core.message.scene.objective.varano",
+};
+
+const approachObjectiveKeys: Readonly<Record<Approach, MessageKey>> = {
+  evidence: "core.message.scene.approach.evidence",
+  rescue: "core.message.scene.approach.rescue",
+};
+
+function element<K extends keyof HTMLElementTagNameMap>(
+  document: Document,
+  tagName: K,
+  text?: string,
+): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tagName);
+  if (text !== undefined) {
+    node.textContent = text;
+  }
+  return node;
+}
+
+function heading(context: RenderContext, key: MessageKey): HTMLHeadingElement {
+  const title = element(context.document, "h2", context.content.message(key));
+  title.tabIndex = -1;
+  title.dataset.focusTarget = "screen-heading";
+  context.screen.append(title);
+  return title;
+}
+
+function button(
+  context: RenderContext,
+  key: MessageKey,
+  action: GameAction,
+): HTMLButtonElement {
+  const control = element(
+    context.document,
+    "button",
+    context.content.message(key),
+  );
+  control.type = "button";
+  control.addEventListener("click", () => {
+    context.dispatch(action);
+  });
+  return control;
+}
+
+function findNode(context: RenderContext): StoryNode | undefined {
+  return context.state.run === undefined
+    ? undefined
+    : context.content.story.nodes.find(
+        (node) => node.id === context.state.run?.currentNodeId,
+      );
+}
+
+function checkbox(
+  context: RenderContext,
+  labelKey: MessageKey,
+  checked: boolean,
+  onChange: (value: boolean) => GameAction,
+): HTMLLabelElement {
+  const label = element(context.document, "label");
+  label.className = "toggle-option";
+  const input = element(context.document, "input");
+  input.type = "checkbox";
+  input.checked = checked;
+  input.addEventListener("change", () => {
+    context.dispatch(onChange(input.checked));
+  });
+  label.append(
+    input,
+    element(context.document, "span", context.content.message(labelKey)),
+  );
+  return label;
+}
+
+interface RadioOption<T extends string> {
+  readonly value: T;
+  readonly labelKey: MessageKey;
+  readonly bodyKey?: MessageKey;
+}
+
+function radioGroup<T extends string>(
+  context: RenderContext,
+  name: string,
+  legendKey: MessageKey,
+  options: readonly RadioOption<T>[],
+  selected: T | undefined,
+  onChange: (value: T) => GameAction,
+): HTMLFieldSetElement {
+  const fieldset = element(context.document, "fieldset");
+  const legend = element(
+    context.document,
+    "legend",
+    context.content.message(legendKey),
+  );
+  const choices = element(context.document, "div");
+  choices.className = "radio-cards";
+  fieldset.append(legend, choices);
+
+  for (const option of options) {
+    const label = element(context.document, "label");
+    const input = element(context.document, "input");
+    const copy = element(context.document, "span");
+    const title = element(
+      context.document,
+      "strong",
+      context.content.message(option.labelKey),
+    );
+    input.type = "radio";
+    input.name = name;
+    input.value = option.value;
+    input.checked = selected === option.value;
+    input.addEventListener("change", () => {
+      if (input.checked) {
+        context.dispatch(onChange(option.value));
+      }
+    });
+    label.className = "radio-card";
+    copy.className = "radio-card__copy";
+    copy.append(title);
+    if (option.bodyKey !== undefined) {
+      const body = element(
+        context.document,
+        "span",
+        context.content.message(option.bodyKey),
+      );
+      body.className = "radio-card__body";
+      copy.append(body);
+    }
+    label.append(input, copy);
+    choices.append(label);
+  }
+
+  return fieldset;
+}
+
+function overlayCard(context: RenderContext): HTMLElement {
+  const card = element(context.document, "section");
+  card.className = "overlay-card game-screen";
+  context.screen.append(card);
+  return card;
+}
+
+function renderLevel(context: RenderContext): void {
+  if (
+    context.state.settings.playMode === "standard" &&
+    !context.state.settings.reducedMotion
+  ) {
+    const srHeading = element(
+      context.document,
+      "h2",
+      context.content.message("core.message.level.heading"),
+    );
+    srHeading.className = "sr-only";
+    srHeading.tabIndex = -1;
+    srHeading.dataset.focusTarget = "screen-heading";
+    const host = element(context.document, "div");
+    host.className = "arcade-host";
+    host.dataset.levelHost = "";
+    context.screen.append(srHeading, host);
+    return;
+  }
+
+  const card = overlayCard(context);
+  const cardContext: RenderContext = { ...context, screen: card };
+  heading(cardContext, "core.message.level.heading");
+  const intro = element(
+    context.document,
+    "p",
+    context.content.message("core.message.level.intro"),
+  );
+  const assisted = element(
+    context.document,
+    "p",
+    context.content.message("core.message.level.assisted"),
+  );
+  assisted.className = "scope-notice";
+  const proceed = element(
+    context.document,
+    "button",
+    context.content.message("core.message.level.continue"),
+  );
+  proceed.type = "button";
+  proceed.addEventListener("click", () => {
+    context.dispatch({ type: "MINIGAME_SKIPPED" });
+  });
+  card.append(intro, assisted, proceed);
+}
+
+function findAsset(
+  context: RenderContext,
+  assetId: string,
+): AssetDefinition | undefined {
+  return context.content.assets.find((asset) => asset.id === assetId);
+}
+
+function renderScene(
+  context: RenderContext,
+  node: StoryNode & { type: "scene" },
+): void {
+  const card = overlayCard(context);
+  const cardContext: RenderContext = { ...context, screen: card };
+  heading(cardContext, "core.message.ui.scene.heading");
+  const setup = completeSetup(context.state.setup);
+  if (setup !== undefined) {
+    card.append(
+      element(
+        context.document,
+        "p",
+        context.content.message(roleObjectiveKeys[setup.role]),
+      ),
+      element(
+        context.document,
+        "p",
+        context.content.message(approachObjectiveKeys[setup.approach]),
+      ),
+    );
+  }
+
+  const asset = findAsset(context, node.backgroundAssetId);
+  const scene = element(context.document, "div");
+  scene.className = "scene-frame";
+  if (asset !== undefined) {
+    const image = element(context.document, "img");
+    image.src = asset.src;
+    image.alt = context.content.message(asset.altKey);
+    image.width = 320;
+    image.height = 180;
+    scene.append(image);
+  }
+
+  const listHeading = element(
+    context.document,
+    "h3",
+    context.content.message("core.message.ui.hotspot-list"),
+  );
+  const list = element(context.document, "ul");
+  list.className = "action-list";
+  for (const hotspot of node.hotspots) {
+    const item = element(context.document, "li");
+    const control = element(
+      context.document,
+      "button",
+      context.content.message(hotspot.labelKey),
+    );
+    control.type = "button";
+    control.addEventListener("click", () => {
+      context.dispatch({
+        type: "HOTSPOT_ACTIVATED",
+        hotspotId: hotspot.id,
+      });
+    });
+    item.append(control);
+    list.append(item);
+  }
+
+  card.append(scene, listHeading, list);
+}
+
+function renderDialogue(
+  context: RenderContext,
+  node: StoryNode & { type: "dialogue" },
+): void {
+  const card = overlayCard(context);
+  const cardContext: RenderContext = { ...context, screen: card };
+  heading(cardContext, "core.message.ui.dialogue.heading");
+  const setup = completeSetup(context.state.setup);
+  if (setup !== undefined && context.state.run !== undefined) {
+    const dialogue = element(context.document, "div");
+    dialogue.className = "dialogue";
+    for (const line of node.lines) {
+      if (matchesConditions(line.when, { setup, run: context.state.run })) {
+        dialogue.append(
+          element(context.document, "p", context.content.message(line.textKey)),
+        );
+      }
+    }
+    card.append(dialogue);
+  }
+  card.append(
+    button(cardContext, "core.message.ui.continue", {
+      type: "DIALOGUE_ADVANCED",
+    }),
+  );
+}
+
+function renderSurprise(
+  context: RenderContext,
+  node: StoryNode & { type: "surprise" },
+): void {
+  const dialog = element(context.document, "section");
+  const title = element(
+    context.document,
+    "h2",
+    context.content.message("core.message.ui.surprise.heading"),
+  );
+  title.id = "surprise-heading";
+  dialog.className = "surprise-dialog overlay-card";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", title.id);
+  dialog.append(title);
+  const asset = findAsset(context, node.assetId);
+  if (asset !== undefined) {
+    const image = element(context.document, "img");
+    image.className = "surprise-sprite";
+    image.src = asset.src;
+    image.alt = context.content.message(asset.altKey);
+    image.width = 160;
+    image.height = 64;
+    dialog.append(image);
+  }
+  if (node.messageKey !== undefined) {
+    dialog.append(
+      element(context.document, "p", context.content.message(node.messageKey)),
+    );
+  }
+  const dismiss = button(context, "core.message.ui.surprise.dismiss", {
+    type: "SURPRISE_DISMISSED",
+  });
+  dismiss.dataset.focusTarget = "surprise-dismiss";
+  dialog.append(dismiss);
+  context.screen.append(dialog);
+}
+
+function renderChoice(
+  context: RenderContext,
+  node: StoryNode & { type: "choice" },
+): void {
+  const card = overlayCard(context);
+  const cardContext: RenderContext = { ...context, screen: card };
+  heading(cardContext, "core.message.ui.choice.heading");
+  card.append(
+    element(context.document, "p", context.content.message(node.promptKey)),
+  );
+  const choices = element(context.document, "div");
+  choices.className = "choice-list";
+  const setup = completeSetup(context.state.setup);
+  for (const option of node.options) {
+    if (
+      setup !== undefined &&
+      context.state.run !== undefined &&
+      matchesConditions(option.when, { setup, run: context.state.run })
+    ) {
+      const control = element(
+        context.document,
+        "button",
+        context.content.message(option.textKey),
+      );
+      control.type = "button";
+      control.addEventListener("click", () => {
+        context.dispatch({ type: "OPTION_CHOSEN", optionId: option.id });
+      });
+      choices.append(control);
+    }
+  }
+  card.append(choices);
+}
+
+function renderScorePanel(context: RenderContext): HTMLElement | undefined {
+  if (context.lastScore === undefined) {
+    return undefined;
+  }
+  const panel = element(context.document, "div");
+  panel.className = "score-panel";
+  const last = element(
+    context.document,
+    "p",
+    `${context.content.message("core.message.ui.score.last")}: ${String(context.lastScore)}`,
+  );
+  last.className = "score-panel__value";
+  panel.append(last);
+  if (context.bestScore !== undefined) {
+    panel.append(
+      element(
+        context.document,
+        "p",
+        `${context.content.message("core.message.ui.score.best")}: ${String(context.bestScore)}`,
+      ),
+    );
+  }
+
+  const share = element(
+    context.document,
+    "button",
+    context.content.message("core.message.ui.score.share"),
+  );
+  share.type = "button";
+  const sharedNotice = element(
+    context.document,
+    "p",
+    context.content.message("core.message.ui.score.shared"),
+  );
+  sharedNotice.className = "quiet-copy";
+  sharedNotice.setAttribute("role", "status");
+  sharedNotice.hidden = true;
+  share.addEventListener("click", () => {
+    const view = context.document.defaultView;
+    if (view === null || context.lastScore === undefined) {
+      return;
+    }
+    const text = `Ho fatto ${String(context.lastScore)} punti nel Livello 1 di VARANO 2:39! ${view.location.origin}${view.location.pathname}`;
+    if (typeof view.navigator.share === "function") {
+      view.navigator.share({ text }).catch(() => {
+        // Sharing was cancelled; nothing to clean up.
+      });
+      return;
+    }
+    void view.navigator.clipboard.writeText(text).then(() => {
+      sharedNotice.hidden = false;
+    });
+  });
+  panel.append(share, sharedNotice);
+  return panel;
+}
+
+function renderEnding(
+  context: RenderContext,
+  node: StoryNode & { type: "ending" },
+): void {
+  const card = overlayCard(context);
+  const cardContext: RenderContext = { ...context, screen: card };
+  heading(cardContext, node.titleKey);
+  card.append(
+    element(context.document, "p", context.content.message(node.bodyKey)),
+  );
+  const scorePanel = renderScorePanel(context);
+  if (scorePanel !== undefined) {
+    card.append(scorePanel);
+  }
+  card.append(
+    button(cardContext, "core.message.ui.ending.restart", {
+      type: "LOCAL_DATA_CLEARED",
+    }),
+  );
+}
+
+function renderUnavailable(context: RenderContext): void {
+  const card = overlayCard(context);
+  const cardContext: RenderContext = { ...context, screen: card };
+  heading(cardContext, "core.message.ui.unavailable-node");
+  card.append(
+    button(cardContext, "core.message.ui.ending.restart", {
+      type: "LOCAL_DATA_CLEARED",
+    }),
+  );
+}
+
+const roleSelectEntries: readonly {
+  readonly role: Role;
+  readonly titleKey: MessageKey;
+  readonly goalKey: MessageKey;
+}[] = [
+  {
+    role: "varano",
+    titleKey: "core.message.ui.role-select.varano.title",
+    goalKey: "core.message.ui.role-select.varano.goal",
+  },
+  {
+    role: "hunter",
+    titleKey: "core.message.ui.role-select.hunter.title",
+    goalKey: "core.message.ui.role-select.hunter.goal",
+  },
+  {
+    role: "guardian",
+    titleKey: "core.message.ui.role-select.guardian.title",
+    goalKey: "core.message.ui.role-select.guardian.goal",
+  },
+  {
+    role: "mayor",
+    titleKey: "core.message.ui.role-select.mayor.title",
+    goalKey: "core.message.ui.role-select.mayor.goal",
+  },
+];
+
+function renderRoleSelect(context: RenderContext): void {
+  const panel = element(context.document, "section");
+  panel.className = "role-select game-screen";
+  const panelContext: RenderContext = { ...context, screen: panel };
+  heading(panelContext, "core.message.ui.role-select.heading");
+  panel.append(
+    element(
+      context.document,
+      "p",
+      context.content.message("core.message.ui.role-select.body"),
+    ),
+  );
+
+  const list = element(context.document, "div");
+  list.className = "role-select__cards";
+  for (const entry of roleSelectEntries) {
+    const card = element(context.document, "button");
+    card.type = "button";
+    card.className = "role-card";
+    const title = element(
+      context.document,
+      "strong",
+      context.content.message(entry.titleKey),
+    );
+    const goal = element(
+      context.document,
+      "span",
+      context.content.message(entry.goalKey),
+    );
+    card.append(title, goal);
+    card.addEventListener("click", () => {
+      context.dispatch({ type: "ROLE_SELECTED", value: entry.role });
+      context.dispatch({ type: "RUN_STARTED" });
+    });
+    list.append(card);
+  }
+  panel.append(list);
+  context.screen.append(panel);
+}
+
+function renderStage(context: RenderContext): void {
+  if (context.state.phase === "title") {
+    renderRoleSelect(context);
+    return;
+  }
+
+  if (context.state.setup.storyScope !== "core") {
+    const fallback = element(
+      context.document,
+      "p",
+      context.content.message("core.message.ui.scope-fallback"),
+    );
+    fallback.className = "scope-notice scope-notice--floating";
+    fallback.setAttribute("role", "status");
+    context.screen.append(fallback);
+  }
+
+  const node = findNode(context);
+  if (node === undefined) {
+    if (context.state.run !== undefined) {
+      renderUnavailable(context);
+    }
+    return;
+  }
+
+  switch (node.type) {
+    case "scene":
+      renderScene(context, node);
+      return;
+    case "dialogue":
+      renderDialogue(context, node);
+      return;
+    case "surprise":
+      renderSurprise(context, node);
+      return;
+    // Dossier cards stay in the content contract for a future Archive, but no
+    // shipped node uses them (ADR-024).
+    case "dossier-card":
+      renderUnavailable(context);
+      return;
+    case "choice":
+      renderChoice(context, node);
+      return;
+    case "ending":
+      renderEnding(context, node);
+      return;
+    case "level":
+      renderLevel(context);
+      return;
+    case "chapter-end":
+      renderUnavailable(context);
+      return;
+  }
+}
+
+function menuSection(
+  context: RenderContext,
+  labelKey: MessageKey,
+  wasOpen: boolean,
+): HTMLDetailsElement {
+  const details = element(context.document, "details");
+  details.className = "menu-section";
+  details.dataset.menuSection = labelKey;
+  details.open = wasOpen;
+  details.append(
+    element(context.document, "summary", context.content.message(labelKey)),
+  );
+  return details;
+}
+
+function renderSettings(context: RenderContext): HTMLElement {
+  const wrapper = element(context.document, "div");
+  wrapper.className = "menu-settings";
+  wrapper.append(
+    radioGroup<Role>(
+      context,
+      "role",
+      "core.message.ui.options.role.legend",
+      [
+        { value: "varano", labelKey: "core.message.ui.options.role.varano" },
+        { value: "hunter", labelKey: "core.message.ui.options.role.hunter" },
+        {
+          value: "guardian",
+          labelKey: "core.message.ui.options.role.guardian",
+        },
+        { value: "mayor", labelKey: "core.message.ui.options.role.mayor" },
+      ],
+      context.state.setup.role,
+      (value) => ({ type: "ROLE_SELECTED", value }),
+    ),
+  );
+
+  const audioFieldset = element(context.document, "fieldset");
+  audioFieldset.append(
+    element(
+      context.document,
+      "legend",
+      context.content.message("core.message.ui.options.audio.legend"),
+    ),
+  );
+  const toggles = element(context.document, "div");
+  toggles.className = "toggle-options";
+  toggles.append(
+    checkbox(
+      context,
+      "core.message.ui.options.music",
+      context.state.settings.musicEnabled,
+      (musicEnabled) => ({
+        type: "SETTINGS_UPDATED",
+        settings: { musicEnabled },
+      }),
+    ),
+    checkbox(
+      context,
+      "core.message.ui.options.effects",
+      context.state.settings.effectsEnabled,
+      (effectsEnabled) => ({
+        type: "SETTINGS_UPDATED",
+        settings: { effectsEnabled },
+      }),
+    ),
+  );
+  audioFieldset.append(toggles);
+  wrapper.append(audioFieldset);
+  return wrapper;
+}
+
+function sectionOpen(mount: HTMLElement, labelKey: MessageKey): boolean {
+  return (
+    mount.querySelector<HTMLDetailsElement>(
+      `details[data-menu-section="${labelKey}"]`,
+    )?.open ?? false
+  );
+}
+
+function renderMenu(context: RenderContext): HTMLElement {
+  const wasOpen =
+    context.mount.querySelector<HTMLElement>("[data-menu]")?.hidden === false;
+  const menu = element(context.document, "section");
+  menu.className = "menu-overlay";
+  menu.dataset.menu = "";
+  menu.hidden = !wasOpen;
+
+  const bar = element(context.document, "div");
+  bar.className = "menu-bar";
+  const title = element(
+    context.document,
+    "h2",
+    context.content.message("core.message.ui.menu.heading"),
+  );
+  title.id = "menu-heading";
+  title.tabIndex = -1;
+  const close = element(
+    context.document,
+    "button",
+    context.content.message("core.message.ui.menu.close"),
+  );
+  close.type = "button";
+  close.dataset.menuClose = "";
+  bar.append(title, close);
+  menu.setAttribute("aria-labelledby", title.id);
+  menu.append(bar);
+
+  const settings = menuSection(
+    context,
+    "core.message.ui.menu.settings",
+    sectionOpen(context.mount, "core.message.ui.menu.settings"),
+  );
+  settings.append(renderSettings(context));
+
+  const credits = menuSection(
+    context,
+    "core.message.ui.menu.credits",
+    sectionOpen(context.mount, "core.message.ui.menu.credits"),
+  );
+  const externalLink = (labelKey: MessageKey, href: string): HTMLElement => {
+    const paragraph = element(context.document, "p");
+    const link = element(
+      context.document,
+      "a",
+      context.content.message(labelKey),
+    );
+    link.href = href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    paragraph.append(link);
+    return paragraph;
+  };
+  credits.append(
+    element(
+      context.document,
+      "p",
+      context.content.message("core.message.ui.credits.body"),
+    ),
+    externalLink("core.message.ui.credits.link", repositoryUrl),
+    externalLink("core.message.ui.credits.sources-link", sourcesDocumentUrl),
+  );
+
+  const privacy = menuSection(
+    context,
+    "core.message.ui.menu.privacy",
+    sectionOpen(context.mount, "core.message.ui.menu.privacy"),
+  );
+  const privacyLink = element(
+    context.document,
+    "a",
+    context.content.message("core.message.ui.privacy.link"),
+  );
+  privacyLink.href = privacyDocumentUrl;
+  privacyLink.target = "_blank";
+  privacyLink.rel = "noopener noreferrer";
+  const privacyBody = element(
+    context.document,
+    "p",
+    context.content.message("core.message.ui.privacy.body"),
+  );
+  const privacyLinkParagraph = element(context.document, "p");
+  privacyLinkParagraph.append(privacyLink);
+  privacy.append(privacyBody, privacyLinkParagraph);
+
+  const terms = menuSection(
+    context,
+    "core.message.ui.menu.terms",
+    sectionOpen(context.mount, "core.message.ui.menu.terms"),
+  );
+  terms.append(
+    element(
+      context.document,
+      "p",
+      context.content.message("core.message.ui.terms.body"),
+    ),
+  );
+
+  const clear = button(context, "core.message.ui.clear-save", {
+    type: "LOCAL_DATA_CLEARED",
+  });
+  clear.className = "menu-clear";
+
+  const disclaimer = element(
+    context.document,
+    "p",
+    context.content.message("core.message.ui.disclaimer"),
+  );
+  disclaimer.className = "quiet-copy";
+
+  menu.append(settings, credits, privacy, terms, clear, disclaimer);
+  return menu;
+}
+
+function renderHud(context: RenderContext, menu: HTMLElement): HTMLElement {
+  const hud = element(context.document, "header");
+  hud.className = "hud";
+
+  const siteTitle = element(context.document, "h1", "VARANO 2:39");
+  siteTitle.className = "sr-only";
+
+  const legend = element(
+    context.document,
+    "p",
+    context.content.message("core.message.ui.legend-banner"),
+  );
+  legend.className = "legend-banner";
+
+  const actions = element(context.document, "div");
+  actions.className = "hud-actions";
+
+  const node = findNode(context);
+  if (
+    node?.type === "level" &&
+    context.state.settings.playMode === "standard" &&
+    !context.state.settings.reducedMotion
+  ) {
+    const skip = button(context, "core.message.level.skip", {
+      type: "MINIGAME_SKIPPED",
+    });
+    skip.className = "hud-skip";
+    actions.append(skip);
+  }
+
+  const menuButton = element(
+    context.document,
+    "button",
+    context.content.message("core.message.ui.menu.open"),
+  );
+  menuButton.type = "button";
+  menuButton.className = "hud-menu";
+  menuButton.dataset.menuButton = "";
+  menuButton.setAttribute("aria-expanded", menu.hidden ? "false" : "true");
+
+  const setMenuOpen = (open: boolean): void => {
+    menu.hidden = !open;
+    menuButton.setAttribute("aria-expanded", open ? "true" : "false");
+    context.onMenuToggled?.(open);
+    if (open) {
+      menu.querySelector<HTMLElement>("#menu-heading")?.focus();
+    } else {
+      menuButton.focus();
+    }
+  };
+  menuButton.addEventListener("click", () => {
+    setMenuOpen(menu.hasAttribute("hidden"));
+  });
+  menu
+    .querySelector<HTMLElement>("[data-menu-close]")
+    ?.addEventListener("click", () => {
+      setMenuOpen(false);
+    });
+
+  actions.append(menuButton);
+  hud.append(siteTitle, legend, actions);
+  return hud;
+}
+
+export function renderGameApp(options: RenderGameAppOptions): void {
+  const shell = element(options.document, "section");
+  shell.className = "game-shell";
+
+  const stage = element(options.document, "div");
+  stage.className = "stage";
+  const context: RenderContext = { ...options, screen: stage };
+
+  const menu = renderMenu(context);
+  const hud = renderHud(context, menu);
+  renderStage(context);
+
+  shell.append(hud, stage, menu);
+  options.mount.replaceChildren(shell);
+}

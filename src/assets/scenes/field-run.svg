@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="180" viewBox="0 0 768 180" role="img" aria-labelledby="title description" shape-rendering="crispEdges">
+  <title id="title">Campo notturno della leggenda</title>
+  <desc id="description">Panorama inventato con mais, balle di fieno, una roggia e un canneto illuminati dalla luna.</desc>
+  <rect width="768" height="180" fill="#101d35"/>
+  <rect y="76" width="768" height="104" fill="#183b38"/>
+  <rect y="132" width="768" height="48" fill="#234b34"/>
+  <rect y="154" width="768" height="26" fill="#182d20"/>
+  <circle cx="76" cy="38" r="20" fill="#ffe397"/>
+  <rect x="58" y="34" width="26" height="8" fill="#101d35"/>
+  <path d="M0 108h42V86h10v22h22V78h10v30h25V91h10v17h33V83h10v25h31V89h10v19h39V79h10v29h22V88h10v20h36V81h10v27h28V88h10v20h34V80h10v28h31V90h10v18h33V84h10v24h35V77h10v31h28V87h10v21h29V82h10v26h35V90h10v18h33V80h10v28h29V88h10v20h34V76h10v32h26v46H0z" fill="#286044"/>
+  <path d="M0 144h768v10H0z" fill="#315f3f"/>
+  <path d="M22 156h110v8H22zm216 0h144v8H238zm226 0h154v8H464z" fill="#516c3f"/>
+  <path d="M132 154h106l-18 26H148z" fill="#244b5b"/>
+  <path d="M382 154h82l-12 26h-58z" fill="#244b5b"/>
+  <g fill="#9b6d2c">
+    <rect x="276" y="128" width="72" height="26"/>
+    <rect x="286" y="116" width="52" height="12"/>
+    <rect x="502" y="138" width="62" height="16"/>
+  </g>
+  <g fill="#ddb44f">
+    <rect x="282" y="122" width="60" height="4"/>
+    <rect x="508" y="142" width="50" height="4"/>
+  </g>
+  <g fill="#5d8b49">
+    <rect x="706" y="92" width="5" height="62"/>
+    <rect x="720" y="78" width="5" height="76"/>
+    <rect x="736" y="88" width="5" height="66"/>
+    <rect x="752" y="72" width="5" height="82"/>
+  </g>
+  <g fill="#ffcf5a">
+    <rect x="140" y="137" width="6" height="6"/>
+    <rect x="342" y="92" width="6" height="6"/>
+    <rect x="617" y="143" width="6" height="6"/>
+  </g>
+  <g fill="#88d6c1" opacity=".75">
+    <rect x="185" y="42" width="3" height="3"/>
+    <rect x="434" y="54" width="3" height="3"/>
+    <rect x="629" y="34" width="3" height="3"/>
+  </g>
+</svg>

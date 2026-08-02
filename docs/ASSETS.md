@@ -17,8 +17,12 @@ Non copiare fotografie giornalistiche, meme, stemmi, loghi, musiche o sprite tro
 
 ## Registro
 
-| ID                     | Percorso    | Tipo      | Autore           | Fonte     | Licenza | Modifiche | Verificato da |
-| ---------------------- | ----------- | --------- | ---------------- | --------- | ------- | --------- | ------------- |
-| `placeholder-original` | Da definire | Pixel art | Team VARANO 2:39 | Originale | MIT     | Nessuna   | Da definire   |
+| ID                              | Percorso                             | Tipo                | Autore           | Fonte                                                | Licenza | Modifiche | Verificato da            |
+| ------------------------------- | ------------------------------------ | ------------------- | ---------------- | ---------------------------------------------------- | ------- | --------- | ------------------------ |
+| `core.asset.scene.field-night`  | `src/assets/scenes/field-night.svg`  | Fondale SVG 320×180 | Team VARANO 2:39 | Originale                                            | MIT     | Nessuna   | Quality gate M1, 1/8/26  |
+| `core.asset.scene.field-run`    | `src/assets/scenes/field-run.svg`    | Fondale SVG 768×180 | Team VARANO 2:39 | Originale                                            | MIT     | Nessuna   | Quality gate M1R, 1/8/26 |
+| `core.asset.sprite.varano-tail` | `src/assets/sprites/varano-tail.svg` | Sprite SVG 160×64   | Team VARANO 2:39 | Originale                                            | MIT     | Nessuna   | Quality gate M1, 1/8/26  |
+| `core.asset.sprite.varano-run`  | `src/assets/sprites/varano-run.svg`  | Sprite SVG 32×18    | Team VARANO 2:39 | Originale                                            | MIT     | Nessuna   | Quality gate M1R, 1/8/26 |
+| Icone PWA                       | `public/icons/*.png`                 | Icone 180/192/512   | Team VARANO 2:39 | Originale (generate da `scripts/generate-icons.mjs`) | MIT     | Nessuna   | Quality gate M1P, 2/8/26 |
 
-Rimuovere la riga placeholder quando viene registrato il primo asset reale.
+La scena del Livello 1, gli sprite e l'audio chiptune di M1P sono disegnati/sintetizzati proceduralmente dal codice (canvas 2D e WebAudio), senza file esterni. Gli asset sono originali e temporanei. Non riproducono fotografie, loghi, stemmi, persone, edifici, percorsi reali o materiale di altri videogiochi e possono essere sostituiti dopo il playtest senza cambiare il grafo narrativo.

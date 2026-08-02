@@ -5,34 +5,71 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { bootstrapApp, startApplication } from "../../src/app/bootstrap";
 import { appConfig } from "../../src/app/config";
-import type { AnalyticsPort } from "../../src/core/ports";
+import type { AnalyticsPort, SavePort } from "../../src/core/ports";
+import { resolveItalianMessage } from "../../src/content/locales/it";
+import { NoopGameAudio } from "../../src/platform/audio/chiptune-audio";
+import type { BestScorePort } from "../../src/platform/storage/best-score";
 import { renderBootstrapError } from "../../src/platform/dom/render-app";
+import { stubCanvasContext } from "./helpers/canvas-stub";
+
+function createSave(): SavePort {
+  return {
+    load: vi.fn(() => undefined),
+    save: vi.fn(),
+    clear: vi.fn(),
+  };
+}
+
+function createBestScore(): BestScorePort {
+  return {
+    load: vi.fn(() => undefined),
+    save: vi.fn(),
+    clear: vi.fn(),
+  };
+}
 
 describe("application bootstrap", () => {
   beforeEach(() => {
-    document.body.innerHTML = `
-      <h1>${appConfig.title}</h1>
-      <main><div data-app-root></div></main>
-    `;
+    document.body.innerHTML = `<main data-app-root></main>`;
+    stubCanvasContext();
+    Object.defineProperty(window, "requestAnimationFrame", {
+      configurable: true,
+      value: vi.fn(() => 1),
+    });
+    Object.defineProperty(window, "cancelAnimationFrame", {
+      configurable: true,
+      value: vi.fn(),
+    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("renders the ready state and emits only the allowed page view", () => {
+  it("boots to the role selection and emits only the page view", () => {
     const track = vi.fn<AnalyticsPort["track"]>();
 
-    bootstrapApp({ document, analytics: { track } });
+    const controller = bootstrapApp({
+      document,
+      analytics: { track },
+      save: createSave(),
+      audio: new NoopGameAudio(),
+      bestScore: createBestScore(),
+      reducedMotion: false,
+    });
 
-    expect(getByRole(document.body, "status").textContent).toBe(
-      appConfig.shell.ready,
+    expect(controller.getState().phase).toBe("title");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.ui.role-select.heading"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.ui.legend-banner"),
     );
     expect(track).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith({ name: "page_view" });
   });
 
-  it("keeps the shell usable when analytics fails", () => {
+  it("keeps the game usable when analytics fails", () => {
     const consoleWarning = vi
       .spyOn(console, "warn")
       .mockImplementation(() => undefined);
@@ -42,22 +79,44 @@ describe("application bootstrap", () => {
       },
     } satisfies AnalyticsPort;
 
-    bootstrapApp({ document, analytics });
+    bootstrapApp({
+      document,
+      analytics,
+      save: createSave(),
+      audio: new NoopGameAudio(),
+      bestScore: createBestScore(),
+      reducedMotion: false,
+    });
 
-    expect(getByRole(document.body, "status").textContent).toBe(
-      appConfig.shell.ready,
-    );
+    expect(
+      getByRole(document.body, "button", {
+        name: new RegExp(
+          `^${resolveItalianMessage("core.message.ui.role-select.varano.title")}`,
+        ),
+      }),
+    ).toBeInstanceOf(HTMLElement);
     expect(consoleWarning).toHaveBeenCalledOnce();
   });
 
   it("preserves static content and focuses an accessible bootstrap error", () => {
     document.querySelector("[data-app-root]")?.remove();
+    document.body.insertAdjacentHTML(
+      "afterbegin",
+      `<main><h1>${appConfig.title}</h1></main>`,
+    );
     const consoleError = vi
       .spyOn(console, "error")
       .mockImplementation(() => undefined);
     const analytics = { track: vi.fn<AnalyticsPort["track"]>() };
 
-    startApplication({ document, analytics });
+    startApplication({
+      document,
+      analytics,
+      save: createSave(),
+      audio: new NoopGameAudio(),
+      bestScore: createBestScore(),
+      reducedMotion: false,
+    });
 
     const alert = getByRole(document.body, "alert", {
       name: appConfig.bootstrapError.title,
