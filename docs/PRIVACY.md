@@ -19,16 +19,14 @@ Nella UI e nei report usare «visite stimate», non «persone identificate».
 
 ## Dati locali
 
-Il browser conserva soltanto:
+Nella M1 il browser conserva soltanto:
 
-- avanzamento, checkpoint, scelte narrative, dossier scoperti e versioni dei pacchetti;
-- ruolo, approccio, sensibilità, profondità del mistero, teorie selezionate ed esito, tutti esclusivamente locali;
+- avanzamento, checkpoint, scelte narrative e schede del Dossier scoperte;
+- ruolo, approccio, sensibilità, profondità del mistero ed esito, tutti esclusivamente locali;
 - impostazioni di accessibilità;
-- preferenza per le battute bresciane;
-- versione dello schema e dei contenuti;
-- data e ora tecnica dell'ultimo salvataggio locale.
+- versione dello schema locale.
 
-Il salvataggio usa `localStorage`, non viene sincronizzato e non lascia il dispositivo. Il menu offre «Cancella progressi e preferenze» con spiegazione chiara. Non memorizzare nome, email, data di nascita, posizione, testo libero o identificatori di analytics.
+I campi per teorie, inventario e versioni dei pack sono già predisposti nello stato ma restano vuoti finché i relativi contenuti non esistono. Il salvataggio usa la chiave `varano-239.save` in `localStorage`, non viene sincronizzato e non lascia il dispositivo. Il menu offre «Cancella progressi e preferenze locali». Non memorizzare nome, email, data di nascita, posizione, testo libero, data e ora del salvataggio o identificatori di analytics.
 
 ## Eventi remoti ammessi
 

@@ -122,6 +122,8 @@ Flussi minimi:
 12. analytics configurati e non configurati come descritto in `PRIVACY.md`;
 13. archivio con apertura di una fonte esterna.
 
+Per M1R la suite verifica inoltre movimento reale con tastiera, pressione dei controlli touch, presenza del salto equivalente, assenza del loop real-time con movimento ridotto e salvataggio/ripresa dal `LevelNode`.
+
 Ogni adapter di livello usa la stessa suite contrattuale: configurazione presente, completamento, salto equivalente e `destroy()` senza timer o listener residui.
 
 Eseguire almeno su profili Playwright mobile compatto, mobile grande e desktop Chromium. Prima del rilascio aggiungere uno smoke test su Firefox e WebKit.

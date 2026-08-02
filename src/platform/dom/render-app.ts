@@ -1,16 +1,3 @@
-export function renderReadyStatus(
-  document: Document,
-  mount: HTMLElement,
-  message: string,
-): void {
-  const status = document.createElement("p");
-  status.className = "app-status";
-  status.dataset.bootstrapStatus = "ready";
-  status.setAttribute("role", "status");
-  status.textContent = message;
-  mount.replaceChildren(status);
-}
-
 interface BootstrapErrorCopy {
   readonly title: string;
   readonly body: string;

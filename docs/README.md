@@ -48,7 +48,7 @@ In caso di conflitto:
 - Il destino del Varano e il mistero della sua origine sono indipendenti.
 - Fuga e abbandono sono ipotesi non accertate; il complotto è pura leggenda con soggetti inventati.
 - Misteri e capitoli sono Story Pack compilati, dichiarativi, saltabili e namespaced; una nuova meccanica di livello usa anche un adapter isolato.
-- TypeScript + Vite, DOM-first, nessun framework di gioco nell'MVP.
+- TypeScript + Vite, nessun framework di gioco nell'MVP; il loop principale è un platformer canvas con motore locale (ADR-018), avvio immediato a schermo intero e menù in-game (ADR-021); menu, overlay narrativi, Dossier e Archivio restano nel DOM.
 - Nessun account o backend; analytics limitati a visite aggregate e `game_start`.
 
 ## Aggiornare la documentazione

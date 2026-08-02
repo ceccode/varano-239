@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img">
+  <rect width="320" height="180" fill="#111d2c" />
+  <rect y="88" width="320" height="92" fill="#263b2c" />
+  <rect x="244" y="18" width="26" height="26" fill="#f4dfa1" />
+  <rect x="250" y="18" width="20" height="20" fill="#111d2c" opacity="0.28" />
+  <path d="M0 91 36 72l28 12 42-28 44 29 34-18 39 24 44-32 53 32v22H0Z" fill="#1b2d32" />
+  <g fill="#607b3e">
+    <path d="M10 180V96h6v84zm14 0v-70h6v70zm18 0V89h6v91zm19 0v-76h6v76zm21 0V93h6v87zm20 0v-67h6v67zm21 0V89h6v91zm20 0v-75h6v75zm22 0V92h6v88zm20 0v-70h6v70zm22 0V94h6v86zm20 0v-78h6v78zm22 0V90h6v90zm19 0v-72h6v72zm19 0V96h6v84z" />
+  </g>
+  <g fill="#7e9a4a">
+    <path d="m10 116-9-8 9 3zm6 12 12-9-12 4zm26-16-12-8 12 3zm6 20 12-8-12 3zm34-22-11-8 11 3zm6 18 13-9-13 4zm35-16-12-8 12 3zm6 20 12-9-12 4zm36-18-12-8 12 3zm6 17 12-8-12 3zm36-19-12-8 12 3zm6 18 12-9-12 4zm36-16-12-8 12 3zm6 18 12-8-12 3zm33-20-11-8 11 3z" />
+  </g>
+  <path d="M0 151h76l26-9h88l22 9h108v29H0Z" fill="#17241d" />
+  <path d="M0 160h82l24-8h78l26 8h110" fill="none" stroke="#6c8f90" stroke-width="5" />
+  <g fill="#d6c071" opacity="0.62">
+    <rect x="104" y="124" width="5" height="3" />
+    <rect x="116" y="129" width="7" height="3" />
+    <rect x="132" y="136" width="9" height="3" />
+  </g>
+</svg>

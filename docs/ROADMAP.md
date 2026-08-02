@@ -11,13 +11,13 @@ Il caso principale dura circa 20–30 minuti; il Dossier Origini aggiunge circa 
 ### P0 — necessario per il primo rilascio pubblico
 
 - Disclaimer e sicurezza.
-- Scelta `gentle | complete`, quattro ruoli, due approcci e profondità `core | origins | all-registered`.
+- Edizione unica 12+ (ADR-022), quattro ruoli, due approcci e profondità `core | origins | all-registered`.
 - Prologo e cinque atti descritti nel game design.
 - Dossier Origini con fuga, abbandono e complotto, senza soluzione canonica.
 - Almeno sei famiglie di finale: salvataggio, fuga, conquista, prova postuma, abbattimento del Cacciatore e mistero aperto.
-- Ogni esito di morte è escluso da `gentle`; l'abbattimento è limitato a `hunter + evidence + complete`.
+- L'abbattimento è limitato a `hunter + evidence`, con conferma aggiuntiva e fuori campo (ADR-013, ADR-022).
 - Scene DOM-first con touch, mouse e tastiera.
-- Modalità Standard, Storia e Calma.
+- Una sola modalità di gioco; accessibilità garantita da «Salta il livello» e dal percorso assistito con `prefers-reduced-motion` (ADR-022).
 - Archivio FATTO/TESTIMONIANZA/IPOTESI/LEGGENDA/SCONFESSATO con fonti e data di verifica.
 - Story Pack compilati, saltabili e verificati, senza plugin runtime.
 - Salvataggio locale versionato.
@@ -38,7 +38,6 @@ Il caso principale dura circa 20–30 minuti; il Dossier Origini aggiunge circa 
 ### P2 — dopo il lancio
 
 - Mini-giochi real-time facoltativi.
-- PWA/offline.
 - Traduzioni oltre italiano e dialetto.
 - Nuovi epiloghi, misteri e capitoli tramite Story Pack; nuovi livelli tramite `LevelNode` e adapter isolati.
 - Modalità commento del regista sulle fonti.
@@ -47,7 +46,7 @@ Multiplayer, account, classifica, geolocalizzazione e caccia nel mondo reale res
 
 ## Milestone M0 — Fondamenta
 
-**Stato al 1 agosto 2026:** implementata localmente; la pubblicazione effettiva e l'esecuzione della CI richiedono il primo commit autorizzato e l'abilitazione di GitHub Pages nel repository.
+**Stato al 1 agosto 2026:** implementata e pubblicata nel commit iniziale su `main`; GitHub Actions è configurato come sorgente Pages e il primo deploy è riuscito.
 
 ### Deliverable
 
@@ -70,6 +69,8 @@ Multiplayer, account, classifica, geolocalizzazione e caccia nel mondo reale res
 - La pagina è leggibile da 320 px e con sola tastiera.
 
 ## Milestone M1 — Vertical slice «Ore 2:39»
+
+**Stato al 1 agosto 2026:** implementata localmente sul branch `codex/m1-vertical-slice`. Gli acceptance criteria automatici sono coperti, ma il playtest qualitativo del proprietario ha giudicato il loop poco arcade, poco giocabile e poco coinvolgente. La domanda di milestone non è superata e M2 resta sospesa durante M1R.
 
 ### Deliverable
 
@@ -96,7 +97,78 @@ Multiplayer, account, classifica, geolocalizzazione e caccia nel mondo reale res
 
 La scena point-and-click è divertente e leggibile su telefono? Se no, correggere il loop prima di produrre gli altri capitoli.
 
+## Milestone M1R — Prototipo «Ore 2:39 arcade»
+
+**Stato al 1 agosto 2026:** implementata localmente sul branch `codex/m1-vertical-slice`; resta da eseguire il nuovo playtest qualitativo del proprietario su telefono.
+
+### Deliverable
+
+- Un `LevelNode` laterale 320×180 con panorama originale a scorrimento.
+- Movimento, salto, tre segnali da raccogliere e uscita nel canneto.
+- Controlli tastiera e touch; nessun nemico, vita, timer o game over.
+- «Salta la sfida» con lo stesso esito narrativo del completamento.
+- Percorso immediato equivalente per Modalità Storia, Calma e movimento ridotto.
+- Adapter isolato, registro compilato e fisica TypeScript pura, senza framework.
+- Dialogo, Dossier, scelta, Archivio e finale M1 conservati nel DOM.
+
+### Acceptance criteria
+
+- In Modalità Standard il Varano si muove, salta, raccoglie tutti e tre i segnali e può raggiungere l'uscita con tastiera o touch.
+- Completamento e salto conducono allo stesso nodo narrativo e tutte le 16 combinazioni core raggiungono il finale temporaneo.
+- Il salvataggio registra il `LevelNode`; la ripresa ricomincia la breve sfida senza serializzare fisica, input o timer.
+- Modalità Storia, Calma e `prefers-reduced-motion` non richiedono il loop real-time e conservano tutto il contenuto narrativo.
+- Il livello non mostra morte, armi, danni, punteggi, premi esclusivi o inviti alla ricerca reale dell'animale.
+- Controlli, salto e stato hanno nomi accessibili; il banner LEGGENDA resta persistente.
+- La coppia livello/configurazione e le chiavi di testo sono validate in build.
+- Nessun asset o elemento identificativo di Super Mario Bros viene copiato.
+- `npm run check` passa senza dipendenze runtime.
+
+### Domanda a cui deve rispondere
+
+La corsa rende il prologo più arcade, giocabile e coinvolgente su telefono senza trasformare lettura e accessibilità in ostacoli? Se no, rivedere ancora il formato prima di M2.
+
+**Esito del playtest (1 agosto 2026):** no. Il flusso resta macchinoso (cinque passaggi prima di giocare) e poco usabile da mobile. ADR-018 pivota il loop principale a platformer arcade; la milestone successiva è M1P.
+
+## Milestone M1P — Platformer «Livello 1: I campi di Montichiari»
+
+**Stato:** implementata. Sostituisce M1R come formato del loop principale (ADR-018). Dopo i playtest del proprietario (2 agosto 2026) la title screen è stata rimossa (ADR-021) e la revisione ADR-022 ha fissato l'edizione unica 12+ dal tono goliardico, i nomi reali dei luoghi (Montichiari, Castello Bonoris), il menù ridotto a Personaggio + Audio e la distribuzione come PWA portrait-first.
+
+### Deliverable
+
+- Onboarding a zero passaggi: al caricamento il gioco parte subito a schermo intero con il Varano come default (o riprende il salvataggio); narrativa contestuale durante il livello e overlay a scheda per dialogo, Dossier, scelta e finale; menù in-game con impostazioni (personaggio, audio), credits, privacy e termini (ADR-021, ADR-022).
+- Layout giocabile anche in landscape (controlli in overlay sul canvas) e PWA installabile: manifest, icone originali generate e service worker offline (ADR-022).
+- Selezione del ruolo al primo avvio con obiettivo dichiarato per personaggio, punteggio di livello con record personale locale e condivisione via Web Share/appunti, overlay narrativi nello stesso stile grafico del gioco e riscrittura del prologo con gancio per il Livello 2 (ADR-023).
+
+### Verso M2
+
+- Superpoteri per ruolo (posseduti o trovati nei livelli): Varano scatto di coda, Cacciatore fiuto, Custode richiamo, Sindaco drone (bozza ADR-023).
+- Livello 2 con il seguito del colpo di scena («chi ha mandato la foto alle chat alle 2:41?»).
+- Livello 1 platformer a scorrimento laterale su canvas: corsa, salto con gravità e coyote time, piattaforme, collezionabili (segnali), checkpoint morbidi e traguardo nel canneto.
+- Controlli touch mobile-first (frecce + salto, pulsanti grandi) e tastiera; nessuna rotazione imposta.
+- «Salta il livello» sempre disponibile con lo stesso esito narrativo.
+- Musica chiptune e SFX generati con WebAudio (ADR-019), toggle separati, avvio solo dopo gesto utente.
+- UI retrò curata: HUD, title screen, schermata di completamento; banner LEGGENDA persistente.
+- Breve interludio narrativo dopo il livello con dialogo, scelta e finale temporaneo aperto; nessuna scheda del Dossier nel percorso giocabile (ADR-024).
+- `netlify.toml` e pubblicazione su Netlify (ADR-020).
+
+### Acceptance criteria
+
+- Da title screen al gameplay in al massimo due tap.
+- Il livello è completabile con tastiera o touch su viewport da 320 px; «Salta il livello» conduce allo stesso nodo narrativo.
+- Nessun game over punitivo: cadute e ostacoli riportano al checkpoint senza perdere i segnali raccolti.
+- Musica ed effetti disattivabili; il gioco resta completabile senza suono.
+- `prefers-reduced-motion` e Modalità Calma offrono il percorso immediato senza loop real-time.
+- Nessun asset o elemento identificativo copiato da Super Mario Bros o Sonic.
+- `npm run check` passa; nessuna dipendenza runtime.
+- Il sito è pubblicato su Netlify con base `/`.
+
+### Domanda a cui deve rispondere
+
+Il platformer è divertente, immediato e usabile su telefono? Se sì, M2 produce i livelli successivi con gli interludi narrativi; se no, iterare sul feel (fisica, controlli, feedback audio-visivo) prima di aggiungere contenuti.
+
 ## Milestone M2 — Cronaca giocabile
+
+**Nota:** da ri-scopare dopo il playtest di M1P: gli atti diventano livelli platformer con interludi narrativi DOM; carte, punteggi e Archivio restano.
 
 ### Deliverable
 

@@ -16,7 +16,7 @@
     "format:check": "prettier --check . --ignore-unknown",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "validate": "tsc --noEmit --project tsconfig.validation.json && node scripts/validate-m0.mjs",
+    "validate": "tsc --noEmit --project tsconfig.validation.json && vitest run tests/content",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run validate && npm run test -- --coverage && npm run build && npm run test:e2e"
   },
   "dependencies": {},

@@ -106,6 +106,19 @@ Ogni riferimento a morte o ritrovamento nella tabella è esclusivo di `complete`
 
 Una scena standard dura 2–4 minuti. Nessuna scena deve richiedere più di due obiettivi contemporanei.
 
+### Esperimento M1R — ritmo arcade
+
+Il playtest proprietario del primo Atto 0 ha giudicato la sola selezione di hotspot poco giocabile e poco coinvolgente. Prima di estendere la campagna, M1R sostituisce l'apertura point-and-click con un unico micro-livello laterale originale:
+
+- il giocatore guida il Varano, raccoglie tre segnali e raggiunge il canneto;
+- movimento, salto e scorrimento servono a dare presenza fisica e ritmo, non a creare difficoltà punitiva;
+- non ci sono nemici, vite, cadute letali, timer, punteggio o game over;
+- «Salta la sfida» porta allo stesso nodo narrativo del completamento;
+- Modalità Storia, Calma e movimento ridotto offrono direttamente il percorso equivalente senza loop real-time;
+- dialoghi, scelte, Dossier, banner LEGGENDA e Archivio restano HTML semantico.
+
+M1R è un test di formato, non l'approvazione di un platform completo. M2 resta sospesa finché il proprietario non valuta il nuovo prototipo.
+
 ## Struttura condivisa
 
 | Atto                  | Luogo                                        | Fatto di partenza                                                              | Obiettivo ludico                               |
