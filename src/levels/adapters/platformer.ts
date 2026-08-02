@@ -1,5 +1,5 @@
 import type { MessageKey } from "../../core/model";
-import type { MiniGameHandle, MiniGamePort } from "../contract";
+import type { LevelOutcome, MiniGameHandle, MiniGamePort } from "../contract";
 import {
   cameraX,
   createPlatformerState,
@@ -128,6 +128,19 @@ export function levelScore(state: PlatformerState): number {
   const timeBonus = Math.max(0, 1500 - Math.round(state.elapsedSeconds * 10));
   const spillMalus = state.respawns * 50;
   return Math.max(0, clues + timeBonus - spillMalus);
+}
+
+export function levelOutcome(
+  state: PlatformerState,
+  config: PlatformerConfig,
+): LevelOutcome {
+  return {
+    score: levelScore(state),
+    clues: state.collectedIds.length,
+    totalClues: config.pickups.length,
+    seconds: Math.round(state.elapsedSeconds),
+    respawns: state.respawns,
+  };
 }
 
 export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
@@ -645,9 +658,9 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         running = false;
         if (!completionSent) {
           completionSent = true;
-          const score = levelScore(state);
+          const outcome = levelOutcome(state, config);
           completionTimer = view.setTimeout(() => {
-            request.onComplete(score);
+            request.onComplete(outcome);
           }, 700);
         }
         return;

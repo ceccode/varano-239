@@ -50,9 +50,13 @@ Regole:
 - errori di rete ignorati senza retry aggressivo;
 - il gioco deve funzionare identico con analytics bloccati.
 
-## Provider consigliato
+## Provider attivo (ADR-025)
 
-Per un progetto amatoriale su Netlify, la prima scelta è **GoatCounter hosted**, configurato per dati aggregati e senza pageview individuali.
+Il provider è **GoatCounter hosted** sull'istanza `varano239.goatcounter.com`, attivo soltanto sul sito pubblicato: l'endpoint è dichiarato in `netlify.toml` e senza quella variabile l'app usa `NoopAnalytics`, quindi build locali e test non fanno nessuna richiesta a terzi.
+
+Cosa viene inviato, in tutto: una visita con percorso e titolo fissi (`/`, `VARANO 2:39`) e l'evento `game_start` senza proprietà. Il referrer è ridotto alla sola origine, mai l'URL completo, e i referrer interni vengono scartati. `Do Not Track` e `Global Privacy Control` disattivano l'adapter prima ancora di caricare lo script. Il punteggio, il record personale e la cartolina condivisibile restano sul dispositivo.
+
+Per un progetto amatoriale su Netlify, GoatCounter hosted resta la scelta più adatta, configurato per dati aggregati e senza pageview individuali.
 
 Motivi:
 

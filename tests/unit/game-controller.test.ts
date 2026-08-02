@@ -350,25 +350,15 @@ describe("full-screen game controller", () => {
     );
   });
 
-  it("shows the score with a shareable personal best on the ending card", async () => {
-    const { mount } = prepareDocument();
-    const writeText = vi.fn((text: string) => {
-      void text;
-      return Promise.resolve();
-    });
-    Object.defineProperty(window.navigator, "clipboard", {
-      configurable: true,
-      value: { writeText },
-    });
-
-    let state: GameState = {
-      ...createInitialState(),
-    };
+  function renderEndingWithScore(
+    mount: HTMLElement,
+    overrides: Partial<Parameters<typeof renderGameApp>[0]> = {},
+  ): void {
+    let state: GameState = { ...createInitialState() };
     for (const action of [
       { type: "RUN_STARTED" },
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
-      { type: "DOSSIER_CLOSED" },
       { type: "OPTION_CHOSEN", optionId: "core.option.prologue.protect" },
     ] as const) {
       state = reduce(state, action, coreStoryGraph).state;
@@ -379,7 +369,13 @@ describe("full-screen game controller", () => {
       mount,
       state,
       savedState: undefined,
-      lastScore: 1730,
+      lastOutcome: {
+        score: 1730,
+        clues: 3,
+        totalClues: 3,
+        seconds: 47,
+        respawns: 0,
+      },
       bestScore: 1800,
       content: {
         story: coreStoryGraph,
@@ -387,7 +383,14 @@ describe("full-screen game controller", () => {
         message: resolveItalianMessage,
       },
       dispatch: vi.fn(),
+      ...overrides,
     });
+  }
+
+  it("draws a score card and teases the next level on the ending", () => {
+    const { mount } = prepareDocument();
+    const canvasStub = stubCanvasContext();
+    renderEndingWithScore(mount, { isRecord: true });
 
     expect(mount.textContent).toContain(
       `${resolveItalianMessage("core.message.ui.score.last")}: 1730`,
@@ -395,11 +398,106 @@ describe("full-screen game controller", () => {
     expect(mount.textContent).toContain(
       `${resolveItalianMessage("core.message.ui.score.best")}: 1800`,
     );
+
+    // The card is a real canvas with an accessible name.
+    const card = mount.querySelector<HTMLCanvasElement>("canvas.score-card");
+    expect(card).toBeInstanceOf(HTMLCanvasElement);
+    expect(card?.getAttribute("role")).toBe("img");
+    expect(card?.getAttribute("aria-label")).toBe(
+      resolveItalianMessage("core.message.ui.score.card-alt"),
+    );
+    expect(canvasStub.texts).toContain("1730");
+    expect(canvasStub.texts).toContain("3/3");
+    expect(canvasStub.texts).toContain("47s");
+    expect(canvasStub.texts).toContain(
+      resolveItalianMessage("core.message.ui.card.record"),
+    );
+    expect(canvasStub.texts).toContain(
+      resolveItalianMessage("core.message.ui.role-select.varano.title"),
+    );
+
+    // The suspense block announces that level 2 is on the way.
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.ui.next-level.label"),
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.ui.next-level.title"),
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.ui.next-level.install"),
+    );
+  });
+
+  it("shares the card as an image and reports the outcome", async () => {
+    const { mount } = prepareDocument();
+    stubCanvasContext();
+    const blob = new Blob(["png"], { type: "image/png" });
+    HTMLCanvasElement.prototype.toBlob = vi.fn((callback: BlobCallback) => {
+      callback(blob);
+    });
+    const share = vi.fn((data: ShareData) => {
+      void data;
+      return Promise.resolve();
+    });
+    Object.defineProperty(window.navigator, "canShare", {
+      configurable: true,
+      value: () => true,
+    });
+    Object.defineProperty(window.navigator, "share", {
+      configurable: true,
+      value: share,
+    });
+
+    renderEndingWithScore(mount);
     clickMessage("core.message.ui.score.share");
-    await Promise.resolve();
-    expect(writeText).toHaveBeenCalledOnce();
-    const sharedText = writeText.mock.calls[0]?.[0] ?? "";
-    expect(sharedText).toContain("1730");
-    expect(sharedText).toContain("VARANO 2:39");
+    await vi.waitFor(() => {
+      expect(share).toHaveBeenCalledOnce();
+    });
+
+    const payload = share.mock.calls[0]?.[0];
+    expect(payload?.files?.[0]?.type).toBe("image/png");
+    expect(payload?.text).toContain("1730");
+    expect(payload?.text).toContain("3/3");
+    await vi.waitFor(() => {
+      expect(getByRole(document.body, "status").textContent).toBe(
+        resolveItalianMessage("core.message.ui.score.shared"),
+      );
+    });
+  });
+
+  it("falls back to copying the text when no sharing API works", async () => {
+    const { mount } = prepareDocument();
+    stubCanvasContext();
+    // No toBlob, no Web Share: only the clipboard is left.
+    HTMLCanvasElement.prototype.toBlob =
+      undefined as unknown as HTMLCanvasElement["toBlob"];
+    Object.defineProperty(window.navigator, "canShare", {
+      configurable: true,
+      value: undefined,
+    });
+    Object.defineProperty(window.navigator, "share", {
+      configurable: true,
+      value: undefined,
+    });
+    const writeText = vi.fn((text: string) => {
+      void text;
+      return Promise.resolve();
+    });
+    Object.defineProperty(window.navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    renderEndingWithScore(mount);
+    clickMessage("core.message.ui.score.share");
+    await vi.waitFor(() => {
+      expect(writeText).toHaveBeenCalledOnce();
+    });
+    expect(writeText.mock.calls[0]?.[0]).toContain("1730");
+    await vi.waitFor(() => {
+      expect(getByRole(document.body, "status").textContent).toBe(
+        resolveItalianMessage("core.message.ui.score.copied"),
+      );
+    });
   });
 });

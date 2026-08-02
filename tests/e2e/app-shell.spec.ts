@@ -138,6 +138,15 @@ test("completes the gentle flow with the keyboard and restarts", async ({
   await expect(page.locator("[data-app-root]")).not.toContainText(
     /morte|morto|uccid|abbatt|sparare/i,
   );
+  // The ending promises the next level so players know to come back.
+  await expect(
+    page.getByText(message("core.message.ui.next-level.label")),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: message("core.message.ui.next-level.title"),
+    }),
+  ).toBeVisible();
 
   await page
     .getByRole("button", {

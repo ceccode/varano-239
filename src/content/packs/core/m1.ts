@@ -101,8 +101,26 @@ export const m1Messages = {
     "Gestisci il caso del secolo senza perdere la faccia (né la fascia).",
   "core.message.ui.score.last": "Punteggio",
   "core.message.ui.score.best": "Record personale",
-  "core.message.ui.score.share": "Condividi il punteggio",
-  "core.message.ui.score.shared": "Punteggio copiato: incollalo dove vuoi!",
+  "core.message.ui.score.share": "Condividi il risultato",
+  "core.message.ui.score.shared": "Condiviso!",
+  "core.message.ui.score.downloaded":
+    "Immagine salvata nei download: allegala dove vuoi!",
+  "core.message.ui.score.copied": "Testo copiato: incollalo dove vuoi!",
+  "core.message.ui.score.unavailable":
+    "Questo browser non permette la condivisione: fai uno screenshot!",
+  "core.message.ui.score.card-alt":
+    "Cartolina del punteggio: il Varano nei campi di Montichiari con punteggio, indizi e tempo.",
+  "core.message.ui.card.score": "PUNTI",
+  "core.message.ui.card.clues": "INDIZI",
+  "core.message.ui.card.time": "TEMPO",
+  "core.message.ui.card.level": "LIVELLO 1 — I CAMPI DI MONTICHIARI",
+  "core.message.ui.card.record": "NUOVO RECORD!",
+  "core.message.ui.next-level.label": "PROSSIMO EPISODIO",
+  "core.message.ui.next-level.title": "Livello 2 — Le chat di paese",
+  "core.message.ui.next-level.body":
+    "Alle 2:41 la foto era già ovunque. Qualcuno l’ha mandata… e qualcuno, nel mais, stava ancora cercando. Il Livello 2 arriva a breve: si scende nelle chat, nei cortili e — forse — sotto il Castello Bonoris.",
+  "core.message.ui.next-level.install":
+    "Aggiungi il gioco alla schermata Home: quando il Livello 2 esce, lo trovi già qui.",
   "core.message.ui.menu.open": "Menù",
   "core.message.ui.menu.heading": "Menù",
   "core.message.ui.menu.close": "Torna al gioco",

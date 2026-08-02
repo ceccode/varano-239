@@ -8,7 +8,7 @@ import { coreStoryGraph } from "../content/packs/core/m1";
 import { renderGameApp } from "../platform/dom/render-game";
 import type { GameAudio } from "../platform/audio/chiptune-audio";
 import type { BestScorePort } from "../platform/storage/best-score";
-import type { MiniGameHandle } from "../levels/contract";
+import type { LevelOutcome, MiniGameHandle } from "../levels/contract";
 import { mountRegisteredLevel } from "../levels/registry";
 
 export interface GameControllerDependencies {
@@ -46,7 +46,8 @@ export function createGameController(
   let state = createInitialState(dependencies.reducedMotion);
   let savedState = safeLoad(dependencies.save);
   let activeLevel: MiniGameHandle | undefined;
-  let lastScore: number | undefined;
+  let lastOutcome: LevelOutcome | undefined;
+  let isRecord = false;
 
   const safeBestScore = (): number | undefined => {
     try {
@@ -56,12 +57,13 @@ export function createGameController(
     }
   };
 
-  const recordScore = (score: number): void => {
-    lastScore = score;
+  const recordOutcome = (outcome: LevelOutcome): void => {
+    lastOutcome = outcome;
     const best = safeBestScore();
-    if (best === undefined || score > best) {
+    isRecord = best === undefined || outcome.score > best;
+    if (isRecord) {
       try {
-        dependencies.bestScore.save(score);
+        dependencies.bestScore.save(outcome.score);
       } catch {
         // The personal best is optional; the session continues.
       }
@@ -86,8 +88,9 @@ export function createGameController(
       mount: dependencies.mount,
       state,
       savedState,
-      lastScore,
+      lastOutcome,
       bestScore: safeBestScore(),
+      isRecord,
       content: {
         story: coreStoryGraph,
         assets: assetManifest,
@@ -118,8 +121,8 @@ export function createGameController(
         settings: state.settings,
         message: resolveItalianMessage,
         audio: dependencies.audio,
-        onComplete: (score) => {
-          recordScore(score);
+        onComplete: (outcome) => {
+          recordOutcome(outcome);
           dispatch({ type: "MINIGAME_COMPLETED" });
         },
         onExit: () => {
@@ -150,7 +153,8 @@ export function createGameController(
           // Clearing storage must not block a new local session.
         }
         savedState = undefined;
-        lastScore = undefined;
+        lastOutcome = undefined;
+        isRecord = false;
         return;
       case "analytics":
         try {

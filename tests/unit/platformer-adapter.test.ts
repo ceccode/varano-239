@@ -10,6 +10,7 @@ import {
 } from "../../src/levels/adapters/platformer";
 import type {
   LevelAudioPort,
+  LevelOutcome,
   MiniGameRequest,
 } from "../../src/levels/contract";
 import { campiLevelConfig } from "../../src/levels/registry";
@@ -189,25 +190,36 @@ describe("platformer canvas adapter", () => {
     const harness = installFrameHarness();
     const host = document.createElement("div");
     document.body.append(host);
-    const request = createRequest({
-      groundSegments: [{ x: 0, width: 400 }],
-      platforms: [],
-      pickups: [],
-      checkpoints: [],
-      finishX: 90,
-      worldWidth: 400,
-    });
+    const onComplete = vi.fn<(outcome: LevelOutcome) => void>();
+    const request = {
+      ...createRequest({
+        groundSegments: [{ x: 0, width: 400 }],
+        platforms: [],
+        pickups: [],
+        checkpoints: [],
+        finishX: 90,
+        worldWidth: 400,
+      }),
+      onComplete,
+    };
     const handle = platformerMiniGame.mount(host, request);
 
     fireEvent.keyDown(window, { key: "ArrowRight" });
     harness.run(240);
     expect(request.audio.playEffect).toHaveBeenCalledWith("finish");
-    expect(request.onComplete).not.toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
     vi.advanceTimersByTime(800);
-    expect(request.onComplete).toHaveBeenCalledOnce();
-    expect(request.onComplete).toHaveBeenCalledWith(expect.any(Number));
+    expect(onComplete).toHaveBeenCalledOnce();
+
+    const outcome = onComplete.mock.calls[0]?.[0];
+    expect(outcome?.score).toBeGreaterThanOrEqual(0);
+    expect(outcome?.clues).toBe(0);
+    expect(outcome?.totalClues).toBe(0);
+    expect(outcome?.respawns).toBe(0);
+    expect(outcome?.seconds).toBeGreaterThanOrEqual(0);
+
     vi.advanceTimersByTime(800);
-    expect(request.onComplete).toHaveBeenCalledOnce();
+    expect(onComplete).toHaveBeenCalledOnce();
 
     handle.destroy();
   });

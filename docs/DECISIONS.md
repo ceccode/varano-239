@@ -238,3 +238,28 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Perché: la scheda interrompeva il ritmo del gioco e non piaceva al proprietario; il banner LEGGENDA persistente e il disclaimer nel menù coprono già l'obbligo di non spacciare la finzione per cronaca.
 - Vincoli confermati: nessun contenuto è classificato `fact` dentro il gioco, quindi non serve alcuna fonte in-game; nessun atto o dichiarazione di persone reali entra nei dialoghi (ADR-016); Montichiari e il Castello Bonoris restano nominati come luoghi reali senza attribuire loro fatti inventati.
 - Conseguenza: `DossierCard`, `SourceRef`, il nodo `dossier-card`, l'effetto `reveal-dossier` e le relative validazioni restano nel contratto dei contenuti per un eventuale Archivio in M2, ma non hanno rendering: un nodo dossier in una build futura richiede di ripristinare la vista. Il pack `core` dichiara `dossierCards: []` e `sources: []`.
+
+## ADR-025 — GoatCounter attivo solo sul sito pubblicato
+
+- Stato: **Accettata**
+- Data: 2 agosto 2026
+- Attua: ADR-009, che aveva approvato il modello ma lasciato il provider «proposto».
+- Decisione: il proprietario ha creato l'istanza `https://varano239.goatcounter.com`. L'adapter `GoatCounterAnalytics` implementa `AnalyticsPort` e invia soltanto i due eventi già approvati:
+  - `page_view` → `count({ path: "/", title: "VARANO 2:39" })`, con percorso e titolo **fissi**;
+  - `game_start` → `count({ path: "game_start", event: true, no_session: true })`, così ogni avvio esplicito è contato anche più volte nella stessa sessione.
+- L'endpoint è configurato in `netlify.toml` (`VITE_GOATCOUNTER_ENDPOINT`): senza quella variabile l'app usa `NoopAnalytics`, quindi build locali, `npm run check` e i test end-to-end non fanno **nessuna** richiesta a terzi e il test «tutte le richieste sono same-origin» resta valido.
+- `count.js` è caricato dinamicamente dall'adapter con `no_onload` e `no_events`, così non parte alcun pageview automatico né tracciamento dei click. La Content-Security-Policy è generata in `vite.config.ts` e apre `https://gc.zgo.at` e l'host GoatCounter **solo** quando l'endpoint è configurato.
+- Privacy: DNT e Global Privacy Control disattivano l'adapter prima di caricare lo script. Il referrer è ridotto alla sola **origine** (`https://esempio.it`), mai URL completi, query o referrer interni. Non vengono inviati ruolo, scelte, punteggio, impostazioni, dimensioni schermo o identificatori.
+- Conseguenza: un errore di rete, un blocco da estensione o uno script assente non interrompono mai il gioco; la coda di eventi viene semplicemente scartata.
+
+## ADR-026 — Teaser del livello successivo e cartolina del punteggio
+
+- Stato: **Accettata**
+- Data: 2 agosto 2026
+- Decisione:
+  1. La schermata finale mostra un blocco **«Prossimo episodio»** con titolo, testo di suspance e l'invito a installare la PWA, così è chiaro che il Livello 2 arriverà e conviene restare.
+  2. Il punteggio è condiviso come **immagine**: una cartolina quadrata 1080×1080 disegnata proceduralmente su canvas (cielo notturno, Varano, ruolo, punti, indizi, tempo, eventuale record e host del sito). L'anteprima è visibile nel finale con `role="img"` e testo alternativo.
+  3. La condivisione degrada in ordine: Web Share con il file PNG → download dell'immagine → copia del testo negli appunti → messaggio che invita allo screenshot. Ogni esito ha un messaggio dedicato; una cancellazione volontaria non mostra nulla.
+- Perché: la condivisione solo testuale non funzionava in modo affidabile (nessuna guardia su `navigator.share`/`clipboard`) e un'immagine è molto più condivisibile sui social locali.
+- Vincoli: la cartolina è generata in locale, non contiene dati personali e non viene caricata su alcun server; il punteggio non premia azioni letali (ADR-013) e resta salvato solo nel browser.
+- Conseguenza: `MiniGameRequest.onComplete` riporta un `LevelOutcome` (punti, indizi, tempo, respawn) invece del solo punteggio.

@@ -4,7 +4,7 @@ import {
   platformerMiniGame,
   type PlatformerViewConfig,
 } from "./adapters/platformer";
-import type { LevelAudioPort, MiniGameHandle } from "./contract";
+import type { LevelAudioPort, LevelOutcome, MiniGameHandle } from "./contract";
 
 export const campiLevelConfig = {
   worldWidth: 3200,
@@ -103,7 +103,7 @@ export interface MountRegisteredLevelOptions {
   readonly settings: AccessibilitySettings;
   readonly message: (key: MessageKey) => string;
   readonly audio: LevelAudioPort;
-  readonly onComplete: (score: number) => void;
+  readonly onComplete: (outcome: LevelOutcome) => void;
   readonly onExit: () => void;
 }
 

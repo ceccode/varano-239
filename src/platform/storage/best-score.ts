@@ -10,8 +10,9 @@ export class LocalBestScore implements BestScorePort {
   constructor(private readonly storage: Storage) {}
 
   load(): number | undefined {
-    const raw = this.storage.getItem(bestScoreKey);
-    if (raw === null) {
+    const raw = this.storage.getItem(bestScoreKey)?.trim();
+    // An empty entry is absent, not a score of zero: Number("") would be 0.
+    if (raw === undefined || raw === "") {
       return undefined;
     }
     const value = Number(raw);

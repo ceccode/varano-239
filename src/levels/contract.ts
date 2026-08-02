@@ -10,6 +10,15 @@ export interface LevelAudioPort {
   readonly playEffect: (effect: LevelSoundEffect) => void;
 }
 
+/** What a finished level reports back: enough for a score card, nothing more. */
+export interface LevelOutcome {
+  readonly score: number;
+  readonly clues: number;
+  readonly totalClues: number;
+  readonly seconds: number;
+  readonly respawns: number;
+}
+
 export interface MiniGameRequest<Config extends object> {
   readonly levelId: LevelId;
   readonly configId: LevelConfigId;
@@ -17,7 +26,7 @@ export interface MiniGameRequest<Config extends object> {
   readonly settings: AccessibilitySettings;
   readonly message: (key: MessageKey) => string;
   readonly audio: LevelAudioPort;
-  readonly onComplete: (score: number) => void;
+  readonly onComplete: (outcome: LevelOutcome) => void;
   readonly onExit: () => void;
 }
 

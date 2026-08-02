@@ -1,5 +1,8 @@
 import type { AssetDefinition } from "../../assets/manifest";
 import type { GameAction } from "../../core/actions";
+import type { LevelOutcome } from "../../levels/contract";
+import { drawScoreCard } from "./score-card";
+import { shareScoreCard, type ShareOutcome } from "./share-card";
 import { matchesConditions } from "../../core/conditions";
 import { completeSetup, type GameState } from "../../core/game-state";
 import type {
@@ -9,6 +12,7 @@ import type {
   StoryGraph,
   StoryNode,
 } from "../../core/model";
+
 interface GameContent {
   readonly story: StoryGraph;
   readonly assets: readonly AssetDefinition[];
@@ -20,8 +24,9 @@ export interface RenderGameAppOptions {
   readonly mount: HTMLElement;
   readonly state: GameState;
   readonly savedState: GameState | undefined;
-  readonly lastScore?: number | undefined;
+  readonly lastOutcome?: LevelOutcome | undefined;
   readonly bestScore?: number | undefined;
+  readonly isRecord?: boolean | undefined;
   readonly content: GameContent;
   readonly dispatch: (action: GameAction) => void;
   readonly onMenuToggled?: (open: boolean) => void;
@@ -397,19 +402,64 @@ function renderChoice(
   card.append(choices);
 }
 
+const shareNoticeKeys: Readonly<Record<ShareOutcome, MessageKey | undefined>> =
+  {
+    shared: "core.message.ui.score.shared",
+    downloaded: "core.message.ui.score.downloaded",
+    copied: "core.message.ui.score.copied",
+    unavailable: "core.message.ui.score.unavailable",
+    // A deliberate cancellation needs no feedback.
+    cancelled: undefined,
+  };
+
+function roleLabel(context: RenderContext): string {
+  const role = context.state.setup.role ?? "varano";
+  return context.content.message(
+    roleSelectEntries.find((entry) => entry.role === role)?.titleKey ??
+      "core.message.ui.role-select.varano.title",
+  );
+}
+
 function renderScorePanel(context: RenderContext): HTMLElement | undefined {
-  if (context.lastScore === undefined) {
+  const outcome = context.lastOutcome;
+  if (outcome === undefined) {
     return undefined;
   }
+
   const panel = element(context.document, "div");
   panel.className = "score-panel";
-  const last = element(
+
+  const canvas = element(context.document, "canvas");
+  canvas.className = "score-card";
+  canvas.setAttribute(
+    "aria-label",
+    context.content.message("core.message.ui.score.card-alt"),
+  );
+  canvas.setAttribute("role", "img");
+  const view = context.document.defaultView;
+  const siteLabel =
+    view === null ? "" : view.location.host.replace(/^www\./, "");
+  drawScoreCard(canvas, {
+    title: context.content.message("core.message.title"),
+    subtitle: context.content.message("core.message.subtitle"),
+    roleName: roleLabel(context),
+    score: outcome.score,
+    clues: outcome.clues,
+    totalClues: outcome.totalClues,
+    seconds: outcome.seconds,
+    isRecord: context.isRecord === true,
+    siteLabel,
+    message: context.content.message,
+  });
+
+  const summary = element(
     context.document,
     "p",
-    `${context.content.message("core.message.ui.score.last")}: ${String(context.lastScore)}`,
+    `${context.content.message("core.message.ui.score.last")}: ${String(outcome.score)}`,
   );
-  last.className = "score-panel__value";
-  panel.append(last);
+  summary.className = "score-panel__value";
+  panel.append(canvas, summary);
+
   if (context.bestScore !== undefined) {
     panel.append(
       element(
@@ -426,32 +476,68 @@ function renderScorePanel(context: RenderContext): HTMLElement | undefined {
     context.content.message("core.message.ui.score.share"),
   );
   share.type = "button";
-  const sharedNotice = element(
+  const notice = element(context.document, "p");
+  notice.className = "quiet-copy";
+  notice.setAttribute("role", "status");
+
+  share.addEventListener("click", () => {
+    if (view === null) {
+      return;
+    }
+    const url = `${view.location.origin}${view.location.pathname}`;
+    const text = `Ho fatto ${String(outcome.score)} punti nel Livello 1 di VARANO 2:39 — ${String(outcome.clues)}/${String(outcome.totalClues)} indizi in ${String(outcome.seconds)}s. Provaci: ${url}`;
+    share.disabled = true;
+    void shareScoreCard(view, {
+      canvas,
+      text,
+      fileName: "varano-239-punteggio.png",
+    })
+      .then((result) => {
+        const key = shareNoticeKeys[result];
+        notice.textContent =
+          key === undefined ? "" : context.content.message(key);
+      })
+      .finally(() => {
+        share.disabled = false;
+      });
+  });
+
+  panel.append(share, notice);
+  return panel;
+}
+
+function renderNextLevelTeaser(context: RenderContext): HTMLElement {
+  const teaser = element(context.document, "aside");
+  teaser.className = "teaser";
+
+  const label = element(
     context.document,
     "p",
-    context.content.message("core.message.ui.score.shared"),
+    context.content.message("core.message.ui.next-level.label"),
   );
-  sharedNotice.className = "quiet-copy";
-  sharedNotice.setAttribute("role", "status");
-  sharedNotice.hidden = true;
-  share.addEventListener("click", () => {
-    const view = context.document.defaultView;
-    if (view === null || context.lastScore === undefined) {
-      return;
-    }
-    const text = `Ho fatto ${String(context.lastScore)} punti nel Livello 1 di VARANO 2:39! ${view.location.origin}${view.location.pathname}`;
-    if (typeof view.navigator.share === "function") {
-      view.navigator.share({ text }).catch(() => {
-        // Sharing was cancelled; nothing to clean up.
-      });
-      return;
-    }
-    void view.navigator.clipboard.writeText(text).then(() => {
-      sharedNotice.hidden = false;
-    });
-  });
-  panel.append(share, sharedNotice);
-  return panel;
+  label.className = "teaser__label";
+
+  const title = element(
+    context.document,
+    "h3",
+    context.content.message("core.message.ui.next-level.title"),
+  );
+
+  const body = element(
+    context.document,
+    "p",
+    context.content.message("core.message.ui.next-level.body"),
+  );
+
+  const install = element(
+    context.document,
+    "p",
+    context.content.message("core.message.ui.next-level.install"),
+  );
+  install.className = "quiet-copy";
+
+  teaser.append(label, title, body, install);
+  return teaser;
 }
 
 function renderEnding(
@@ -469,6 +555,7 @@ function renderEnding(
     card.append(scorePanel);
   }
   card.append(
+    renderNextLevelTeaser(context),
     button(cardContext, "core.message.ui.ending.restart", {
       type: "LOCAL_DATA_CLEARED",
     }),

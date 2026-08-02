@@ -4,6 +4,9 @@
 
 [build.environment]
   NODE_VERSION = "24"
+  # Analytics run only on the published site (ADR-025): local and test builds
+  # leave this unset and make no third-party requests at all.
+  VITE_GOATCOUNTER_ENDPOINT = "https://varano239.goatcounter.com/count"
 
 [[headers]]
   for = "/*"

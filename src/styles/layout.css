@@ -346,6 +346,51 @@
   font-size: 0.92rem;
 }
 
+.score-card {
+  inline-size: min(100%, 18rem);
+  block-size: auto;
+  margin-inline: auto;
+  border: 2px solid var(--color-border);
+  image-rendering: pixelated;
+}
+
+.teaser {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 3px dashed var(--color-accent);
+  background: rgb(10 15 38 / 88%);
+}
+
+.teaser__label {
+  inline-size: fit-content;
+  margin: 0;
+  padding: 0.2rem 0.5rem;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  animation: teaser-pulse 1.6s steps(2, jump-none) infinite;
+}
+
+.teaser h3 {
+  margin: 0;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+}
+
+.teaser p:not(.teaser__label) {
+  margin: 0;
+}
+
+@keyframes teaser-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
 .score-panel {
   display: grid;
   gap: var(--space-1);
