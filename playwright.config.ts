@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
 const port = "4173";
-const basePath = "/varano-239/";
+const basePath = "/";
 
 export default defineConfig({
   testDir: "./tests/e2e",

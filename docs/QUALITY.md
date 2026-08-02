@@ -207,5 +207,5 @@ Prima del rilascio, una persona diversa dall'autore controlla:
 - `SOURCES.md` e data dell'Archivio aggiornati.
 - `ASSETS.md` completo e senza placeholder.
 - Licenze di terze parti presenti.
-- URL GitHub Pages provato da finestra privata.
+- URL di produzione su Netlify (app.varano239.it) provato da finestra privata.
 - Tag di versione e changelog.

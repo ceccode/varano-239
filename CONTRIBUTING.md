@@ -49,7 +49,7 @@ npm run validate
 npm run check
 ```
 
-`npm run check` applica l'intero quality gate in ordine fail-fast. Eseguilo prima di aprire una pull request. Per provare la stessa base di GitHub Pages usa `npm run build -- --base=/varano-239/` e poi `npm run preview -- --base=/varano-239/`.
+`npm run check` applica l'intero quality gate in ordine fail-fast. Eseguilo prima di aprire una pull request. La build di produzione usa base `/` (Netlify, ADR-020); usa `VITE_BASE_PATH` se devi testare un sottopercorso diverso.
 
 ## Codice
 

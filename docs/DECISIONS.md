@@ -100,7 +100,7 @@ Una nuova ADR può introdurre Phaser soltanto se:
 
 ## ADR-010 — GitHub Pages e nessun backend
 
-- Stato: **Accettata per MVP**
+- Stato: **Sostituita da ADR-020**
 - Data: 1 agosto 2026
 - Decisione: sito statico su GitHub Pages dal repository personale; salvataggio solo locale.
 - Perché: distribuzione gratuita, trasparente e adatta a Vite; nessun requisito attuale giustifica un server.
@@ -190,7 +190,7 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Stato: **Accettata**
 - Data: 1 agosto 2026
 - Sostituisce: ADR-010 per la piattaforma di pubblicazione principale.
-- Decisione: il sito statico viene pubblicato su **Netlify** con `netlify.toml` (build `npm run build`, publish `dist/`, base path `/`). GitHub Pages può restare come mirror finché non crea ambiguità.
+- Decisione: il sito statico viene pubblicato su **Netlify** con `netlify.toml` (build `npm run build`, publish `dist/`, base path `/`) all'indirizzo **app.varano239.it**. La landing page è su **varano239.it** (progetto separato). GitHub Pages è stato rimosso come mirror.
 - Perché: richiesta esplicita del proprietario; Netlify offre deploy da CLI, anteprime e dominio dedicato senza sottocartella, semplificando il base path.
 - Conseguenza: il base path di produzione predefinito diventa `/`; `VITE_BASE_PATH` resta disponibile per eventuali mirror in sottocartella. Nessun backend, nessun segreto nel bundle.
 

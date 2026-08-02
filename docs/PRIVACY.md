@@ -52,7 +52,7 @@ Regole:
 
 ## Provider consigliato
 
-Per un progetto amatoriale su GitHub Pages, la prima scelta è **GoatCounter hosted**, configurato per dati aggregati e senza pageview individuali.
+Per un progetto amatoriale su Netlify, la prima scelta è **GoatCounter hosted**, configurato per dati aggregati e senza pageview individuali.
 
 Motivi:
 

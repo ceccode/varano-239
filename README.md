@@ -45,20 +45,13 @@ Comandi disponibili:
 | `npm run format`       | Formatta i file supportati con Prettier.                            |
 | `npm run format:check` | Verifica la formattazione senza modificare file.                    |
 | `npm run test`         | Esegue i test unitari e DOM con Vitest.                             |
-| `npm run test:e2e`     | Esegue Playwright e axe su build con base `/varano-239/`.           |
+| `npm run test:e2e`     | Esegue Playwright e axe su build con base `/`.                      |
 | `npm run validate`     | Compila i contratti e valida grafo, fonti, asset e combinazioni M1. |
 | `npm run check`        | Esegue in ordine tutti i gate definiti in `docs/QUALITY.md`.        |
 
-Per verificare manualmente una build sotto il sottopercorso GitHub Pages:
+La build usa base `/` (Netlify, ADR-020). La configurazione accetta `VITE_BASE_PATH` per eventuali altri sottopercorsi. Usa la stessa base per build e preview. La build non ha dipendenze runtime e non carica font, script o asset remoti.
 
-```sh
-npm run build -- --base=/varano-239/
-npm run preview -- --base=/varano-239/
-```
-
-La configurazione accetta anche `VITE_BASE_PATH` per altri sottopercorsi. Usa la stessa base per build e preview. La build non ha dipendenze runtime e non carica font, script o asset remoti.
-
-Le pull request producono un artifact di preview scaricabile dopo il quality gate. I push su `main` eseguono nuovamente `npm run check` e pubblicano l'artifact statico tramite GitHub Pages. Il repository usa già **GitHub Actions** come sorgente ed è disponibile su [ceccode.github.io/varano-239](https://ceccode.github.io/varano-239/).
+Le pull request producono un artifact di preview scaricabile dopo il quality gate. I push su `main` eseguono nuovamente `npm run check` e pubblicano l'artifact statico su **Netlify** all'indirizzo [app.varano239.it](https://app.varano239.it). La landing page è su [varano239.it](https://varano239.it).
 
 ## Prospettive giocabili
 
