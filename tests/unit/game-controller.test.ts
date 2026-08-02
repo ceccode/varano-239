@@ -176,6 +176,22 @@ describe("full-screen game controller", () => {
     );
     clickMessage("core.message.choice.protect");
 
+    // Chapter 1: the choice hands over to level 2 with the run superpower.
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.chat.level",
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level2.narrative.start"),
+    );
+    clickMessage("core.message.level.skip");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue2.varano"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue2.twist"),
+    );
+    clickMessage("core.message.ui.continue");
+
     expect(controller.getState().phase).toBe("ending");
     expect(document.body.textContent).toContain(
       resolveItalianMessage("core.message.ending.body"),
@@ -231,10 +247,15 @@ describe("full-screen game controller", () => {
     expect(creditsLink.getAttribute("href")).toBe(
       "https://github.com/ceccode/varano-239",
     );
+    // The legal notices are pages of the site itself, so they work offline.
     const privacyLink = getByRole(document.body, "link", {
       name: resolveItalianMessage("core.message.ui.privacy.link"),
     });
-    expect(privacyLink.getAttribute("href")).toMatch(/^https:/);
+    expect(privacyLink.getAttribute("href")).toBe("privacy.html");
+    const termsLink = getByRole(document.body, "link", {
+      name: resolveItalianMessage("core.message.ui.terms.link"),
+    });
+    expect(termsLink.getAttribute("href")).toBe("termini.html");
     // The single 12+ edition has no sensitivity or play-mode selectors.
     expect(
       document.querySelector('input[type="radio"][name="sensitivity"]'),
@@ -360,6 +381,8 @@ describe("full-screen game controller", () => {
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
       { type: "OPTION_CHOSEN", optionId: "core.option.prologue.protect" },
+      { type: "MINIGAME_SKIPPED" },
+      { type: "DIALOGUE_ADVANCED" },
     ] as const) {
       state = reduce(state, action, coreStoryGraph).state;
     }

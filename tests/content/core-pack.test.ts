@@ -31,9 +31,13 @@ function startRun(
 
 function finishRun(state: GameState): GameState {
   const actions = [
+    // Chapter 0: level 1, dialogue, first choice.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
     { type: "OPTION_CHOSEN", optionId: "core.option.prologue.document" },
+    // Chapter 1: level 2, dialogue, ending.
+    { type: "MINIGAME_SKIPPED" },
+    { type: "DIALOGUE_ADVANCED" },
   ] as const;
 
   return actions.reduce(

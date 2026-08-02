@@ -1,4 +1,4 @@
-import type { StoryGraph } from "../../../core/model.ts";
+import type { StoryGraph, StoryNode } from "../../../core/model.ts";
 import type { StoryPack } from "../../story-pack.ts";
 
 export const m1Messages = {
@@ -55,6 +55,35 @@ export const m1Messages = {
     "Ops. Il fosso era più fosso del previsto: si riparte dalla bandierina.",
   "core.message.level.narrative.finish":
     "Il canneto ti nasconde. Colpo di scena: nessuno ti ha visto. O forse sì?",
+  "core.message.chapter.chat.title": "Atto I — Le chat di paese",
+  "core.message.level2.heading": "Livello 2 — Le chat di paese",
+  "core.message.level2.intro":
+    "La foto gira di telefono in telefono e mezza Montichiari è in cortile. Attraversa vicoli e muretti, recupera i tre indizi sul mittente e arriva al muretto del Castello. Tieni premuta la direzione: dopo un attimo parte lo SCATTO, e serve per i salti larghi.",
+  "core.message.level2.objective":
+    "Recupera screenshot, messaggio vocale e numero sconosciuto, poi raggiungi il muretto del Castello. Tieni premuta la direzione per scattare.",
+  "core.message.level2.controls":
+    "Tastiera: frecce o A/D per correre, Spazio o W per saltare. Tieni premuta la direzione per lo scatto: i salti larghi si fanno solo in corsa. Su telefono usa i pulsanti sullo schermo.",
+  "core.message.level2.status.0": "Indizi sul mittente: 0 di 3.",
+  "core.message.level2.status.1": "Indizi sul mittente: 1 di 3.",
+  "core.message.level2.status.2": "Indizi sul mittente: 2 di 3.",
+  "core.message.level2.status.3":
+    "Indizi sul mittente: 3 di 3! Corri al Castello.",
+  "core.message.level2.narrative.start":
+    "Ore 2:41. Tre chat, ottanta messaggi e zero certezze: segui la foto fino a chi l’ha spedita.",
+  "core.message.level2.narrative.sprint":
+    "SCATTO! La coda frusta l’aria: adesso i salti larghi si fanno.",
+  "core.message.level2.narrative.pickup.screenshot":
+    "Uno screenshot inoltrato quattordici volte. Qualcuno l’ha inoltrato per primo…",
+  "core.message.level2.narrative.pickup.vocale":
+    "Un vocale di ventidue secondi: respira, tossisce e dice «non dite che ve l’ho mandato io».",
+  "core.message.level2.narrative.pickup.numero":
+    "Un numero sconosciuto. Prefisso di qui. Salvato come «non rispondere».",
+  "core.message.level2.narrative.checkpoint":
+    "Muretto raggiunto: da qui si riparte, e con lo slancio giusto.",
+  "core.message.level2.narrative.respawn":
+    "Giù nella roggia. Serviva più corsa: tieni premuto e riprova.",
+  "core.message.level2.narrative.finish":
+    "Sei sotto il Castello Bonoris. I tre indizi portano tutti alla stessa persona… e non è chi pensavi.",
   "core.message.hotspot.photo": "Osserva la fotografia sfocata",
   "core.message.hotspot.trace": "Segui la traccia nel fango",
   "core.message.hotspot.water": "Controlla il canale d’irrigazione",
@@ -77,9 +106,21 @@ export const m1Messages = {
   "core.message.choice.prompt": "Che cosa conta di più in questa versione?",
   "core.message.choice.document": "Annota la traccia e conserva il dubbio",
   "core.message.choice.protect": "Lascia libero il passaggio verso l’acqua",
+  "core.message.dialogue2.ada":
+    "Ada mette in fila i tre indizi: «Screenshot, vocale, numero sconosciuto. Tutti dalla stessa persona, e alle 2:39 non era in casa.»",
+  "core.message.dialogue2.varano":
+    "Il Varano socchiude un occhio: «Io la conosco, quella voce. Mi lasciava le pere marce dietro il capanno.»",
+  "core.message.dialogue2.hunter":
+    "Toni Pista fischia: «Uno che manda la foto e poi dice di non averla mandata. Questo non è un testimone: è un complice.»",
+  "core.message.dialogue2.guardian":
+    "Marta Ramarro stringe il trasportino: «Se sapeva dov’era, sapeva anche che stava male. E ha chiamato le chat invece di noi.»",
+  "core.message.dialogue2.mayor":
+    "Cesare Cerimonia sbianca: «Quel numero… è del mio ufficio. Borgocoda ha un problema di comunicazione interna.»",
+  "core.message.dialogue2.twist":
+    "Ada chiude il taccuino: «Una cosa è certa: chi ha spedito la foto sapeva dov’era il Varano prima di tutti noi. E domani il Castello apre le porte al pubblico.»",
   "core.message.ending.title": "Il mistero si allarga",
   "core.message.ending.body":
-    "Fine del prologo, ma non del mistero: alle 2:41 la foto era già su tre chat di paese, e qualcuno — nel buio — ha raccolto qualcosa fra il mais. Chi? E perché proprio alle 2:39? Questa ricostruzione è Leggenda: specie, provenienza e destino reale del Varano restano tutti da scoprire.",
+    "Due notti, tre chat e sei indizi: la foto delle 2:39 non è arrivata per caso ai telefoni del paese. Qualcuno sapeva. Il Castello Bonoris apre domani e il Varano è già sotto le sue mura. Questa ricostruzione è Leggenda: specie, provenienza e destino reale del Varano restano tutti da scoprire.",
   "core.message.ui.clear-save": "Cancella progressi e preferenze locali",
   "core.message.ui.disclaimer":
     "Gioco 12+ di finzione: tutto ciò che giochi è LEGGENDA, una ricostruzione inventata. I fatti documentati e le loro fonti restano nel registro editoriale del progetto. Non cercare, inseguire o toccare animali selvatici o esotici nella realtà.",
@@ -113,12 +154,12 @@ export const m1Messages = {
   "core.message.ui.card.score": "PUNTI",
   "core.message.ui.card.clues": "INDIZI",
   "core.message.ui.card.time": "TEMPO",
-  "core.message.ui.card.level": "LIVELLO 1 — I CAMPI DI MONTICHIARI",
+  "core.message.ui.card.level": "LE NOTTI DI MONTICHIARI",
   "core.message.ui.card.record": "NUOVO RECORD!",
   "core.message.ui.next-level.label": "PROSSIMO EPISODIO",
-  "core.message.ui.next-level.title": "Livello 2 — Le chat di paese",
+  "core.message.ui.next-level.title": "Livello 3 — Il Castello Bonoris",
   "core.message.ui.next-level.body":
-    "Alle 2:41 la foto era già ovunque. Qualcuno l’ha mandata… e qualcuno, nel mais, stava ancora cercando. Il Livello 2 arriva a breve: si scende nelle chat, nei cortili e — forse — sotto il Castello Bonoris.",
+    "Domani il Castello apre le porte al pubblico, e sotto le sue mura c’è un rettile con un piano. Chi ha spedito la foto sarà lì, in prima fila, a sorridere alle telecamere. Il Livello 3 arriva a breve: si sale fino alle torri.",
   "core.message.ui.next-level.install":
     "Aggiungi il gioco alla schermata Home: quando il Livello 2 esce, lo trovi già qui.",
   "core.message.ui.menu.open": "Menù",
@@ -129,14 +170,16 @@ export const m1Messages = {
   "core.message.ui.menu.privacy": "Privacy",
   "core.message.ui.menu.terms": "Termini e condizioni",
   "core.message.ui.credits.body":
-    "VARANO 2:39 è un gioco gratuito ideato, scritto e sviluppato da Francesco Falanga. Codice, testi, pixel art e musica chiptune sono originali: il codice è aperto con licenza AGPL-3.0, mentre storia, grafica e musica usano CC BY-NC-SA 4.0 (puoi condividere e modificare citando l’autore, ma non per scopi commerciali). Tutti i personaggi umani sono inventati o compositi; il Varano è il protagonista.",
+    "VARANO 2:39 è un gioco gratuito. Codice, testi, pixel art e musica chiptune sono originali: il codice è aperto con licenza AGPL-3.0, mentre storia, grafica e musica usano CC BY-NC-SA 4.0 (puoi condividere e modificare citando l’autore, ma non per scopi commerciali). Tutti i personaggi umani sono inventati o compositi; il Varano è il protagonista.",
   "core.message.ui.credits.link": "Codice sorgente su GitHub (nuova scheda)",
   "core.message.ui.credits.sources-link":
     "Fonti e note editoriali (nuova scheda)",
   "core.message.ui.privacy.body":
     "Il gioco non raccoglie dati personali: nessun account, nessun cookie di profilazione, nessun invio di testo a server. I progressi e le preferenze restano salvati soltanto in questo browser e puoi cancellarli in ogni momento dal pulsante qui sotto.",
   "core.message.ui.privacy.link":
-    "Leggi l’informativa completa su GitHub (nuova scheda)",
+    "Leggi l’informativa privacy completa (nuova scheda)",
+  "core.message.ui.terms.link":
+    "Leggi i termini e condizioni completi (nuova scheda)",
   "core.message.ui.terms.body":
     "Gioco gratuito consigliato a un pubblico 12+, fornito «così com’è» e senza garanzie. Le scene giocabili sono LEGGENDA: una ricostruzione inventata che non attribuisce fatti o dichiarazioni a persone reali. Il gioco non è una guida alla ricerca dell’animale: non avvicinare o inseguire animali selvatici o esotici. Il codice è distribuito con licenza AGPL-3.0; storia, grafica e musica con CC BY-NC-SA 4.0, quindi non è consentito venderlo o usarlo per scopi commerciali. Il nome VARANO 2:39 e i suoi personaggi non sono concessi in licenza.",
   "core.message.ui.options.role.legend": "Personaggio",
@@ -166,7 +209,11 @@ const chapterId = "core.chapter.c00-first-sighting";
 const levelNodeId = "core.node.prologue.campi";
 const dialogueId = "core.node.prologue.dialogue";
 const choiceId = "core.node.prologue.choice";
-const endingId = "core.node.prologue.ending";
+
+const chatChapterId = "core.chapter.c01-village-chats";
+const chatLevelNodeId = "core.node.chat.level";
+const chatDialogueId = "core.node.chat.dialogue";
+const endingId = "core.node.chat.ending";
 
 export const corePack = {
   id: "core",
@@ -250,7 +297,7 @@ export const corePack = {
                   optionId: "core.option.prologue.document",
                 },
               ],
-              targetNodeId: endingId,
+              targetNodeId: chatLevelNodeId,
             },
             {
               id: "core.option.prologue.protect",
@@ -263,13 +310,76 @@ export const corePack = {
                   optionId: "core.option.prologue.protect",
                 },
               ],
-              targetNodeId: endingId,
+              targetNodeId: chatLevelNodeId,
             },
           ],
         },
+      ],
+      // The playable prologue carries no dossier card (ADR-024): the editorial
+      // source registry lives in docs/SOURCES.md and is linked from the menu.
+      dossierCards: [],
+      clues: [],
+      messages: m1Messages,
+      sources: [],
+    },
+    {
+      chapter: {
+        id: chatChapterId,
+        titleKey: "core.message.chapter.chat.title",
+        entryNodeId: chatLevelNodeId,
+        checkpointNodeId: chatLevelNodeId,
+      },
+      nodes: [
+        {
+          id: chatLevelNodeId,
+          chapterId: chatChapterId,
+          type: "level",
+          narrativeLayer: "legend",
+          levelId: "core.level.chat-di-paese",
+          configId: "core.level-config.chat-2",
+          completedNodeId: chatDialogueId,
+          skippedNodeId: chatDialogueId,
+        },
+        {
+          id: chatDialogueId,
+          chapterId: chatChapterId,
+          type: "dialogue",
+          narrativeLayer: "legend",
+          lines: [
+            {
+              speakerId: "core.speaker.ada",
+              textKey: "core.message.dialogue2.ada",
+            },
+            {
+              speakerId: "core.speaker.varano",
+              textKey: "core.message.dialogue2.varano",
+              when: [{ type: "role-is", role: "varano" }],
+            },
+            {
+              speakerId: "core.speaker.toni",
+              textKey: "core.message.dialogue2.hunter",
+              when: [{ type: "role-is", role: "hunter" }],
+            },
+            {
+              speakerId: "core.speaker.marta",
+              textKey: "core.message.dialogue2.guardian",
+              when: [{ type: "role-is", role: "guardian" }],
+            },
+            {
+              speakerId: "core.speaker.cesare",
+              textKey: "core.message.dialogue2.mayor",
+              when: [{ type: "role-is", role: "mayor" }],
+            },
+            {
+              speakerId: "core.speaker.ada",
+              textKey: "core.message.dialogue2.twist",
+            },
+          ],
+          next: endingId,
+        },
         {
           id: endingId,
-          chapterId,
+          chapterId: chatChapterId,
           type: "ending",
           narrativeLayer: "legend",
           outcomeId: "core.outcome.open-mystery",
@@ -277,8 +387,6 @@ export const corePack = {
           bodyKey: "core.message.ending.body",
         },
       ],
-      // The playable prologue carries no dossier card (ADR-024): the editorial
-      // source registry lives in docs/SOURCES.md and is linked from the menu.
       dossierCards: [],
       clues: [],
       messages: m1Messages,
@@ -289,9 +397,12 @@ export const corePack = {
   theories: [],
 } as const satisfies StoryPack;
 
-const coreChapter = corePack.chapters[0];
+const entryChapter = corePack.chapters[0];
 
 export const coreStoryGraph: StoryGraph = {
-  entryNodeId: coreChapter.chapter.entryNodeId,
-  nodes: coreChapter.nodes,
+  entryNodeId: entryChapter.chapter.entryNodeId,
+  // Every chapter of the pack lives in one immutable graph.
+  nodes: corePack.chapters.flatMap(
+    (bundle): readonly StoryNode[] => bundle.nodes,
+  ),
 };

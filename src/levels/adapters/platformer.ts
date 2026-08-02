@@ -27,6 +27,8 @@ export interface PlatformerViewConfig extends PlatformerConfig {
   readonly narrativeCheckpointKey: MessageKey;
   readonly narrativeRespawnKey: MessageKey;
   readonly narrativeFinishKey: MessageKey;
+  /** Only on levels that grant the sprint. */
+  readonly narrativeSprintKey?: MessageKey;
 }
 
 interface MutableInput {
@@ -340,6 +342,11 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         request.audio.playEffect("respawn");
         narrate(config.narrativeRespawnKey);
       }
+      if (events.sprintStarted) {
+        request.audio.playEffect("sprint");
+        spawnDust(8, palette.dust);
+        narrate(config.narrativeSprintKey);
+      }
       if (events.finished) {
         request.audio.playEffect("finish");
         request.audio.stopMusic();
@@ -567,6 +574,20 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         context.translate(drawX + width / 2, 0);
         context.scale(-1, 1);
         context.translate(-(drawX + width / 2), 0);
+      }
+
+      // Speed lines trailing behind the sprint.
+      if (state.sprinting) {
+        context.fillStyle = palette.dust;
+        for (let index = 0; index < 4; index += 1) {
+          const offset = ((time * 260 + index * 13) % 26) + 4;
+          context.fillRect(
+            drawX - offset,
+            drawY + 3 + ((index * 4) % height),
+            Math.floor(6 + index),
+            1,
+          );
+        }
       }
 
       context.fillStyle = palette.bodyDark;

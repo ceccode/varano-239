@@ -37,8 +37,10 @@ interface RenderContext extends RenderGameAppOptions {
 }
 
 const repositoryUrl = "https://github.com/ceccode/varano-239";
-const privacyDocumentUrl = `${repositoryUrl}/blob/main/docs/PRIVACY.md`;
 const sourcesDocumentUrl = `${repositoryUrl}/blob/main/docs/SOURCES.md`;
+// Same-origin legal pages: they work offline and under any base path.
+const privacyPageUrl = "privacy.html";
+const termsPageUrl = "termini.html";
 
 const roleObjectiveKeys: Readonly<Record<Role, MessageKey>> = {
   hunter: "core.message.scene.objective.hunter",
@@ -843,22 +845,14 @@ function renderMenu(context: RenderContext): HTMLElement {
     "core.message.ui.menu.privacy",
     sectionOpen(context.mount, "core.message.ui.menu.privacy"),
   );
-  const privacyLink = element(
-    context.document,
-    "a",
-    context.content.message("core.message.ui.privacy.link"),
+  privacy.append(
+    element(
+      context.document,
+      "p",
+      context.content.message("core.message.ui.privacy.body"),
+    ),
+    externalLink("core.message.ui.privacy.link", privacyPageUrl),
   );
-  privacyLink.href = privacyDocumentUrl;
-  privacyLink.target = "_blank";
-  privacyLink.rel = "noopener noreferrer";
-  const privacyBody = element(
-    context.document,
-    "p",
-    context.content.message("core.message.ui.privacy.body"),
-  );
-  const privacyLinkParagraph = element(context.document, "p");
-  privacyLinkParagraph.append(privacyLink);
-  privacy.append(privacyBody, privacyLinkParagraph);
 
   const terms = menuSection(
     context,
@@ -871,6 +865,7 @@ function renderMenu(context: RenderContext): HTMLElement {
       "p",
       context.content.message("core.message.ui.terms.body"),
     ),
+    externalLink("core.message.ui.terms.link", termsPageUrl),
   );
 
   const clear = button(context, "core.message.ui.clear-save", {

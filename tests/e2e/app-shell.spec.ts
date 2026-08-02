@@ -132,6 +132,24 @@ test("completes the gentle flow with the keyboard and restarts", async ({
   await protect.focus();
   await page.keyboard.press("Enter");
 
+  // Chapter 1: level 2 grants the sprint and leads to the ending.
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+  await expect(
+    page.getByText(message("core.message.level2.narrative.start")),
+  ).toBeVisible();
+  const skipSecond = page.getByRole("button", {
+    name: message("core.message.level.skip"),
+  });
+  await skipSecond.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByText(message("core.message.dialogue2.twist")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+
   await expect(
     page.getByRole("heading", { name: message("core.message.ending.title") }),
   ).toBeVisible();
@@ -178,7 +196,9 @@ test("offers settings, credits, privacy and terms from the in-game menu", async 
     await expect(page.getByText(message(key), { exact: true })).toBeVisible();
   }
 
-  await page.getByText(message("core.message.ui.menu.credits")).click();
+  await page
+    .getByText(message("core.message.ui.menu.credits"), { exact: true })
+    .click();
   await expect(
     page.getByRole("link", { name: message("core.message.ui.credits.link") }),
   ).toHaveAttribute("href", "https://github.com/ceccode/varano-239");
@@ -189,10 +209,20 @@ test("offers settings, credits, privacy and terms from the in-game menu", async 
     }),
   ).toHaveAttribute("href", /\/docs\/SOURCES\.md$/);
 
-  await page.getByText(message("core.message.ui.menu.privacy")).click();
+  // The legal notices are pages of this site, so they also work offline.
+  await page
+    .getByText(message("core.message.ui.menu.privacy"), { exact: true })
+    .click();
   await expect(
     page.getByRole("link", { name: message("core.message.ui.privacy.link") }),
-  ).toHaveAttribute("href", /^https:/);
+  ).toHaveAttribute("href", "privacy.html");
+
+  await page
+    .getByText(message("core.message.ui.menu.terms"), { exact: true })
+    .click();
+  await expect(
+    page.getByRole("link", { name: message("core.message.ui.terms.link") }),
+  ).toHaveAttribute("href", "termini.html");
 
   await page
     .getByRole("button", { name: message("core.message.ui.menu.close") })
@@ -209,6 +239,33 @@ test("offers settings, credits, privacy and terms from the in-game menu", async 
   await expect(
     page.getByText(message("core.message.dialogue.guardian")),
   ).toBeVisible();
+});
+
+test("grants the run superpower in level 2", async ({ page }) => {
+  await page.goto("./");
+  await pickRole(page);
+  await page
+    .getByRole("button", { name: message("core.message.level.skip") })
+    .click();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .click();
+  await page
+    .getByRole("button", { name: message("core.message.choice.protect") })
+    .click();
+
+  await expect(
+    page.getByText(message("core.message.level2.narrative.start")),
+  ).toBeVisible();
+
+  // Holding one direction long enough charges the sprint, with no extra button.
+  const startingPosition = await playerX(page);
+  await page.keyboard.down("ArrowRight");
+  await expect(
+    page.getByText(message("core.message.level2.narrative.sprint")),
+  ).toBeVisible({ timeout: 5000 });
+  await page.keyboard.up("ArrowRight");
+  expect(await playerX(page)).toBeGreaterThan(startingPosition);
 });
 
 test("restores a saved run automatically after reload", async ({ page }) => {

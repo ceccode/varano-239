@@ -1,5 +1,5 @@
 export type GameSoundEffect =
-  "jump" | "pickup" | "checkpoint" | "respawn" | "finish" | "select";
+  "jump" | "pickup" | "checkpoint" | "respawn" | "finish" | "sprint" | "select";
 
 export interface GameAudio {
   readonly setMusicEnabled: (enabled: boolean) => void;
@@ -221,6 +221,11 @@ export class ChiptuneAudio implements GameAudio {
         return;
       case "respawn":
         this.playNote(masterGain, "square", 300, now, 0.18, 0.05, 150);
+        return;
+      case "sprint":
+        // A rising whoosh: the run superpower kicking in.
+        this.playNote(masterGain, "square", 420, now, 0.16, 0.06, 900);
+        this.playNote(masterGain, "triangle", 660, now + 0.05, 0.14, 0.07);
         return;
       case "finish":
         this.playNote(masterGain, "square", 523, now, 0.09, 0.09);

@@ -57,13 +57,25 @@ export function createGameController(
     }
   };
 
+  /** The card shows the whole run, so each level adds to the running total. */
   const recordOutcome = (outcome: LevelOutcome): void => {
-    lastOutcome = outcome;
+    const previous = lastOutcome;
+    lastOutcome =
+      previous === undefined
+        ? outcome
+        : {
+            score: previous.score + outcome.score,
+            clues: previous.clues + outcome.clues,
+            totalClues: previous.totalClues + outcome.totalClues,
+            seconds: previous.seconds + outcome.seconds,
+            respawns: previous.respawns + outcome.respawns,
+          };
+
     const best = safeBestScore();
-    isRecord = best === undefined || outcome.score > best;
+    isRecord = best === undefined || lastOutcome.score > best;
     if (isRecord) {
       try {
-        dependencies.bestScore.save(outcome.score);
+        dependencies.bestScore.save(lastOutcome.score);
       } catch {
         // The personal best is optional; the session continues.
       }
@@ -182,6 +194,12 @@ export function createGameController(
   };
 
   function dispatch(action: GameAction): void {
+    if (action.type === "RUN_STARTED") {
+      // A brand new run starts from zero points.
+      lastOutcome = undefined;
+      isRecord = false;
+    }
+
     const transition = reduce(state, action, coreStoryGraph);
     state = transition.state;
 

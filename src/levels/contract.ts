@@ -2,7 +2,7 @@ import type { AccessibilitySettings } from "../core/game-state";
 import type { LevelConfigId, LevelId, MessageKey } from "../core/model";
 
 export type LevelSoundEffect =
-  "jump" | "pickup" | "checkpoint" | "respawn" | "finish";
+  "jump" | "pickup" | "checkpoint" | "respawn" | "finish" | "sprint";
 
 export interface LevelAudioPort {
   readonly startMusic: () => void;

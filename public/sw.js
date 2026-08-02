@@ -1,12 +1,20 @@
 // Offline cache for VARANO 2:39. Navigations are network-first so updates
 // arrive as soon as the player is online; hashed assets are cache-first.
-const CACHE_NAME = "varano-239-v1";
+const CACHE_NAME = "varano-239-v2";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(["./", "manifest.webmanifest"]))
+      .then((cache) =>
+        cache.addAll([
+          "./",
+          "manifest.webmanifest",
+          "privacy.html",
+          "termini.html",
+          "legal.css",
+        ]),
+      )
       .then(() => self.skipWaiting()),
   );
 });

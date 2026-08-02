@@ -20,6 +20,16 @@ export interface PlatformerCheckpoint {
   readonly x: number;
 }
 
+/**
+ * The run superpower: holding one direction on the ground charges a sprint,
+ * so no extra on-screen button is needed on a phone.
+ */
+export interface SprintConfig {
+  readonly holdSeconds: number;
+  readonly maxSpeed: number;
+  readonly acceleration: number;
+}
+
 export interface PlatformerConfig {
   readonly worldWidth: number;
   readonly worldHeight: number;
@@ -43,6 +53,8 @@ export interface PlatformerConfig {
   readonly pickups: readonly PlatformerPickup[];
   readonly checkpoints: readonly PlatformerCheckpoint[];
   readonly finishX: number;
+  /** Omitted on levels that do not grant the sprint. */
+  readonly sprint?: SprintConfig;
 }
 
 export interface PlatformerInput {
@@ -67,6 +79,9 @@ export interface PlatformerState {
   readonly respawns: number;
   readonly elapsedSeconds: number;
   readonly completed: boolean;
+  /** Seconds of uninterrupted running in the same direction. */
+  readonly sprintCharge: number;
+  readonly sprinting: boolean;
 }
 
 export interface PlatformerEvents {
@@ -76,6 +91,7 @@ export interface PlatformerEvents {
   readonly checkpointId: string | undefined;
   readonly respawned: boolean;
   readonly finished: boolean;
+  readonly sprintStarted: boolean;
 }
 
 export interface PlatformerStepResult {
@@ -93,6 +109,7 @@ const noEvents: PlatformerEvents = {
   checkpointId: undefined,
   respawned: false,
   finished: false,
+  sprintStarted: false,
 };
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -126,6 +143,8 @@ export function createPlatformerState(
     respawns: 0,
     elapsedSeconds: 0,
     completed: false,
+    sprintCharge: 0,
+    sprinting: false,
   };
 }
 
@@ -211,10 +230,26 @@ export function stepPlatformer(
   const delta = clamp(deltaSeconds, 0, 0.05);
   const direction = Number(input.right) - Number(input.left);
 
+  // The sprint charges only while running one way; turning or stopping resets
+  // it. Once charged it survives a jump, so gaps can be cleared at full speed.
+  const sprint = config.sprint;
+  const keepsCharging =
+    sprint !== undefined &&
+    direction !== 0 &&
+    (direction < 0 ? "left" : "right") === state.facing;
+  const sprintCharge = keepsCharging ? state.sprintCharge + delta : 0;
+  const sprinting = sprint !== undefined && sprintCharge >= sprint.holdSeconds;
+  const sprintStarted = sprinting && !state.sprinting;
+
+  const maxSpeed = sprinting ? sprint.maxSpeed : config.maxSpeed;
+  const groundAcceleration = sprinting
+    ? sprint.acceleration
+    : config.groundAcceleration;
+
   const acceleration = state.grounded
-    ? config.groundAcceleration
+    ? groundAcceleration
     : config.airAcceleration;
-  const targetSpeed = direction * config.maxSpeed;
+  const targetSpeed = direction * maxSpeed;
   let velocityX = state.velocityX;
   if (direction !== 0) {
     const step = acceleration * delta;
@@ -292,6 +327,8 @@ export function stepPlatformer(
     jumpBufferRemaining: startsJump ? 0 : jumpBufferRemaining,
     jumpCutAvailable: grounded ? false : jumpCutAvailable,
     elapsedSeconds: state.elapsedSeconds + delta,
+    sprintCharge,
+    sprinting,
   };
 
   let respawned = false;
@@ -308,6 +345,9 @@ export function stepPlatformer(
       jumpBufferRemaining: 0,
       jumpCutAvailable: false,
       respawns: next.respawns + 1,
+      // A fall costs the sprint: the run has to be built up again.
+      sprintCharge: 0,
+      sprinting: false,
     };
     respawned = true;
   }
@@ -340,6 +380,7 @@ export function stepPlatformer(
       checkpointId: checkpoint?.id,
       respawned,
       finished,
+      sprintStarted: sprintStarted && !respawned,
     },
   };
 }

@@ -278,6 +278,21 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Perché: il gioco è inseparabile dalla propria storia, grafica e musica, quindi vincolare i contenuti a `NonCommercial` impedisce di vendere l'opera pur lasciando il motore riusabile e realmente aperto.
 - Conseguenza: il titolare del copyright è **Francesco Falanga**; i testi di credits e termini nel gioco, il README e il registro asset dichiarano la doppia licenza. Le due licenze non sono combinabili in un'opera commerciale: chi vuole usare il gioco a fini commerciali deve chiedere un permesso esplicito.
 
+## ADR-029 — Superpotere corsa e capitolo 2
+
+- Stato: **Accettata**
+- Data: 2 agosto 2026
+- Attua: il primo dei superpoteri previsti da ADR-023 e apre il secondo capitolo della campagna.
+- Decisione sul superpotere: lo **scatto** si carica **tenendo premuta una direzione** a terra per `holdSeconds`; supera la velocità massima normale e sopravvive al salto, ma si azzera fermandosi, girandosi o cadendo.
+  - Nessun quarto pulsante: su un telefono da 320 px lo spazio non c'è, e un potere che si attiva tenendo premuto funziona identico con tastiera e touch, senza tempi di reazione né combinazioni.
+  - È una `sprint` **opzionale nella configurazione del livello**: il livello 1 resta senza scatto, quindi il suo bilanciamento e i suoi test non cambiano.
+  - Ha un riscontro chiaro su tre canali: scie di velocità sul canvas, effetto sonoro dedicato e una riga narrativa. Chi gioca senza audio o senza colori se ne accorge comunque.
+- Decisione sul capitolo: il pack `core` ha un secondo `ChapterBundle`, `core.chapter.c01-village-chats` («Atto I — Le chat di paese»). La scelta del prologo non porta più al finale ma al livello 2; dopo il livello 2 il dialogo rivela che chi ha spedito la foto alle 2:41 sapeva già dove fosse il Varano, e il finale aperto rilancia sul Castello Bonoris.
+  - `coreStoryGraph` compone ora i nodi di **tutti** i capitoli del pack, non solo del primo.
+  - Il punteggio mostrato nella cartolina è il **totale della partita**: ogni livello somma punti, indizi, tempo e cadute, e il record personale confronta i totali.
+- Vincoli confermati: nessun nemico, vita, timer o game over; le cadute riportano alla bandierina; «Salta il livello» resta su ogni livello con lo stesso esito narrativo; il percorso assistito con `prefers-reduced-motion` salta entrambi i livelli.
+- Verifica: i test di modello coprono carica, velocità, azzeramento e persistenza nel salto; due test di level design dimostrano che ogni fossato è superabile **solo** in scatto ma entro la sua portata e che c'è pista sufficiente per caricarlo; una simulazione completa prova che il livello 2 è finibile senza cadute.
+
 ## ADR-028 — Documenti di trama fuori dal repository pubblico
 
 - Stato: **Accettata**

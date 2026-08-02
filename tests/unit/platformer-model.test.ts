@@ -213,6 +213,17 @@ describe("platformer model", () => {
     expect(frozen.state).toBe(state);
   });
 
+  it("grants no sprint on a level without the superpower", () => {
+    const state = run(
+      createPlatformerState(testConfig),
+      { ...idle, right: true },
+      3,
+    );
+    expect(state.sprinting).toBe(false);
+    expect(state.sprintCharge).toBe(0);
+    expect(state.velocityX).toBeCloseTo(testConfig.maxSpeed, 0);
+  });
+
   it("keeps the camera inside the world bounds", () => {
     const config = testConfig;
     const start = createPlatformerState(config);
