@@ -38,18 +38,18 @@ src/
     effects.ts
     ports.ts
   content/
+    chain-chapters.ts
     campaign.ts
     compose-packs.ts
     packs/
       core/
         pack.ts
+        ui-messages.ts
         chapters/
           c00-first-sighting/
-          c01-red-zone/
-          c02-identities/
-          c03-superstar/
-          c04-six-hills/
-          c05-castle/
+          c01-village-chats/
+          c02-superstar/
+          c99-finale/
       origins/
         pack.ts
         chapters/
@@ -454,6 +454,7 @@ export interface MiniGameRequest<Config extends object> {
   readonly levelId: LevelId;
   readonly configId: LevelConfigId;
   readonly config: Readonly<Config>;
+  readonly role: Role;
   readonly seed: number;
   readonly settings: AccessibilitySettings;
   readonly onComplete: (result: MiniGameResult) => void;
@@ -476,7 +477,21 @@ export interface LevelRegistration<Config extends object> {
 }
 ```
 
-`src/levels/registry.ts` registra adattatore e configurazioni insieme tramite una factory generica `defineLevel()`. È l'unico modulo che risolve la coppia `levelId`/`configId`; una coppia assente è un errore di contenuto in build e un errore recuperabile al bootstrap. Il risultato non viene memorizzato come oggetto separato: il reducer sceglie `completedNodeId` o `skippedNodeId` e il normale `RunState` persistito registra il nuovo nodo. DOM, timer, canvas, configurazioni e oggetti di framework non entrano mai nel salvataggio. Ogni mini-gioco deve avere un esito equivalente tramite «Salta sfida».
+`src/levels/registry.ts` tiene insieme adattatore e configurazioni nella mappa `levelConfigs`. È l'unico modulo che risolve la coppia `levelId`/`configId`; una coppia assente è un errore di contenuto in build e un errore recuperabile al bootstrap. È anche l'unico punto in cui il **ruolo** viene tradotto in un potere: `mountRegisteredLevel()` legge `powersByRole[role]` e passa al modello un solo `power`, così la fisica resta pura e testabile senza ruolo (ADR-031). Il risultato non viene memorizzato come oggetto separato: il reducer sceglie `completedNodeId` o `skippedNodeId` e il normale `RunState` persistito registra il nuovo nodo. DOM, timer, canvas, configurazioni e oggetti di framework non entrano mai nel salvataggio. Ogni mini-gioco deve avere un esito equivalente tramite «Salta sfida».
+
+### Livelli attuali
+
+Tre `LevelNode` condividono lo stesso adapter platformer e la stessa fisica pura:
+
+| Livello                    | `levelId`                         | Meccanica aggiunta                                              |
+| -------------------------- | --------------------------------- | --------------------------------------------------------------- |
+| 1 — I campi di Montichiari | `core.level.campi-di-montichiari` | corsa, salto, raccolta, traguardo                               |
+| 2 — Le chat di paese       | `core.level.chat-di-paese`        | `sprint?`, caricato tenendo una direzione (ADR-029)             |
+| 3 — Varano superstar       | `core.level.varano-superstar`     | `power?` per ruolo e `obstacles?` non letali (ADR-031, ADR-032) |
+
+Ogni nodo porta le proprie `headingKey` e `introKey` (ADR-030). `power?` e `obstacles?` sono opzionali come `sprint?`, quindi un livello nuovo non tocca il bilanciamento di quelli esistenti.
+
+Ogni livello dichiara inoltre un `backdrop` obbligatorio (ADR-033) con cielo, ora del giorno e i due strati di parallasse. Vive in `PlatformerViewConfig` perché è presentazione: `PlatformerConfig`, la fisica pura, non conosce colori. `registeredLevels` espone tutti i livelli con la loro configurazione, così le invarianti di design si affermano sull'intero registro invece che su un livello alla volta.
 
 ### Implementazione M1P
 

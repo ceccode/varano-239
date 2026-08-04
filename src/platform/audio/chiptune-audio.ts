@@ -1,5 +1,13 @@
 export type GameSoundEffect =
-  "jump" | "pickup" | "checkpoint" | "respawn" | "finish" | "sprint" | "select";
+  | "jump"
+  | "pickup"
+  | "checkpoint"
+  | "respawn"
+  | "finish"
+  | "sprint"
+  | "power"
+  | "blocked"
+  | "select";
 
 export interface GameAudio {
   readonly setMusicEnabled: (enabled: boolean) => void;
@@ -233,6 +241,16 @@ export class ChiptuneAudio implements GameAudio {
         this.playNote(masterGain, "square", 784, now + 0.18, 0.09, 0.09);
         this.playNote(masterGain, "square", 1046, now + 0.27, 0.24, 0.1);
         this.playNote(masterGain, "triangle", 262, now + 0.27, 0.3, 0.12);
+        return;
+      case "power":
+        // A chime that opens upward: a role superpower engaging (ADR-031).
+        this.playNote(masterGain, "triangle", 523, now, 0.1, 0.09);
+        this.playNote(masterGain, "triangle", 784, now + 0.08, 0.1, 0.09);
+        this.playNote(masterGain, "square", 1046, now + 0.16, 0.18, 0.06);
+        return;
+      case "blocked":
+        // A soft, low thud: bumping into something costs time, never health.
+        this.playNote(masterGain, "triangle", 140, now, 0.1, 0.05, 96);
         return;
       case "select":
         this.playNote(masterGain, "square", 660, now, 0.05, 0.06);

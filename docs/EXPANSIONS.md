@@ -204,19 +204,28 @@ Non usare nomi, indirizzi, fotografie, loghi o dettagli che rendano riconoscibil
 
 ## Nuovi livelli
 
-La definizione canonica di `LevelNode`, inclusi i campi ereditati da `BaseNode`, vive soltanto in `CONTENT_MODEL.md`. Il nodo contiene `levelId`, `configId`, `completedNodeId` e `skippedNodeId`.
+La definizione canonica di `LevelNode`, inclusi i campi ereditati da `BaseNode`, vive soltanto in `CONTENT_MODEL.md`. Il nodo contiene `levelId`, `configId`, `headingKey`, `introKey`, `completedNodeId` e `skippedNodeId`. Le due chiavi di testo appartengono al nodo, non al renderer: ogni livello presenta sé stesso, anche nel percorso assistito (ADR-030).
 
-`src/levels/registry.ts` registra insieme, per ogni `LevelId`, l'adattatore e la mappa tipizzata delle configurazioni ammesse. `resolveLevel(levelId, configId)` restituisce adattatore e configurazione oppure un errore esplicito; la validazione di build rifiuta coppie non registrate. Il reducer non salva l'oggetto del mini-gioco: applica il ramo `completed` o `skipped` e persiste il normale `RunState` risultante.
+`src/levels/registry.ts` è l'unico modulo che risolve la coppia `levelId`/`configId`. La mappa `levelConfigs` associa ogni `LevelId` al proprio `configId` ammesso e alla configurazione tipizzata (`… as const satisfies PlatformerViewConfig`); `registeredLevelDescriptors` ne è derivato automaticamente ed espone al validatore le chiavi di messaggio di ciascun livello. `mountRegisteredLevel()` cerca la coppia e monta l'adapter platformer, restituendo `undefined` quando la coppia non è registrata: è un errore di contenuto in build e un errore recuperabile al bootstrap.
 
-Aggiungere un livello richiede:
+Finché esiste un solo adapter non c'è un secondo uso che giustifichi un'astrazione `resolveLevel()` generica: una nuova meccanica introduce prima il proprio adapter dietro `MiniGamePort`, e solo allora la risoluzione diventa un punto di variazione reale.
 
-1. configurazione tipizzata;
-2. adattatore isolato;
-3. voce nel registro compilato;
-4. suite contrattuale condivisa;
-5. nodo nel capitolo;
-6. percorso di salto equivalente;
-7. verifica touch, tastiera e movimento ridotto.
+Il reducer non salva l'oggetto del mini-gioco: applica il ramo `completed` o `skipped` e persiste il normale `RunState` risultante.
+
+Aggiungere un livello richiede (ADR-034), **senza modificare alcun capitolo già scritto**:
+
+1. una cartella `chapters/cNN-slug/` con `chapter.ts` e `messages.ts`;
+2. il capitolo collegato in avanti a `nextChapterNodeId`, mai al nome del successore;
+3. una voce nell'array del pack, prima del capitolo finale;
+4. configurazione con `defineLevel()`, che porta già fisica ed etichette dei controlli;
+5. voce in `levelConfigs`;
+6. chiavi proprie del nodo: `headingKey`, `recapKey`, `introKey`;
+7. un `backdrop` diverso da quello dei livelli vicini;
+8. adattatore isolato **soltanto** se introduce una meccanica nuova;
+9. percorso di salto equivalente e suite contrattuale condivisa;
+10. verifica touch, tastiera e movimento ridotto.
+
+Il finale vive in `chapters/c99-finale/` ed è sempre l'ultimo bundle: nessun livello nuovo deve spostarlo. Rinominare o rimuovere un ID di nodo richiede invece una voce nella mappa di migrazione in `src/core/save.ts`, con il suo test.
 
 ## Validazione
 

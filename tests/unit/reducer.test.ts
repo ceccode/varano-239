@@ -4,7 +4,7 @@ import type { GameAction } from "../../src/core/actions";
 import { createInitialState, type GameState } from "../../src/core/game-state";
 import type { StoryGraph } from "../../src/core/model";
 import { reduce } from "../../src/core/reducer";
-import { coreStoryGraph } from "../../src/content/packs/core/m1";
+import { coreStoryGraph } from "../../src/content/packs/core/pack";
 
 function setupState(): GameState {
   return {

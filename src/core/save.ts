@@ -140,6 +140,30 @@ function isGameState(value: unknown): value is GameState {
   );
 }
 
+/**
+ * Node IDs a content refactor renamed. Renaming needs a pure, tested migration
+ * (EXPANSIONS.md), so a run saved on an old ID keeps working instead of landing
+ * on «questa parte della storia non è disponibile».
+ */
+const renamedNodeIds: Readonly<Record<string, string>> = {
+  // The open ending moved into its own finale chapter (ADR-034).
+  "core.node.superstar.ending": "core.node.finale.open-mystery",
+};
+
+function currentNodeId(nodeId: string): string {
+  return renamedNodeIds[nodeId] ?? nodeId;
+}
+
+function migrateRun(run: RunState): RunState {
+  return {
+    ...run,
+    currentNodeId: currentNodeId(run.currentNodeId),
+    checkpointNodeId: currentNodeId(run.checkpointNodeId),
+    coreCheckpointNodeId: currentNodeId(run.coreCheckpointNodeId),
+    visitedNodeIds: run.visitedNodeIds.map(currentNodeId),
+  };
+}
+
 export function encodeSave(state: GameState): SaveEnvelope {
   return { version: saveVersion, state };
 }
@@ -153,5 +177,8 @@ export function decodeSave(value: unknown): GameState | undefined {
     return undefined;
   }
 
-  return value.state;
+  const state = value.state;
+  return state.run === undefined
+    ? state
+    : { ...state, run: migrateRun(state.run) };
 }

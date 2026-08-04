@@ -8,7 +8,7 @@ import {
   italianMessages,
   resolveItalianMessage,
 } from "../../src/content/locales/it";
-import { corePack, coreStoryGraph } from "../../src/content/packs/core/m1";
+import { corePack, coreStoryGraph } from "../../src/content/packs/core/pack";
 import { validateContent } from "../../src/content/validate-content";
 import type { StoryPack } from "../../src/content/story-pack";
 import { registeredLevelDescriptors } from "../../src/levels/registry";
@@ -35,7 +35,10 @@ function finishRun(state: GameState): GameState {
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
     { type: "OPTION_CHOSEN", optionId: "core.option.prologue.document" },
-    // Chapter 1: level 2, dialogue, ending.
+    // Chapter 1: level 2, dialogue.
+    { type: "MINIGAME_SKIPPED" },
+    { type: "DIALOGUE_ADVANCED" },
+    // Chapter 2: level 3, dialogue, ending.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
   ] as const;
@@ -75,6 +78,27 @@ describe("M1 core content", () => {
     }
   });
 
+  it("gives every level its own heading and intro copy", () => {
+    // Regression guard: the renderer used to hardcode level 1's keys for every
+    // level, so the assisted path announced level 2 as «Livello 1» (ADR-030).
+    const levels = coreStoryGraph.nodes.filter((node) => node.type === "level");
+    expect(levels.length).toBeGreaterThan(1);
+
+    for (const key of [
+      ...levels.map((level) => level.headingKey),
+      ...levels.map((level) => level.introKey),
+    ]) {
+      expect(Object.hasOwn(italianMessages, key)).toBe(true);
+    }
+
+    const headings = levels.map((level) =>
+      resolveItalianMessage(level.headingKey),
+    );
+    const intros = levels.map((level) => resolveItalianMessage(level.introKey));
+    expect(new Set(headings).size).toBe(levels.length);
+    expect(new Set(intros).size).toBe(levels.length);
+  });
+
   it("lets all 16 core setup combinations reach the temporary ending", () => {
     for (const role of roles) {
       for (const approach of approaches) {
@@ -106,13 +130,16 @@ describe("M1 core content", () => {
           return node.messageKey === undefined ? [] : [node.messageKey];
         case "ending":
           return [node.titleKey, node.bodyKey];
-        case "dossier-card":
         case "level":
+          return [node.headingKey, node.introKey];
+        case "dossier-card":
         case "chapter-end":
           return [];
       }
     });
-    const content = graphKeys.map(resolveItalianMessage).join(" ");
+    const content = graphKeys
+      .map((key) => resolveItalianMessage(key))
+      .join(" ");
     expect(content).not.toMatch(/morte|morto|uccid|abbatt|sparare/i);
   });
 
@@ -176,6 +203,9 @@ describe("M1 core content", () => {
               narrativeLayer: "legend",
               levelId: "core.level.missing",
               configId: "core.level-config.missing",
+              headingKey: "missing.level.heading",
+              recapKey: "missing.level.recap",
+              introKey: "missing.level.intro",
               completedNodeId: "core.node.missing",
               skippedNodeId: "core.node.missing",
             },
@@ -248,6 +278,16 @@ describe("M1 core content", () => {
     expect(errors).toContain("outside.chapter is outside the core namespace.");
     expect(errors).toContain(
       "core.node.level references missing level configuration core.level.missing/core.level-config.missing.",
+    );
+    // A level's own copy is validated like any other node text (ADR-030).
+    expect(errors).toContain(
+      "core.node.level references missing message missing.level.heading.",
+    );
+    expect(errors).toContain(
+      "core.node.level references missing message missing.level.recap.",
+    );
+    expect(errors).toContain(
+      "core.node.level references missing message missing.level.intro.",
     );
     expect(errors).toContain("core.dossier.fact requires at least one source.");
     expect(errors).toContain("core.dossier.legend requires a fiction notice.");

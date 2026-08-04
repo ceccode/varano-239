@@ -1,5 +1,5 @@
 import type { MessageKey } from "../../core/model.ts";
-import { m1Messages } from "../packs/core/m1.ts";
+import { coreMessages } from "../packs/core/pack.ts";
 
 const shellMessages = {
   "core.message.title": "VARANO 2:39",
@@ -10,9 +10,9 @@ const shellMessages = {
   "core.message.shell.age-label": "Platformer narrativo 12+",
   "core.message.shell.nav-label": "Navigazione principale",
   "core.message.shell.sources-link": "Archivio e fonti",
-  "core.message.shell.status-title": "Livello 1 giocabile",
+  "core.message.shell.status-title": "Tre livelli giocabili",
   "core.message.shell.description":
-    "Il prologo M1P è un livello platformer con musica chiptune, sempre saltabile, seguito da un primo finale aperto.",
+    "Tre livelli platformer con musica chiptune, sempre saltabili: i campi di Montichiari, le chat di paese e il circo mediatico sotto il Castello, seguiti da un finale aperto.",
   "core.message.shell.ready":
     "Applicazione inizializzata. Il Livello 1 «I campi di Montichiari» è pronto.",
   "core.message.shell.safety-title": "Sicurezza",
@@ -30,7 +30,7 @@ const shellMessages = {
 
 export const italianMessages = {
   ...shellMessages,
-  ...m1Messages,
+  ...coreMessages,
 } as const;
 
 export type ItalianMessageKey = keyof typeof italianMessages;
@@ -43,10 +43,27 @@ export function hasItalianMessage(key: MessageKey): key is ItalianMessageKey {
   return Object.hasOwn(italianMessages, key);
 }
 
-export function resolveItalianMessage(key: MessageKey): string {
+export type MessageValues = Readonly<Record<string, string | number>>;
+
+/**
+ * Fills `{name}` placeholders, so components never build visible sentences from
+ * string literals. An unknown placeholder is left as it is: a typo in the
+ * catalogue must stay visible instead of silently vanishing.
+ */
+export function formatMessage(template: string, values: MessageValues): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) =>
+    Object.hasOwn(values, name) ? String(values[name]) : match,
+  );
+}
+
+export function resolveItalianMessage(
+  key: MessageKey,
+  values?: MessageValues,
+): string {
   if (!hasItalianMessage(key)) {
     throw new Error(`Missing Italian message: ${key}`);
   }
 
-  return italianMessages[key];
+  const template = italianMessages[key];
+  return values === undefined ? template : formatMessage(template, values);
 }

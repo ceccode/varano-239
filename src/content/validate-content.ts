@@ -64,8 +64,9 @@ function nodeMessageKeys(node: StoryNode): readonly MessageKey[] {
       return node.messageKey === undefined ? [] : [node.messageKey];
     case "ending":
       return [node.titleKey, node.bodyKey];
-    case "dossier-card":
     case "level":
+      return [node.headingKey, node.recapKey, node.introKey];
+    case "dossier-card":
     case "chapter-end":
       return [];
   }

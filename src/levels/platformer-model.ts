@@ -30,6 +30,51 @@ export interface SprintConfig {
   readonly acceleration: number;
 }
 
+/**
+ * The role superpowers (ADR-031). All four are held, not tapped, and each one
+ * answers a different dimension: speed, information, neutralisation, height.
+ */
+export type PowerConfig =
+  | {
+      readonly kind: "sprint";
+      readonly chargeSeconds: number;
+      readonly maxSpeed: number;
+      readonly acceleration: number;
+    }
+  | {
+      readonly kind: "scent";
+      readonly chargeSeconds: number;
+      readonly radius: number;
+    }
+  | {
+      readonly kind: "call";
+      readonly chargeSeconds: number;
+      readonly radius: number;
+    }
+  | {
+      readonly kind: "drone";
+      readonly chargeSeconds: number;
+      readonly hoverSeconds: number;
+      readonly liftSpeed: number;
+    };
+
+export type PowerKind = PowerConfig["kind"];
+
+/**
+ * Non-lethal obstacles: they cost time, never health. There is no damage, no
+ * life counter and no game over anywhere in this model.
+ */
+export type ObstacleKind = "onlooker" | "drone" | "cables";
+
+export interface PlatformerObstacle {
+  readonly id: string;
+  readonly kind: ObstacleKind;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
 export interface PlatformerConfig {
   readonly worldWidth: number;
   readonly worldHeight: number;
@@ -55,6 +100,10 @@ export interface PlatformerConfig {
   readonly finishX: number;
   /** Omitted on levels that do not grant the sprint. */
   readonly sprint?: SprintConfig;
+  /** Omitted on levels without a role superpower; resolved per role by the registry. */
+  readonly power?: PowerConfig;
+  /** Omitted on levels without obstacles. */
+  readonly obstacles?: readonly PlatformerObstacle[];
 }
 
 export interface PlatformerInput {
@@ -62,6 +111,8 @@ export interface PlatformerInput {
   readonly right: boolean;
   readonly jumpPressed: boolean;
   readonly jumpHeld: boolean;
+  /** Optional so levels and tests without a power stay unchanged. */
+  readonly powerHeld?: boolean;
 }
 
 export interface PlatformerState {
@@ -82,6 +133,15 @@ export interface PlatformerState {
   /** Seconds of uninterrupted running in the same direction. */
   readonly sprintCharge: number;
   readonly sprinting: boolean;
+  /** Seconds the power button has been held without interruption. */
+  readonly powerCharge: number;
+  readonly powerActive: boolean;
+  /** Remaining hover seconds; refills on the ground. */
+  readonly droneFuel: number;
+  /** Obstacles the scent opened for good. */
+  readonly openedObstacleIds: readonly string[];
+  /** Obstacles the call is calming right now; momentary, recomputed each step. */
+  readonly calmedObstacleIds: readonly string[];
 }
 
 export interface PlatformerEvents {
@@ -92,6 +152,10 @@ export interface PlatformerEvents {
   readonly respawned: boolean;
   readonly finished: boolean;
   readonly sprintStarted: boolean;
+  readonly powerStarted: boolean;
+  readonly openedObstacleIds: readonly string[];
+  /** Bumped into a solid obstacle: worth a sound, never a penalty. */
+  readonly blocked: boolean;
 }
 
 export interface PlatformerStepResult {
@@ -101,6 +165,10 @@ export interface PlatformerStepResult {
 
 const pickupRadius = 18;
 const fallRespawnMargin = 26;
+/** How hard an onlooker nudges you back. Enough to cost time, never to hurt. */
+const onlookerPushSpeed = 95;
+/** Cables and tripods slow you down and make a sprint impossible. */
+const cablesSpeedFactor = 0.45;
 
 const noEvents: PlatformerEvents = {
   jumped: false,
@@ -110,6 +178,9 @@ const noEvents: PlatformerEvents = {
   respawned: false,
   finished: false,
   sprintStarted: false,
+  powerStarted: false,
+  openedObstacleIds: [],
+  blocked: false,
 };
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -123,6 +194,87 @@ function overlapsHorizontally(
   regionWidth: number,
 ): boolean {
   return x + width > regionX && x < regionX + regionWidth;
+}
+
+function overlapsVertically(
+  y: number,
+  height: number,
+  regionY: number,
+  regionHeight: number,
+): boolean {
+  return y + height > regionY && y < regionY + regionHeight;
+}
+
+function initialDroneFuel(config: PlatformerConfig): number {
+  return config.power?.kind === "drone" ? config.power.hoverSeconds : 0;
+}
+
+/** Distance from the player box to an obstacle box, zero while overlapping. */
+function obstacleDistance(
+  state: PlatformerState,
+  config: PlatformerConfig,
+  obstacle: PlatformerObstacle,
+): number {
+  const centerX = state.x + config.playerWidth / 2;
+  const centerY = state.y + config.playerHeight / 2;
+  return Math.hypot(
+    centerX - clamp(centerX, obstacle.x, obstacle.x + obstacle.width),
+    centerY - clamp(centerY, obstacle.y, obstacle.y + obstacle.height),
+  );
+}
+
+interface ObstacleContact {
+  readonly x: number;
+  readonly velocityX: number;
+  readonly blocked: boolean;
+}
+
+/**
+ * Pushes the player out of the obstacles that still stand in the way. A sprint
+ * carries the Varano straight through a crowd; nothing carries anyone through
+ * the troupe's drone, which is why every set piece also has a route above it.
+ */
+function resolveObstacleContacts(
+  config: PlatformerConfig,
+  obstacles: readonly PlatformerObstacle[],
+  proposedX: number,
+  y: number,
+  velocityX: number,
+  sprinting: boolean,
+): ObstacleContact {
+  let x = proposedX;
+  let nextVelocityX = velocityX;
+  let blocked = false;
+
+  for (const obstacle of obstacles) {
+    if (
+      obstacle.kind === "cables" ||
+      (obstacle.kind === "onlooker" && sprinting) ||
+      !overlapsVertically(
+        y,
+        config.playerHeight,
+        obstacle.y,
+        obstacle.height,
+      ) ||
+      !overlapsHorizontally(x, config.playerWidth, obstacle.x, obstacle.width)
+    ) {
+      continue;
+    }
+
+    const fromLeft =
+      x + config.playerWidth / 2 < obstacle.x + obstacle.width / 2;
+    x = fromLeft
+      ? obstacle.x - config.playerWidth
+      : obstacle.x + obstacle.width;
+    if (obstacle.kind === "onlooker") {
+      nextVelocityX = fromLeft ? -onlookerPushSpeed : onlookerPushSpeed;
+    } else {
+      nextVelocityX = 0;
+      blocked = true;
+    }
+  }
+
+  return { x, velocityX: nextVelocityX, blocked };
 }
 
 export function createPlatformerState(
@@ -145,6 +297,11 @@ export function createPlatformerState(
     completed: false,
     sprintCharge: 0,
     sprinting: false,
+    powerCharge: 0,
+    powerActive: false,
+    droneFuel: initialDroneFuel(config),
+    openedObstacleIds: [],
+    calmedObstacleIds: [],
   };
 }
 
@@ -230,21 +387,101 @@ export function stepPlatformer(
   const delta = clamp(deltaSeconds, 0, 0.05);
   const direction = Number(input.right) - Number(input.left);
 
+  // The power is held, never tapped, so it behaves the same on a keyboard and
+  // under a thumb. Releasing it discharges the whole thing (ADR-031).
+  const power = config.power;
+  const powerCharge =
+    power !== undefined && input.powerHeld === true
+      ? state.powerCharge + delta
+      : 0;
+  // The drone also needs fuel left in the tank.
+  const powerActive =
+    power !== undefined &&
+    powerCharge >= power.chargeSeconds &&
+    (power.kind !== "drone" || state.droneFuel > 0);
+  const powerStarted = powerActive && !state.powerActive;
+
+  const obstacles = config.obstacles ?? [];
+  // The call calms whatever is nearby for as long as it is held…
+  const callRadius =
+    power?.kind === "call" && powerActive ? power.radius : undefined;
+  const calmedObstacleIds =
+    callRadius === undefined
+      ? []
+      : obstacles
+          .filter(
+            (obstacle) =>
+              obstacleDistance(state, config, obstacle) <= callRadius,
+          )
+          .map((obstacle) => obstacle.id);
+  // …while the scent finds a gap in a crowd once and for all.
+  const scentRadius =
+    power?.kind === "scent" && powerActive ? power.radius : undefined;
+  const newlyOpenedIds =
+    scentRadius === undefined
+      ? []
+      : obstacles
+          .filter(
+            (obstacle) =>
+              obstacle.kind === "onlooker" &&
+              !state.openedObstacleIds.includes(obstacle.id) &&
+              obstacleDistance(state, config, obstacle) <= scentRadius,
+          )
+          .map((obstacle) => obstacle.id);
+  const openedObstacleIds = [...state.openedObstacleIds, ...newlyOpenedIds];
+  const standingObstacles = obstacles.filter(
+    (obstacle) =>
+      !openedObstacleIds.includes(obstacle.id) &&
+      !calmedObstacleIds.includes(obstacle.id),
+  );
+
+  // Cables cap the speed and make a sprint impossible: this is the set piece
+  // where raw speed is not the answer.
+  const insideCables = standingObstacles.some(
+    (obstacle) =>
+      obstacle.kind === "cables" &&
+      overlapsHorizontally(
+        state.x,
+        config.playerWidth,
+        obstacle.x,
+        obstacle.width,
+      ) &&
+      overlapsVertically(
+        state.y,
+        config.playerHeight,
+        obstacle.y,
+        obstacle.height,
+      ),
+  );
+
   // The sprint charges only while running one way; turning or stopping resets
   // it. Once charged it survives a jump, so gaps can be cleared at full speed.
   const sprint = config.sprint;
   const keepsCharging =
     sprint !== undefined &&
+    !insideCables &&
     direction !== 0 &&
     (direction < 0 ? "left" : "right") === state.facing;
   const sprintCharge = keepsCharging ? state.sprintCharge + delta : 0;
-  const sprinting = sprint !== undefined && sprintCharge >= sprint.holdSeconds;
+  const sprintPower =
+    power?.kind === "sprint" && powerActive && !insideCables
+      ? power
+      : undefined;
+  const sprintingFromHold =
+    sprint !== undefined && sprintCharge >= sprint.holdSeconds;
+  const sprinting = sprintingFromHold || sprintPower !== undefined;
   const sprintStarted = sprinting && !state.sprinting;
 
-  const maxSpeed = sprinting ? sprint.maxSpeed : config.maxSpeed;
-  const groundAcceleration = sprinting
-    ? sprint.acceleration
-    : config.groundAcceleration;
+  const sprintSpeed =
+    sprintPower?.maxSpeed ?? (sprintingFromHold ? sprint.maxSpeed : undefined);
+  const sprintAcceleration =
+    sprintPower?.acceleration ??
+    (sprintingFromHold ? sprint.acceleration : undefined);
+
+  const maxSpeed = insideCables
+    ? config.maxSpeed * cablesSpeedFactor
+    : (sprintSpeed ?? config.maxSpeed);
+  const groundAcceleration = sprintAcceleration ?? config.groundAcceleration;
 
   const acceleration = state.grounded
     ? groundAcceleration
@@ -265,11 +502,20 @@ export function stepPlatformer(
         : Math.min(0, velocityX + step);
   }
 
-  const nextX = clamp(
-    state.x + velocityX * delta,
-    0,
-    config.worldWidth - config.playerWidth,
+  const contact = resolveObstacleContacts(
+    config,
+    standingObstacles,
+    clamp(
+      state.x + velocityX * delta,
+      0,
+      config.worldWidth - config.playerWidth,
+    ),
+    state.y,
+    velocityX,
+    sprinting,
   );
+  const nextX = clamp(contact.x, 0, config.worldWidth - config.playerWidth);
+  velocityX = contact.velocityX;
 
   const jumpBufferRemaining = input.jumpPressed
     ? config.jumpBufferSeconds
@@ -289,6 +535,14 @@ export function stepPlatformer(
     jumpCutAvailable = false;
   }
 
+  // The drone of the fictional Borgocoda: a slow, fuel-limited lift, so the
+  // Mayor passes above an obstacle instead of through it.
+  const droneLifting = power?.kind === "drone" && powerActive;
+  if (droneLifting) {
+    velocityY = -power.liftSpeed;
+    jumpCutAvailable = false;
+  }
+
   velocityY = Math.min(velocityY, config.terminalFallSpeed);
 
   const proposedY = state.y + velocityY * delta;
@@ -301,7 +555,13 @@ export function stepPlatformer(
       : undefined;
   const groundTop =
     velocityY > 0 ? groundTopAt(config, nextX, config.playerWidth) : undefined;
-  const landsOnGround = groundTop !== undefined && proposedBottom >= groundTop;
+  // The ground is crossed from above, like a platform: without this a player
+  // who has already fallen past the floor gets scooped up the moment they
+  // overlap the far side of a gap, which turned narrow gaps into free bridges.
+  const landsOnGround =
+    groundTop !== undefined &&
+    previousBottom <= groundTop &&
+    proposedBottom >= groundTop;
 
   let nextY = proposedY;
   let grounded = false;
@@ -329,6 +589,15 @@ export function stepPlatformer(
     elapsedSeconds: state.elapsedSeconds + delta,
     sprintCharge,
     sprinting,
+    powerCharge,
+    powerActive,
+    droneFuel: droneLifting
+      ? Math.max(0, state.droneFuel - delta)
+      : grounded
+        ? initialDroneFuel(config)
+        : state.droneFuel,
+    openedObstacleIds,
+    calmedObstacleIds,
   };
 
   let respawned = false;
@@ -348,6 +617,12 @@ export function stepPlatformer(
       // A fall costs the sprint: the run has to be built up again.
       sprintCharge: 0,
       sprinting: false,
+      // …and the power, which has to be charged again. What the scent already
+      // found stays found, like the clues already collected.
+      powerCharge: 0,
+      powerActive: false,
+      droneFuel: initialDroneFuel(config),
+      calmedObstacleIds: [],
     };
     respawned = true;
   }
@@ -381,6 +656,9 @@ export function stepPlatformer(
       respawned,
       finished,
       sprintStarted: sprintStarted && !respawned,
+      powerStarted: powerStarted && !respawned,
+      openedObstacleIds: newlyOpenedIds,
+      blocked: contact.blocked,
     },
   };
 }

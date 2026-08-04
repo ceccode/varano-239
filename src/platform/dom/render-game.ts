@@ -3,6 +3,7 @@ import type { GameAction } from "../../core/actions";
 import type { LevelOutcome } from "../../levels/contract";
 import { drawScoreCard } from "./score-card";
 import { shareScoreCard, type ShareOutcome } from "./share-card";
+import { levelPowerLabelKey } from "../../levels/registry";
 import { matchesConditions } from "../../core/conditions";
 import { completeSetup, type GameState } from "../../core/game-state";
 import type {
@@ -16,7 +17,11 @@ import type {
 interface GameContent {
   readonly story: StoryGraph;
   readonly assets: readonly AssetDefinition[];
-  readonly message: (key: MessageKey) => string;
+  /** Optional values fill `{name}` placeholders, keeping copy out of the DOM layer. */
+  readonly message: (
+    key: MessageKey,
+    values?: Readonly<Record<string, string | number>>,
+  ) => string;
 }
 
 export interface RenderGameAppOptions {
@@ -30,6 +35,9 @@ export interface RenderGameAppOptions {
   readonly content: GameContent;
   readonly dispatch: (action: GameAction) => void;
   readonly onMenuToggled?: (open: boolean) => void;
+  /** Whether the level should open with its briefing card (ADR-034). */
+  readonly showBriefing?: boolean | undefined;
+  readonly onBriefingCleared?: (() => void) | undefined;
 }
 
 interface RenderContext extends RenderGameAppOptions {
@@ -188,50 +196,136 @@ function overlayCard(context: RenderContext): HTMLElement {
   return card;
 }
 
-function renderLevel(context: RenderContext): void {
-  if (
-    context.state.settings.playMode === "standard" &&
-    !context.state.settings.reducedMotion
-  ) {
-    const srHeading = element(
-      context.document,
-      "h2",
-      context.content.message("core.message.level.heading"),
+function isAssisted(context: RenderContext): boolean {
+  return (
+    context.state.settings.playMode !== "standard" ||
+    context.state.settings.reducedMotion
+  );
+}
+
+/** A labelled block of the briefing: «Dove eravamo», «Che cosa devi fare»… */
+function briefingSection(
+  context: RenderContext,
+  labelKey: MessageKey,
+  bodyKey: MessageKey,
+): HTMLElement {
+  const section = element(context.document, "div");
+  section.className = "briefing__section";
+  const label = element(
+    context.document,
+    "h3",
+    context.content.message(labelKey),
+  );
+  label.className = "briefing__label";
+  section.append(
+    label,
+    element(context.document, "p", context.content.message(bodyKey)),
+  );
+  return section;
+}
+
+/**
+ * The briefing card (ADR-034). It recaps the story and states the objective, so
+ * a ten-level run stays followable, and it doubles as the assisted path's card:
+ * same content, «Continua la storia» instead of «Gioca».
+ */
+function renderLevelBriefing(
+  context: RenderContext,
+  node: StoryNode & { type: "level" },
+): void {
+  const assisted = isAssisted(context);
+  const card = overlayCard(context);
+  card.classList.add("briefing");
+  const cardContext: RenderContext = { ...context, screen: card };
+  heading(cardContext, node.headingKey);
+
+  card.append(
+    briefingSection(
+      context,
+      "core.message.level.briefing.recap",
+      node.recapKey,
+    ),
+    briefingSection(
+      context,
+      "core.message.level.briefing.objective",
+      node.introKey,
+    ),
+  );
+
+  const powerLabelKey = levelPowerLabelKey(
+    node.levelId,
+    node.configId,
+    context.state.setup.role ?? "varano",
+  );
+  if (powerLabelKey !== undefined && !assisted) {
+    card.append(
+      briefingSection(
+        context,
+        "core.message.level.briefing.power",
+        powerLabelKey,
+      ),
     );
-    srHeading.className = "sr-only";
-    srHeading.tabIndex = -1;
-    srHeading.dataset.focusTarget = "screen-heading";
-    const host = element(context.document, "div");
-    host.className = "arcade-host";
-    host.dataset.levelHost = "";
-    context.screen.append(srHeading, host);
+  }
+
+  const actions = element(context.document, "div");
+  actions.className = "briefing__actions";
+
+  if (assisted) {
+    const notice = element(
+      context.document,
+      "p",
+      context.content.message("core.message.level.assisted"),
+    );
+    notice.className = "scope-notice";
+    card.append(notice);
+    actions.append(
+      button(cardContext, "core.message.level.continue", {
+        type: "MINIGAME_SKIPPED",
+      }),
+    );
+  } else {
+    const play = element(
+      context.document,
+      "button",
+      context.content.message("core.message.level.play"),
+    );
+    play.type = "button";
+    play.dataset.briefingPlay = "";
+    play.addEventListener("click", () => {
+      context.onBriefingCleared?.();
+    });
+    actions.append(
+      play,
+      button(cardContext, "core.message.level.skip", {
+        type: "MINIGAME_SKIPPED",
+      }),
+    );
+  }
+
+  card.append(actions);
+}
+
+function renderLevel(
+  context: RenderContext,
+  node: StoryNode & { type: "level" },
+): void {
+  if (isAssisted(context) || context.showBriefing === true) {
+    renderLevelBriefing(context, node);
     return;
   }
 
-  const card = overlayCard(context);
-  const cardContext: RenderContext = { ...context, screen: card };
-  heading(cardContext, "core.message.level.heading");
-  const intro = element(
+  const srHeading = element(
     context.document,
-    "p",
-    context.content.message("core.message.level.intro"),
+    "h2",
+    context.content.message(node.headingKey),
   );
-  const assisted = element(
-    context.document,
-    "p",
-    context.content.message("core.message.level.assisted"),
-  );
-  assisted.className = "scope-notice";
-  const proceed = element(
-    context.document,
-    "button",
-    context.content.message("core.message.level.continue"),
-  );
-  proceed.type = "button";
-  proceed.addEventListener("click", () => {
-    context.dispatch({ type: "MINIGAME_SKIPPED" });
-  });
-  card.append(intro, assisted, proceed);
+  srHeading.className = "sr-only";
+  srHeading.tabIndex = -1;
+  srHeading.dataset.focusTarget = "screen-heading";
+  const host = element(context.document, "div");
+  host.className = "arcade-host";
+  host.dataset.levelHost = "";
+  context.screen.append(srHeading, host);
 }
 
 function findAsset(
@@ -487,7 +581,13 @@ function renderScorePanel(context: RenderContext): HTMLElement | undefined {
       return;
     }
     const url = `${view.location.origin}${view.location.pathname}`;
-    const text = `Ho fatto ${String(outcome.score)} punti nel Livello 1 di VARANO 2:39 — ${String(outcome.clues)}/${String(outcome.totalClues)} indizi in ${String(outcome.seconds)}s. Provaci: ${url}`;
+    const text = context.content.message("core.message.ui.score.share-text", {
+      score: outcome.score,
+      clues: outcome.clues,
+      totalClues: outcome.totalClues,
+      seconds: outcome.seconds,
+      url,
+    });
     share.disabled = true;
     void shareScoreCard(view, {
       canvas,
@@ -689,7 +789,7 @@ function renderStage(context: RenderContext): void {
       renderEnding(context, node);
       return;
     case "level":
-      renderLevel(context);
+      renderLevel(context, node);
       return;
     case "chapter-end":
       renderUnavailable(context);
@@ -902,10 +1002,12 @@ function renderHud(context: RenderContext, menu: HTMLElement): HTMLElement {
   actions.className = "hud-actions";
 
   const node = findNode(context);
+  // While the briefing is up the card carries its own skip, so the HUD stays
+  // clear of a second identical button.
   if (
     node?.type === "level" &&
-    context.state.settings.playMode === "standard" &&
-    !context.state.settings.reducedMotion
+    !isAssisted(context) &&
+    context.showBriefing !== true
   ) {
     const skip = button(context, "core.message.level.skip", {
       type: "MINIGAME_SKIPPED",
