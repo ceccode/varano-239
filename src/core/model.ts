@@ -185,6 +185,11 @@ export interface LevelNode extends BaseNode {
   readonly type: "level";
   readonly levelId: LevelId;
   readonly configId: LevelConfigId;
+  /** Own title and intro, so every level presents itself (ADR-030). */
+  readonly headingKey: MessageKey;
+  readonly introKey: MessageKey;
+  /** «Where we were»: the story so far, shown in the briefing (ADR-034). */
+  readonly recapKey: MessageKey;
   readonly completedNodeId: NodeId;
   readonly skippedNodeId: NodeId;
 }

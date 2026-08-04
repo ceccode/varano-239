@@ -8,7 +8,7 @@ import { createInitialState, type GameState } from "../../src/core/game-state";
 import type { AnalyticsPort, SavePort } from "../../src/core/ports";
 import { reduce } from "../../src/core/reducer";
 import { resolveItalianMessage } from "../../src/content/locales/it";
-import { coreStoryGraph } from "../../src/content/packs/core/m1";
+import { coreStoryGraph } from "../../src/content/packs/core/pack";
 import type { GameAudio } from "../../src/platform/audio/chiptune-audio";
 import type { BestScorePort } from "../../src/platform/storage/best-score";
 import { renderGameApp } from "../../src/platform/dom/render-game";
@@ -124,6 +124,64 @@ describe("full-screen game controller", () => {
     });
   });
 
+  it("never puts a briefing between a new run and its first level", () => {
+    // ADR-021's zero steps before playing survives the briefing (ADR-034).
+    const { mount } = prepareDocument();
+    createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+      reducedMotion: false,
+    });
+
+    pickRole();
+    expect(mount.querySelector("canvas")).toBeInstanceOf(HTMLCanvasElement);
+    expect(
+      queryByRole(document.body, "button", {
+        name: resolveItalianMessage("core.message.level.play"),
+      }),
+    ).toBeNull();
+    expect(mount.textContent).not.toContain(
+      resolveItalianMessage("core.message.level.recap"),
+    );
+  });
+
+  it("shows the assisted card instead of a briefing with reduced motion", () => {
+    const { mount } = prepareDocument();
+    createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+      reducedMotion: true,
+    });
+
+    pickRole();
+    // The same card, with «Continua la storia» in place of «Gioca».
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level.recap"),
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level.assisted"),
+    );
+    expect(
+      queryByRole(document.body, "button", {
+        name: resolveItalianMessage("core.message.level.continue"),
+      }),
+    ).not.toBeNull();
+    expect(
+      queryByRole(document.body, "button", {
+        name: resolveItalianMessage("core.message.level.play"),
+      }),
+    ).toBeNull();
+    expect(mount.querySelector("canvas")).toBeNull();
+  });
+
   it("asks for a role on first boot, then plays to the open ending", () => {
     const { mount } = prepareDocument();
     const save = new MemorySave();
@@ -180,6 +238,12 @@ describe("full-screen game controller", () => {
     expect(controller.getState().run?.currentNodeId).toBe(
       "core.node.chat.level",
     );
+    // From the second level on, a briefing recaps the story first (ADR-034).
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level2.recap"),
+    );
+    expect(mount.querySelector("canvas")).toBeNull();
+    clickMessage("core.message.level.play");
     expect(mount.textContent).toContain(
       resolveItalianMessage("core.message.level2.narrative.start"),
     );
@@ -189,6 +253,36 @@ describe("full-screen game controller", () => {
     );
     expect(document.body.textContent).toContain(
       resolveItalianMessage("core.message.dialogue2.twist"),
+    );
+    clickMessage("core.message.ui.continue");
+
+    // Chapter 2: the media circus outside the castle walls (ADR-032).
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.superstar.level",
+    );
+    // The briefing names the superpower this role gets in this level.
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level3.recap"),
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level3.power.varano.label"),
+    );
+    clickMessage("core.message.level.play");
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level3.narrative.start"),
+    );
+    // The Varano's power button carries its own accessible name.
+    expect(
+      queryByRole(document.body, "button", {
+        name: resolveItalianMessage("core.message.level3.power.varano.label"),
+      }),
+    ).not.toBeNull();
+    clickMessage("core.message.level.skip");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue3.varano"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue3.twist"),
     );
     clickMessage("core.message.ui.continue");
 
@@ -381,6 +475,8 @@ describe("full-screen game controller", () => {
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
       { type: "OPTION_CHOSEN", optionId: "core.option.prologue.protect" },
+      { type: "MINIGAME_SKIPPED" },
+      { type: "DIALOGUE_ADVANCED" },
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
     ] as const) {

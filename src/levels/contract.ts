@@ -1,8 +1,15 @@
 import type { AccessibilitySettings } from "../core/game-state";
-import type { LevelConfigId, LevelId, MessageKey } from "../core/model";
+import type { LevelConfigId, LevelId, MessageKey, Role } from "../core/model";
 
 export type LevelSoundEffect =
-  "jump" | "pickup" | "checkpoint" | "respawn" | "finish" | "sprint";
+  | "jump"
+  | "pickup"
+  | "checkpoint"
+  | "respawn"
+  | "finish"
+  | "sprint"
+  | "power"
+  | "blocked";
 
 export interface LevelAudioPort {
   readonly startMusic: () => void;
@@ -23,6 +30,8 @@ export interface MiniGameRequest<Config extends object> {
   readonly levelId: LevelId;
   readonly configId: LevelConfigId;
   readonly config: Readonly<Config>;
+  /** Which superpower the level grants, when it gates them per role (ADR-031). */
+  readonly role: Role;
   readonly settings: AccessibilitySettings;
   readonly message: (key: MessageKey) => string;
   readonly audio: LevelAudioPort;

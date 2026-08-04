@@ -4,7 +4,7 @@ import { createInitialState, type GameState } from "../core/game-state";
 import type { AnalyticsPort, SavePort } from "../core/ports";
 import { reduce } from "../core/reducer";
 import { resolveItalianMessage } from "../content/locales/it";
-import { coreStoryGraph } from "../content/packs/core/m1";
+import { coreStoryGraph } from "../content/packs/core/pack";
 import { renderGameApp } from "../platform/dom/render-game";
 import type { GameAudio } from "../platform/audio/chiptune-audio";
 import type { BestScorePort } from "../platform/storage/best-score";
@@ -48,6 +48,16 @@ export function createGameController(
   let activeLevel: MiniGameHandle | undefined;
   let lastOutcome: LevelOutcome | undefined;
   let isRecord = false;
+  let briefingClearedNodeId: string | undefined;
+
+  /**
+   * Every level opens with its briefing, except the very first one of a brand
+   * new run: there ADR-021's zero steps before playing still wins. The card is
+   * presentation, so the decision lives here and never touches the reducer.
+   */
+  const showBriefing = (nodeId: string): boolean =>
+    briefingClearedNodeId !== nodeId &&
+    (state.run?.visitedNodeIds.length ?? 0) > 1;
 
   const safeBestScore = (): number | undefined => {
     try {
@@ -89,6 +99,13 @@ export function createGameController(
   const render = (): void => {
     activeLevel?.destroy();
     activeLevel = undefined;
+    const node =
+      state.run === undefined
+        ? undefined
+        : coreStoryGraph.nodes.find(
+            (candidate) => candidate.id === state.run?.currentNodeId,
+          );
+    const briefing = node?.type === "level" && showBriefing(node.id);
     try {
       dependencies.audio.setMusicEnabled(state.settings.musicEnabled);
       dependencies.audio.setEffectsEnabled(state.settings.effectsEnabled);
@@ -109,6 +126,18 @@ export function createGameController(
         message: resolveItalianMessage,
       },
       dispatch,
+      showBriefing: briefing,
+      onBriefingCleared:
+        node === undefined
+          ? undefined
+          : (): void => {
+              briefingClearedNodeId = node.id;
+              render();
+              // The level's own heading, never a control: the keyboard handler
+              // ignores events aimed at a button, so focusing one would leave
+              // the game unplayable from the keyboard.
+              focusTarget(dependencies.document, "screen-heading");
+            },
       onMenuToggled: (open) => {
         if (open) {
           activeLevel?.pause();
@@ -118,18 +147,15 @@ export function createGameController(
       },
     });
 
-    const currentNode =
-      state.run === undefined
-        ? undefined
-        : coreStoryGraph.nodes.find(
-            (node) => node.id === state.run?.currentNodeId,
-          );
+    const currentNode = node;
     const levelHost =
       dependencies.mount.querySelector<HTMLElement>("[data-level-host]");
     if (currentNode?.type === "level" && levelHost !== null) {
       activeLevel = mountRegisteredLevel({
         host: levelHost,
         node: currentNode,
+        // The role decides which superpower the level grants (ADR-031).
+        role: state.setup.role ?? "varano",
         settings: state.settings,
         message: resolveItalianMessage,
         audio: dependencies.audio,

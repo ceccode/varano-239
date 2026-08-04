@@ -15,6 +15,9 @@ describe("level registry", () => {
       narrativeLayer: "legend",
       levelId: "core.level.unknown",
       configId: "core.level-config.unknown",
+      headingKey: "core.message.level.heading",
+      recapKey: "core.message.level.recap",
+      introKey: "core.message.level.intro",
       completedNodeId: "core.node.completed",
       skippedNodeId: "core.node.skipped",
     };
@@ -22,6 +25,7 @@ describe("level registry", () => {
       mountRegisteredLevel({
         host: document.createElement("div"),
         node: unknownLevel,
+        role: "varano",
         settings: createInitialState().settings,
         message: (key) => key,
         audio: {

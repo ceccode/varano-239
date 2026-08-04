@@ -132,7 +132,13 @@ test("completes the gentle flow with the keyboard and restarts", async ({
   await protect.focus();
   await page.keyboard.press("Enter");
 
-  // Chapter 1: level 2 grants the sprint and leads to the ending.
+  // Chapter 1: the briefing recaps the story, then level 2 grants the sprint.
+  await expect(
+    page.getByText(message("core.message.level2.recap")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.level.play") })
+    .click();
   await expect(page.locator(".arcade-canvas")).toBeVisible();
   await expect(
     page.getByText(message("core.message.level2.narrative.start")),
@@ -144,6 +150,30 @@ test("completes the gentle flow with the keyboard and restarts", async ({
   await page.keyboard.press("Enter");
   await expect(
     page.getByText(message("core.message.dialogue2.twist")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+
+  // Chapter 2: the media circus, where the level grants a power per role.
+  await expect(
+    page.getByText(message("core.message.level3.recap")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.level.play") })
+    .click();
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+  await expect(
+    page.getByText(message("core.message.level3.narrative.start")),
+  ).toBeVisible();
+  const skipThird = page.getByRole("button", {
+    name: message("core.message.level.skip"),
+  });
+  await skipThird.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByText(message("core.message.dialogue3.twist")),
   ).toBeVisible();
   await page
     .getByRole("button", { name: message("core.message.ui.continue") })
@@ -254,6 +284,9 @@ test("grants the run superpower in level 2", async ({ page }) => {
     .getByRole("button", { name: message("core.message.choice.protect") })
     .click();
 
+  await page
+    .getByRole("button", { name: message("core.message.level.play") })
+    .click();
   await expect(
     page.getByText(message("core.message.level2.narrative.start")),
   ).toBeVisible();
@@ -267,6 +300,70 @@ test("grants the run superpower in level 2", async ({ page }) => {
   await page.keyboard.up("ArrowRight");
   expect(await playerX(page)).toBeGreaterThan(startingPosition);
 });
+
+const powerLabelKeys = {
+  "core.message.ui.role-select.varano.title":
+    "core.message.level3.power.varano.label",
+  "core.message.ui.role-select.hunter.title":
+    "core.message.level3.power.hunter.label",
+  "core.message.ui.role-select.guardian.title":
+    "core.message.level3.power.guardian.label",
+  "core.message.ui.role-select.mayor.title":
+    "core.message.level3.power.mayor.label",
+} as const;
+
+for (const [roleKey, labelKey] of Object.entries(powerLabelKeys) as [
+  keyof typeof powerLabelKeys,
+  (typeof powerLabelKeys)[keyof typeof powerLabelKeys],
+][]) {
+  test(`grants a role superpower in level 3: ${message(labelKey)}`, async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await pickRole(page, roleKey);
+
+    // Straight through the first two levels to the media circus.
+    await page
+      .getByRole("button", { name: message("core.message.level.skip") })
+      .click();
+    await page
+      .getByRole("button", { name: message("core.message.ui.continue") })
+      .click();
+    await page
+      .getByRole("button", { name: message("core.message.choice.protect") })
+      .click();
+    await page
+      .getByRole("button", { name: message("core.message.level.play") })
+      .click();
+    await page
+      .getByRole("button", { name: message("core.message.level.skip") })
+      .click();
+    await page
+      .getByRole("button", { name: message("core.message.ui.continue") })
+      .click();
+
+    await page
+      .getByRole("button", { name: message("core.message.level.play") })
+      .click();
+    await expect(
+      page.getByText(message("core.message.level3.narrative.start")),
+    ).toBeVisible();
+
+    // The button carries the role's own accessible name, and holding it — the
+    // same gesture on touch and keyboard — engages the power (ADR-031).
+    const powerButton = page.getByRole("button", { name: message(labelKey) });
+    await expect(powerButton).toBeVisible();
+
+    const host = page.locator("[data-level-host]");
+    await expect(host).toHaveAttribute("data-power-active", "false");
+    await powerButton.dispatchEvent("pointerdown", { pointerId: 1 });
+    await expect(host).toHaveAttribute("data-power-active", "true", {
+      timeout: 5000,
+    });
+    await powerButton.dispatchEvent("pointerup", { pointerId: 1 });
+    await expect(host).toHaveAttribute("data-power-active", "false");
+  });
+}
 
 test("restores a saved run automatically after reload", async ({ page }) => {
   await page.goto("./");
@@ -297,6 +394,10 @@ test("offers the equivalent path when reduced motion is preferred", async ({
   await expect(
     page.getByText(message("core.message.level.assisted")),
   ).toBeVisible();
+  // Each level announces itself with its own copy (ADR-030).
+  await expect(
+    page.getByRole("heading", { name: message("core.message.level.heading") }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: message("core.message.level.continue") })
     .click();
@@ -309,6 +410,17 @@ test("offers the equivalent path when reduced motion is preferred", async ({
       name: message("core.message.ui.choice.heading"),
     }),
   ).toBeVisible();
+
+  await page
+    .getByRole("button", { name: message("core.message.choice.protect") })
+    .click();
+  // The assisted path used to reuse level 1's title here.
+  await expect(
+    page.getByRole("heading", { name: message("core.message.level2.heading") }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: message("core.message.level.heading") }),
+  ).toHaveCount(0);
 });
 
 test("moves with the touch controls and keeps an equivalent skip action", async ({

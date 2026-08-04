@@ -293,6 +293,99 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Vincoli confermati: nessun nemico, vita, timer o game over; le cadute riportano alla bandierina; «Salta il livello» resta su ogni livello con lo stesso esito narrativo; il percorso assistito con `prefers-reduced-motion` salta entrambi i livelli.
 - Verifica: i test di modello coprono carica, velocità, azzeramento e persistenza nel salto; due test di level design dimostrano che ogni fossato è superabile **solo** in scatto ma entro la sua portata e che c'è pista sufficiente per caricarlo; una simulazione completa prova che il livello 2 è finibile senza cadute.
 
+## ADR-030 — Ogni livello porta le proprie chiavi di testo
+
+- Stato: **Accettata**
+- Data: 3 agosto 2026
+- Contesto: `renderLevel()` leggeva `core.message.level.heading`, `.intro`, `.assisted` e `.continue` per **ogni** `LevelNode`. `core.message.level2.heading` e `core.message.level2.intro` esistevano nel catalogo ma non venivano mai letti, quindi nel percorso assistito (movimento ridotto, dove il livello arcade non parte) il Livello 2 si presentava come «Livello 1 — I campi di Montichiari». Un terzo livello avrebbe ereditato lo stesso difetto.
+- Decisione: `LevelNode` dichiara `headingKey` e `introKey`. Il renderer non conosce più il testo di nessun livello: lo legge dal nodo. Restano condivise `core.message.level.assisted`, `.continue` e `.skip`, perché descrivono il **meccanismo** («puoi proseguire subito con lo stesso esito narrativo») e non il livello.
+  - `nodeMessageKeys()` include le due chiavi, quindi una chiave mancante è un errore di build come per ogni altro testo di nodo.
+  - Il testo di condivisione del punteggio, che era una stringa italiana scritta dentro `render-game.ts` e diceva «nel Livello 1», passa a `core.message.ui.score.share-text` con segnaposto. Il punteggio è il totale della partita (ADR-029), quindi non nomina alcun livello.
+  - L'interpolazione vive nel resolver dei messaggi (`resolveItalianMessage(key, values?)` più `formatMessage`), non nel layer DOM: `platform` non acquisisce una dipendenza verso `content`, che la direzione delle dipendenze di `ARCHITECTURE.md` non prevede. Un segnaposto sconosciuto resta visibile, così un errore di catalogo si nota.
+- Perché: la regola «tutto il testo visibile usa chiavi di messaggio» era rispettata nella forma ma non nella sostanza, perché il renderer decideva _quale_ chiave usare. Un livello è un contenuto e porta il proprio testo.
+- Conseguenza: aggiungere un livello richiede due chiavi in più nel nodo e non tocca il renderer. Un test di contenuto dimostra che titoli e introduzioni dei livelli sono distinti fra loro, e un test end-to-end percorre il percorso assistito fino al Livello 2 verificando che mostri il proprio titolo.
+
+## ADR-031 — Pulsante del superpotere tenuto premuto, dal Livello 3
+
+- Stato: **Accettata**
+- Data: 3 agosto 2026
+- Sostituisce: **soltanto** la clausola «nessun quarto pulsante» di ADR-029. Il resto di ADR-029 resta valido, e per il Livello 2 resta valido integralmente: lì lo scatto si carica ancora tenendo premuta una direzione e non compare alcun pulsante nuovo.
+- Contesto: ADR-023 prevede quattro superpoteri per ruolo, di cui solo lo scatto era implementato. Con tre soli input il completamento richiedeva gesti invisibili — «stai fermo N ms per annusare» — che nessuno scopre senza un tutorial e che non hanno alcun nome accessibile. ADR-029 aveva escluso un quarto pulsante per motivi di spazio: la misura sul CSS attuale mostra che a 320 px il contenitore lascia 296 px, e `62 + 8 + 62 + 12 + 56 + 8 + 88 = 296` tiene ogni bersaglio a 44 px o più. Lo spazio quindi c'è; il costo reale è che le due direzioni scendono da 82 a 62 px.
+- Decisione: un quarto pulsante **★**, **tenuto premuto**, è l'attivazione unica di tutti e quattro i poteri, dal Livello 3 in avanti.
+  - La regola sostanziale di ADR-029 resta rispettata alla lettera: si attiva tenendo premuto, funziona identico su tastiera e touch e non richiede tempi di reazione né combinazioni.
+  - Tastiera: `Shift` (entrambi) e `K`. Su `Shift` non si chiama `preventDefault()`, così `Shift+Tab` continua a navigare a ritroso.
+  - Il pulsante esiste soltanto dove il livello concede un potere, quindi il Livello 1 e il Livello 2 restano identici a vista e i loro test non cambiano.
+  - Il nome accessibile è quello del potere del ruolo («Usa il fiuto», «Alza il drone»): un gesto temporale non avrebbe avuto alcun nome per uno screen reader.
+- Perché un pulsante e non un gesto: la scopribilità e l'accessibilità valgono più del 25% di larghezza perso dalle direzioni. Un potere che parte perché ti sei fermato a leggere non è una scelta del giocatore, ed è l'opposto dell'intento di ADR-023.
+- Modello: un solo meccanismo `power?: PowerConfig` opzionale nella configurazione del livello, come già `sprint?`. È una union discriminata su `sprint | scent | call | drone`, quindi i quattro poteri condividono carica, attivazione, riscontro e test invece di avere tre rilevatori di gesto diversi. `powerHeld` è opzionale in `PlatformerInput`, così nessun test esistente cambia.
+- Riscontro su tre canali per ogni potere: canvas (scie per lo scatto, anello e indicatori per il fiuto, anello per il richiamo, rotore e barra del carburante per il drone), effetto sonoro dedicato (`power`, più `blocked` per l'urto) e riga narrativa propria. Il pulsante si illumina solo quando il potere è **ingaggiato**, non mentre carica.
+- Conseguenza: `MiniGameRequest` acquisisce `role`, perché il gating per ruolo avviene nel registro; il modello puro continua a vedere un solo potere e resta testabile senza ruolo.
+
+## ADR-032 — Livello 3 «Varano superstar», ostacoli non letali e poteri concessi dal livello
+
+- Stato: **Accettata**
+- Data: 3 agosto 2026
+- Attua: i tre superpoteri di ADR-023 non ancora implementati e apre il terzo capitolo della campagna.
+- Decisione sull'ambientazione: il Livello 3 è l'**Atto III del trattamento**, il circo mediatico fuori dalle mura del Castello Bonoris il giorno dell'apertura al pubblico. Non è il castello: l'Atto V resta il finale e verrà costruito dopo.
+  - È l'unica ambientazione del trattamento che offre ostacoli **naturalmente** non letali — furgoni, treppiedi, cavi, curiosi, un drone da riprese — senza dover inventare danno o game over.
+  - Prepara il finale: il poster che incorona il Varano «Conte dei Sei Colli» è la prima istruzione chiara che riceve, quindi il capitolo si chiude con il Varano che **decide** di salire.
+  - I tre indizi sono il pass stampa, il microfono lasciato aperto e il poster con la corona: convergono sul mittente della foto delle 2:41, che è in prima fila davanti alle telecamere.
+  - L'alternativa «Tre animali e nessuna certezza» (Atto II) è stata scartata per questo livello: è un puzzle di abbinamento e in un platformer diventerebbe un quiz travestito da livello. Resta disponibile per un interludio o per il pack `origins`.
+  - Nessuna emittente, testata o troupe reale: i soggetti del circo mediatico sono inventati e non riconoscibili. Montichiari e il Castello Bonoris restano luoghi reali citati come tali (ADR-022); l'apertura al pubblico messa in scena è un evento inventato.
+  - Un secondo manifesto è dichiaratamente generato da un computer, con sei dita e due code, ed è una battuta di una riga. **Non** stabilisce nulla sull'origine del Varano: l'ipotesi che una AI abbia generato l'animale cambierebbe la premessa del mistero e richiede una decisione separata del proprietario.
+- Decisione sugli ostacoli non letali: tre tipi, nessuno dei quali infligge danno, sottrae vite o produce un game over. L'unico costo è il tempo, che il punteggio già pesa.
+  - `onlooker` — ti respinge e ti azzera la carica; lo attraversa lo scatto, lo apre in modo permanente il fiuto, lo sposta temporaneamente il richiamo.
+  - `drone` — blocco solido: ci sbatti e ti fermi. Nessun potere di velocità lo apre; lo posa il richiamo, lo si sorvola col drone o dalle piattaforme.
+  - `cables` — zona d'attrito: dimezza la velocità e rende impossibile lo scatto. Non blocca mai, si aggira dai treppiedi. È il set piece in cui il Varano **non** è il più forte.
+- Decisione sulla concessione dei poteri (modello **ibrido**): la configurazione del livello dichiara quali poteri concede e se sono legati al ruolo. Il Livello 2 continua a concedere lo scatto a **tutti** i ruoli, quindi il suo bilanciamento, i suoi test e ciò che è già pubblicato non cambiano. Il Livello 3 concede i quattro poteri gated per ruolo.
+- Vincolo di progettazione, ed è il cuore di questa ADR: **il Livello 3 è finibile da ogni ruolo e anche senza usare alcun potere**. Ogni fossato sta entro i 117 px di portata di un salto normale e ogni ostacolo bloccante ha una piattaforma che lo scavalca. I poteri sono scorciatoie e carattere, non chiavi obbligatorie. Questo lo distingue dal Livello 2, dove due fossati sono superabili solo in scatto.
+- Verifica: oltre ai test di meccanica per ogni potere, la suite dimostra che ogni fossato è entro la portata base, che ogni indizio è raggiungibile da un appoggio sottostante, che ogni ostacolo bloccante è coperto da una piattaforma, e completa il livello con **cinque simulazioni**: una per ciascuno dei quattro ruoli con il proprio potere e una che non tocca mai il pulsante, tutte senza cadute.
+- Conseguenza: il finale aperto si sposta in coda al nuovo capitolo e il suo testo riflette l'apertura del castello già avvenuta; il teaser promuove il Castello Bonoris a Livello 4.
+
+## ADR-033 — Fondali come dati, uno per livello
+
+- Stato: **Accettata**
+- Data: 4 agosto 2026
+- Contesto: i tre livelli condividevano lo stesso fondale, quindi il gioco «sembrava tutto uguale». Il problema non era però soltanto estetico: il Livello 3 è il **giorno** dell'apertura al pubblico del Castello, ma il canvas disegnava cielo notturno, luna e stelle — gli stessi delle 2:39. Il fondale condiviso al Livello 3 contraddiceva la narrativa del Livello 3.
+- Decisione: il parallasse già presente in `drawBackground()` (tre bande di cielo, stelle a 0,12×, luna a 0,05×, strato lontano a 0,3×, strato vicino a 0,6×) resta invariato come **meccanismo**; diventa dato il suo **contenuto**, con un `backdrop` obbligatorio per livello:
+  - `sky`: le tre bande dall'alto all'orizzonte;
+  - `night`: stelle e luna, oppure sole e nuvole;
+  - `far`: `hills | rooftops | castle | none`;
+  - `near`: `corn | hedges | crowd | none`.
+- Vive in `PlatformerViewConfig` (presentazione) e **non** in `PlatformerConfig`: la fisica pura non deve sapere di colori.
+- Assegnazione: Livello 1 notte con colline e mais, **con i valori identici a quelli pubblicati**; Livello 2 notte appena più chiara con tetti dalle finestre accese e siepi; Livello 3 **giorno**, con il Castello in lontananza e la folla in controluce.
+- Perché il castello sullo strato lontano: mostra al giocatore dove sta andando, e il traguardo `walls` in primo piano chiude il percorso visivo.
+- Aggiungo soltanto le varianti che servono adesso; quelle da interno arriveranno con il livello che le userà davvero.
+- Verifica: un test blocca il fondale del Livello 1 contro le costanti pubblicate, uno vieta che due livelli abbiano lo stesso fondale, uno lega l'ora del giorno alla storia. Uno smoke test monta **ogni** livello registrato e ne disegna il fondale, così una variante mai esercitata non resta un crash in attesa del livello che la userà: proprio quel test ha rivelato che il canvas stub non implementava `stroke()` né `globalAlpha`, usati dall'anello del fiuto e del richiamo.
+- Conseguenza: `registeredLevels` espone i livelli con la loro configurazione, così le invarianti si affermano su tutti i livelli invece che uno per uno. Il limite noto registrato in `ASSETS.md` sul fondale condiviso decade.
+
+## ADR-034 — Contenuti per capitolo, concatenamento dichiarativo e scheda di briefing
+
+- Stato: **Accettata**
+- Data: 4 agosto 2026
+- Contesto: il proprietario vuole arrivare ad almeno dieci livelli. Aggiungere il terzo ha mostrato dove il progetto non scalava: `m1.ts` teneva catalogo e capitoli in un solo file, e per attaccare il capitolo 2 ho dovuto **modificare il capitolo 1** e **spostare il finale**. Ripetuta otto volte, quella manovra tocca ogni volta contenuti già collaudati.
+- Decisione, in quattro parti.
+  1. **Un capitolo, una cartella.** `m1.ts` sparisce — era il nome di una milestone, non di un contenuto — e i contenuti prendono la forma che `ARCHITECTURE.md` ed `EXPANSIONS.md` già descrivevano: `chapters/cNN-slug/{chapter,messages}.ts`, più `ui-messages.ts` per il testo dell'interfaccia, che non appartiene ad alcun capitolo. Il catalogo italiano si compone dai `messages` dei bundle, che prima erano dati morti.
+  2. **Concatenamento dichiarativo.** Un capitolo non nomina il proprio successore: punta al segnaposto `nextChapterNodeId`, e `chainChapters()` lo risolve nell'ingresso del capitolo seguente. Un segnaposto nell'ultimo capitolo è un errore di build, non un collegamento rotto.
+  3. **Il finale è un capitolo suo**, sempre in coda. Aggiungere un livello è quindi una voce nell'array del pack: nessun capitolo esistente viene aperto e nulla deve spostare il finale.
+  4. **Scheda di briefing.** Ogni livello si apre con «Dove eravamo», «Che cosa devi fare» e il superpotere del ruolo, con «Gioca» e «Salta il livello». `LevelNode` acquisisce `recapKey`.
+- Sul briefing e ADR-021: la scheda **non** compare davanti al primo livello di una partita nuova, dove i zero passaggi prima di giocare restano la regola. La decisione vive nel controller e non tocca il reducer: è presentazione, non dominio. La scheda **unifica** inoltre il percorso assistito, che aveva una propria card separata; lì mostra «Continua la storia» al posto di «Gioca».
+- `defineLevel()` raccoglie le costanti fisiche condivise — velocità, gravità, salto, coyote, dimensioni — e le etichette dei controlli. Un livello dichiara solo ciò che lo distingue, e un test verifica che tutti i livelli conservino il feel pubblicato.
+- Migrazione: spostare il finale ha rinominato `core.node.superstar.ending` in `core.node.finale.open-mystery`. Rinominare un ID richiede una migrazione pura e testata (`EXPANSIONS.md`), quindi `decodeSave` rimappa i nodi rinominati invece di lasciare una partita salvata sulla schermata «questa parte non è disponibile».
+- Difetto di layout trovato durante la verifica: `.app-root` aveva soltanto `min-block-size: 100dvh`, quindi una scheda lunga faceva crescere il documento e scorrere l'intera pagina invece di scorrere dentro di sé — su 320 px il pulsante «Gioca» finiva sotto la piega. Ora l'altezza è esatta e la barra delle azioni è sticky.
+- Conseguenza: aggiungere un livello significa una cartella di capitolo, una voce nell'array, una configurazione con `defineLevel()` e una voce in `levelConfigs`. Nessun file già scritto viene modificato.
+
+## ADR-035 — Il suolo si attraversa dall'alto, come una piattaforma
+
+- Stato: **Accettata**
+- Data: 4 agosto 2026
+- Contesto: giocando il Livello 3 il proprietario ha notato che cadendo in un fossato il gioco proseguiva. Non era voluto. `landingPlatform()` richiedeva già di attraversare la superficie **dall'alto** (`previousBottom <= platform.y && nextBottom >= platform.y`), ma il suolo si accontentava di `proposedBottom >= groundTop`. Chi era già sceso sotto il livello del pavimento veniva quindi risucchiato sopra il segmento opposto appena lo sfiorava di lato.
+- Portata del difetto: era presente **da sempre** e riguardava tutti i livelli. Ogni fossato sotto i ~100 px era attraversabile camminando, senza saltare: 50-65 px nel Livello 1, 90 e 95 px nel Livello 2, tutti e tre nel Livello 3. Restavano onesti soltanto i due fossati larghi del Livello 2 (140 e 150 px), gli unici in cui lo scatto era davvero necessario — ecco perché il difetto non era emerso prima.
+- Decisione: il suolo usa la stessa regola delle piattaforme. Un fossato è un fossato: camminare oltre il bordo è una caduta, e la caduta riporta alla bandierina senza perdere gli indizi già raccolti, come previsto da ADR-018.
+- Conseguenza sui livelli pubblicati: i fossati del Livello 1 e del Livello 2 ora richiedono un salto. È un aumento di difficoltà su contenuto già online, ed è l'unico modo di renderli coerenti con ciò che mostrano. «Salta il livello» resta su ogni livello e il percorso assistito non cambia.
+- Verifica: cinque test scritti **prima** del fix lo riproducevano su tutti e tre i livelli. Restano come regressione, insieme a un'invariante nuova che vale per ogni livello presente e futuro: la finestra utile per saltare un fossato — dal primo istante in cui il salto arriva al bordo opposto fino all'ultimo che il coyote time concede — deve superare i 250 ms. Oggi va da 345 a 708 ms, quindi nessun salto chiede precisione al frame.
+- Nota di metodo: la prima verifica nel browser dopo il fix falliva, e non per colpa del livello. Lo script di guida rilasciava il salto dopo 300 ms, il jump-cut riduceva l'arco da 117 a 108 px e il Varano atterrava tre pixel prima del bordo. Il livello resta finibile da ogni ruolo e anche senza usare alcun potere.
+
 ## ADR-028 — Documenti di trama fuori dal repository pubblico
 
 - Stato: **Accettata**

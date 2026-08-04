@@ -4,6 +4,7 @@ import { fireEvent, getByRole } from "@testing-library/dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createInitialState } from "../../src/core/game-state";
+import type { Role } from "../../src/core/model";
 import {
   platformerMiniGame,
   type PlatformerViewConfig,
@@ -13,7 +14,7 @@ import type {
   LevelOutcome,
   MiniGameRequest,
 } from "../../src/levels/contract";
-import { campiLevelConfig } from "../../src/levels/registry";
+import { campiLevelConfig, registeredLevels } from "../../src/levels/registry";
 import { stubCanvasContext } from "./helpers/canvas-stub";
 
 type FrameCallback = (time: number) => void;
@@ -65,11 +66,13 @@ function createAudio(): LevelAudioPort {
 
 function createRequest(
   overrides: Partial<PlatformerViewConfig> = {},
+  role: Role = "varano",
 ): MiniGameRequest<PlatformerViewConfig> {
   return {
     levelId: "core.level.campi-di-montichiari",
     configId: "core.level-config.campi-1",
     config: { ...campiLevelConfig, ...overrides },
+    role,
     settings: createInitialState().settings,
     message: (key) => key,
     audio: createAudio(),
@@ -124,6 +127,151 @@ describe("platformer canvas adapter", () => {
 
     handle.destroy();
     expect(request.audio.stopMusic).toHaveBeenCalled();
+  });
+
+  it("renders every registered level's backdrop without failing", () => {
+    // Each level uses different parallax layers (ADR-033); a variant nobody
+    // exercises is a crash waiting for the level that uses it.
+    for (const level of registeredLevels) {
+      const harness = installFrameHarness();
+      const host = document.createElement("div");
+      document.body.append(host);
+      const handle = platformerMiniGame.mount(host, {
+        levelId: level.levelId,
+        configId: level.configId,
+        config: level.config,
+        role: "varano",
+        settings: createInitialState().settings,
+        message: (key) => key,
+        audio: createAudio(),
+        onComplete: vi.fn(),
+        onExit: vi.fn(),
+      });
+      harness.run(4);
+      expect(host.querySelector("canvas"), level.levelId).toBeInstanceOf(
+        HTMLCanvasElement,
+      );
+      handle.destroy();
+      host.remove();
+    }
+  });
+
+  it("draws the scent and call rings without a real canvas", () => {
+    // These powers stroke arcs, a path no other test reaches.
+    for (const kind of ["scent", "call"] as const) {
+      const harness = installFrameHarness();
+      const host = document.createElement("div");
+      document.body.append(host);
+      const handle = platformerMiniGame.mount(
+        host,
+        createRequest(
+          {
+            power: { kind, chargeSeconds: 0.05, radius: 50 },
+            powersByRole: {
+              hunter: {
+                power: { kind, chargeSeconds: 0.05, radius: 50 },
+                labelKey: "power.label",
+                narrativeKey: "power.narrative",
+              },
+            },
+          },
+          "hunter",
+        ),
+      );
+      harness.run(2);
+      fireEvent.keyDown(window, { key: "Shift" });
+      harness.run(30);
+      expect(host.dataset.powerActive, kind).toBe("true");
+      fireEvent.keyUp(window, { key: "Shift" });
+      handle.destroy();
+      host.remove();
+    }
+  });
+
+  it("shows no power button on a level without a superpower", () => {
+    installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    // Level 1 and level 2 keep their three controls and their wider targets.
+    const handle = platformerMiniGame.mount(host, createRequest());
+
+    expect(host.querySelector(".arcade-control--power")).toBeNull();
+    expect(host.dataset.powerActive).toBeUndefined();
+    handle.destroy();
+  });
+
+  it("names the power button after the role's own superpower", () => {
+    installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const handle = platformerMiniGame.mount(
+      host,
+      createRequest(
+        {
+          powersByRole: {
+            hunter: {
+              power: { kind: "scent", chargeSeconds: 0.4, radius: 52 },
+              labelKey: "power.hunter.label",
+              narrativeKey: "power.hunter.narrative",
+            },
+          },
+        },
+        "hunter",
+      ),
+    );
+
+    // A held gesture would have had no accessible name at all (ADR-031).
+    expect(
+      getByRole(host, "button", { name: "power.hunter.label" }),
+    ).toBeInstanceOf(HTMLButtonElement);
+    handle.destroy();
+  });
+
+  it("engages the power from the keyboard and narrates it", () => {
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const request = createRequest(
+      {
+        powersByRole: {
+          varano: {
+            power: {
+              kind: "sprint",
+              chargeSeconds: 0.2,
+              maxSpeed: 235,
+              acceleration: 620,
+            },
+            labelKey: "power.varano.label",
+            narrativeKey: "power.varano.narrative",
+          },
+        },
+        power: {
+          kind: "sprint",
+          chargeSeconds: 0.2,
+          maxSpeed: 235,
+          acceleration: 620,
+        },
+      },
+      "varano",
+    );
+    const handle = platformerMiniGame.mount(host, request);
+
+    harness.run(2);
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    fireEvent.keyDown(window, { key: "Shift" });
+    harness.run(40);
+
+    expect(host.dataset.powerActive).toBe("true");
+    expect(request.audio.playEffect).toHaveBeenCalledWith("power");
+    expect(host.querySelector(".arcade-narrative")?.textContent).toBe(
+      "power.varano.narrative",
+    );
+
+    // Releasing discharges it, and Shift keeps working for Shift+Tab.
+    fireEvent.keyUp(window, { key: "Shift" });
+    harness.run(4);
+    expect(host.dataset.powerActive).toBe("false");
+    handle.destroy();
   });
 
   it("moves with the keyboard, starts music on input and plays the jump effect", () => {

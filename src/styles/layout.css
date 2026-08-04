@@ -7,9 +7,15 @@
   white-space: nowrap;
 }
 
+/*
+ * Exactly the viewport, not merely at least: with only a minimum, a long
+ * overlay card grew the document and scrolled the whole page instead of
+ * scrolling inside itself, pushing its own buttons out of reach.
+ */
 .app-root {
   display: flex;
   flex-direction: column;
+  block-size: 100dvh;
   min-block-size: 100dvh;
 }
 
@@ -152,6 +158,13 @@
   gap: var(--space-2);
 }
 
+/* Actions stay together under the right thumb, power included. */
+.arcade-action-cluster {
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--space-1);
+}
+
 .arcade-control {
   min-block-size: 4rem;
   padding-inline: 0.5rem;
@@ -178,6 +191,78 @@
 .arcade-control--jump {
   flex: 0 0 auto;
   min-inline-size: 6.5rem;
+}
+
+/* The superpower button (ADR-031): held, never tapped. */
+.arcade-control--power {
+  flex: 0 0 auto;
+  min-inline-size: 3.5rem;
+  border-color: var(--color-accent);
+}
+
+/* Lit while the power is actually engaged, not merely while charging. */
+.arcade-host[data-power-active="true"] .arcade-control--power,
+.arcade-control--power:active {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+/*
+ * With four controls the row has to fit 320 CSS pixels: the host leaves 296px,
+ * and 62 + 8 + 62 + 12 + 56 + 8 + 88 = 296 keeps every target at or above the
+ * 44px WCAG size. Below this width the gaps tighten instead of the buttons.
+ */
+@media (width <= 26rem) {
+  .arcade-controls:has(.arcade-control--power) {
+    gap: var(--space-2);
+  }
+
+  .arcade-controls:has(.arcade-control--power) .arcade-move-cluster {
+    gap: var(--space-1);
+  }
+
+  .arcade-controls:has(.arcade-control--power) .arcade-control--jump {
+    min-inline-size: 5.5rem;
+  }
+}
+
+/* The briefing card: recap, objective and superpower before a level. */
+.briefing__section {
+  margin-block: var(--space-2);
+}
+
+.briefing__label {
+  margin: 0 0 0.25rem;
+  color: var(--color-accent);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.briefing__section p {
+  margin: 0;
+}
+
+/*
+ * Sticky, because a recap can run long on a 320px screen and the primary
+ * action must never end up below the fold.
+ */
+.briefing__actions {
+  position: sticky;
+  z-index: 1;
+  inset-block-end: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-start: var(--space-3);
+  padding-block: var(--space-2);
+  /* Opaque, matching the card, so the recap does not show through. */
+  background: #0d1713;
+  box-shadow: 0 -0.6rem 0.6rem #0d1713;
+}
+
+.briefing__actions button:first-child {
+  flex: 1 1 8rem;
 }
 
 .arcade-instructions {
@@ -269,6 +354,9 @@
 .overlay-card {
   inline-size: min(100%, 36rem);
   max-block-size: 100%;
+  /* A flex item needs this to shrink below its content and scroll itself;
+     without it a long card overflows the viewport instead (ADR-034). */
+  min-block-size: 0;
   margin: auto auto 0;
   padding: var(--space-3) var(--space-3)
     calc(env(safe-area-inset-bottom, 0px) + var(--space-3));

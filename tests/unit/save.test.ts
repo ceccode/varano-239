@@ -6,6 +6,49 @@ import { createInitialState, type GameState } from "../../src/core/game-state";
 import { decodeSave, encodeSave, saveVersion } from "../../src/core/save";
 import { LocalSave, localSaveKey } from "../../src/platform/storage/local-save";
 
+describe("renamed node migration", () => {
+  it("moves a run saved on the old ending node to its new home", () => {
+    // The ending moved into its own finale chapter (ADR-034). Renaming an ID
+    // needs a pure migration, or the run lands on «non disponibile».
+    const old = playableState();
+    const saved = {
+      version: saveVersion,
+      state: {
+        ...old,
+        phase: "ending" as const,
+        run: {
+          ...old.run,
+          currentNodeId: "core.node.superstar.ending",
+          checkpointNodeId: "core.node.superstar.ending",
+          coreCheckpointNodeId: "core.node.superstar.ending",
+          visitedNodeIds: [
+            "core.node.prologue.campi",
+            "core.node.superstar.ending",
+          ],
+        },
+      },
+    };
+
+    const decoded = decodeSave(saved);
+    expect(decoded?.run?.currentNodeId).toBe("core.node.finale.open-mystery");
+    expect(decoded?.run?.checkpointNodeId).toBe(
+      "core.node.finale.open-mystery",
+    );
+    expect(decoded?.run?.coreCheckpointNodeId).toBe(
+      "core.node.finale.open-mystery",
+    );
+    expect(decoded?.run?.visitedNodeIds).toEqual([
+      "core.node.prologue.campi",
+      "core.node.finale.open-mystery",
+    ]);
+  });
+
+  it("leaves every other node ID untouched", () => {
+    const decoded = decodeSave(encodeSave(playableState()));
+    expect(decoded?.run?.currentNodeId).toBe("core.node.prologue.field");
+  });
+});
+
 function playableState(): GameState {
   return {
     ...createInitialState(),
