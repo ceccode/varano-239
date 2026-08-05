@@ -75,6 +75,47 @@ export interface PlatformerObstacle {
   readonly height: number;
 }
 
+/**
+ * A vehicle shuttling back and forth on the ground (ADR-037). Touching it is
+ * the ADR-035 fall in another costume: back to the flag, clues intact — never
+ * damage, never a life lost, never a game over. It must always be jumpable.
+ */
+export interface PatrolCar {
+  readonly id: string;
+  /** Leftmost and rightmost x the car's left edge reaches. */
+  readonly minX: number;
+  readonly maxX: number;
+  readonly width: number;
+  readonly height: number;
+  readonly speed: number;
+}
+
+/**
+ * Where a car is at a given moment: a triangle wave over elapsed time, so the
+ * motion is pure and deterministic — no clock, no randomness (AGENTS.md).
+ */
+export function carPositionAt(car: PatrolCar, elapsedSeconds: number): number {
+  const range = car.maxX - car.minX;
+  if (range <= 0) {
+    return car.minX;
+  }
+  const phase = (elapsedSeconds * car.speed) % (2 * range);
+  return car.minX + (phase <= range ? phase : 2 * range - phase);
+}
+
+/** Which way the car is facing, for the renderer. */
+export function carDirectionAt(
+  car: PatrolCar,
+  elapsedSeconds: number,
+): "left" | "right" {
+  const range = car.maxX - car.minX;
+  if (range <= 0) {
+    return "right";
+  }
+  const phase = (elapsedSeconds * car.speed) % (2 * range);
+  return phase <= range ? "right" : "left";
+}
+
 export interface PlatformerConfig {
   readonly worldWidth: number;
   readonly worldHeight: number;
@@ -104,6 +145,8 @@ export interface PlatformerConfig {
   readonly power?: PowerConfig;
   /** Omitted on levels without obstacles. */
   readonly obstacles?: readonly PlatformerObstacle[];
+  /** Omitted on levels without patrol cars (ADR-037). */
+  readonly cars?: readonly PatrolCar[];
 }
 
 export interface PlatformerInput {
@@ -156,6 +199,8 @@ export interface PlatformerEvents {
   readonly openedObstacleIds: readonly string[];
   /** Bumped into a solid obstacle: worth a sound, never a penalty. */
   readonly blocked: boolean;
+  /** The respawn was a patrol car, so the narrator can tell that story. */
+  readonly carHit: boolean;
 }
 
 export interface PlatformerStepResult {
@@ -181,6 +226,7 @@ const noEvents: PlatformerEvents = {
   powerStarted: false,
   openedObstacleIds: [],
   blocked: false,
+  carHit: false,
 };
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -600,31 +646,51 @@ export function stepPlatformer(
     calmedObstacleIds,
   };
 
+  // The soft respawn of ADR-018/035: back to the flag, clues and everything
+  // the scent found intact; sprint and power have to be charged again.
+  const respawnedState = (current: PlatformerState): PlatformerState => ({
+    ...current,
+    x: respawnX(current, config),
+    y: config.floorY - config.playerHeight,
+    velocityX: 0,
+    velocityY: 0,
+    grounded: true,
+    coyoteRemaining: config.coyoteSeconds,
+    jumpBufferRemaining: 0,
+    jumpCutAvailable: false,
+    respawns: current.respawns + 1,
+    sprintCharge: 0,
+    sprinting: false,
+    powerCharge: 0,
+    powerActive: false,
+    droneFuel: initialDroneFuel(config),
+    calmedObstacleIds: [],
+  });
+
   let respawned = false;
   if (next.y > config.worldHeight + fallRespawnMargin) {
-    const safeX = respawnX(next, config);
-    next = {
-      ...next,
-      x: safeX,
-      y: config.floorY - config.playerHeight,
-      velocityX: 0,
-      velocityY: 0,
-      grounded: true,
-      coyoteRemaining: config.coyoteSeconds,
-      jumpBufferRemaining: 0,
-      jumpCutAvailable: false,
-      respawns: next.respawns + 1,
-      // A fall costs the sprint: the run has to be built up again.
-      sprintCharge: 0,
-      sprinting: false,
-      // …and the power, which has to be charged again. What the scent already
-      // found stays found, like the clues already collected.
-      powerCharge: 0,
-      powerActive: false,
-      droneFuel: initialDroneFuel(config),
-      calmedObstacleIds: [],
-    };
+    next = respawnedState(next);
     respawned = true;
+  }
+
+  // A patrol car is the same fall in another costume (ADR-037): touching it
+  // sends the player back to the flag. Jumping clears it — the cars are lower
+  // than a jump by design, and the tests hold that line.
+  let carHit = false;
+  if (!respawned) {
+    const hit = (config.cars ?? []).some((car) => {
+      const carX = carPositionAt(car, next.elapsedSeconds);
+      const carY = config.floorY - car.height;
+      return (
+        overlapsHorizontally(next.x, config.playerWidth, carX, car.width) &&
+        overlapsVertically(next.y, config.playerHeight, carY, car.height)
+      );
+    });
+    if (hit) {
+      next = respawnedState(next);
+      respawned = true;
+      carHit = true;
+    }
   }
 
   const collectedNow = collectPickups(next, config);
@@ -659,6 +725,7 @@ export function stepPlatformer(
       powerStarted: powerStarted && !respawned,
       openedObstacleIds: newlyOpenedIds,
       blocked: contact.blocked,
+      carHit,
     },
   };
 }

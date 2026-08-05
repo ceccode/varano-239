@@ -2,6 +2,8 @@ import type { MessageKey, Role } from "../../core/model";
 import type { LevelOutcome, MiniGameHandle, MiniGamePort } from "../contract";
 import {
   cameraX,
+  carDirectionAt,
+  carPositionAt,
   createPlatformerState,
   stepPlatformer,
   type PlatformerConfig,
@@ -47,6 +49,8 @@ export interface PlatformerViewConfig extends PlatformerConfig {
   readonly narrativePickupKeys: Readonly<Record<string, MessageKey>>;
   readonly narrativeCheckpointKey: MessageKey;
   readonly narrativeRespawnKey: MessageKey;
+  /** Only on levels with patrol cars: what the narrator says on a hit. */
+  readonly narrativeCarHitKey?: MessageKey;
   readonly narrativeFinishKey: MessageKey;
   /** Only on levels that grant the sprint. */
   readonly narrativeSprintKey?: MessageKey;
@@ -54,6 +58,12 @@ export interface PlatformerViewConfig extends PlatformerConfig {
   readonly powersByRole?: Readonly<Partial<Record<Role, LevelPowerEntry>>>;
   /** What the finish line looks like; reeds when omitted. */
   readonly finishKind?: "reeds" | "walls";
+  /**
+   * What the gaps between ground segments look like; plain pits when omitted.
+   * Purely visual: falling into water is the same fall as ADR-035, respawning
+   * at the flag with every collected clue intact.
+   */
+  readonly gapKind?: "pit" | "water";
   readonly backdrop: BackdropConfig;
 }
 
@@ -132,6 +142,14 @@ const palette = {
   crowdFarHead: "#3d4a5c",
   castleFar: "#2a3340",
   castleFarShade: "#1b2129",
+  water: "#1d4e63",
+  waterLight: "#3a7d94",
+  waterGlint: "#9fd4e4",
+  carBody: "#c9463f",
+  carShade: "#8f2f2b",
+  carGlass: "#bfe0ef",
+  carWheel: "#1a1d24",
+  carHub: "#8b93a1",
 } as const;
 
 function createElement<K extends keyof HTMLElementTagNameMap>(
@@ -429,7 +447,12 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       }
       if (events.respawned) {
         request.audio.playEffect("respawn");
-        narrate(config.narrativeRespawnKey);
+        // A car hit tells its own joke; every other respawn tells the level's.
+        narrate(
+          events.carHit
+            ? (config.narrativeCarHitKey ?? config.narrativeRespawnKey)
+            : config.narrativeRespawnKey,
+        );
       }
       if (events.sprintStarted) {
         request.audio.playEffect("sprint");
@@ -694,6 +717,111 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       drawSky(time);
       drawFarLayer();
       drawNearLayer(time);
+    };
+
+    /**
+     * The gadget van (ADR-037): the one thing in the level that moves on its
+     * own, with an inflatable varano strapped to the dashboard as merchandise.
+     */
+    const drawCars = (time: number): void => {
+      for (const car of config.cars ?? []) {
+        const carX = Math.floor(carPositionAt(car, time) - camera);
+        if (carX > config.viewportWidth || carX + car.width < 0) {
+          continue;
+        }
+        const carY = config.floorY - car.height;
+        const facing = carDirectionAt(car, time);
+
+        context.save();
+        if (facing === "left") {
+          context.translate(carX + car.width / 2, 0);
+          context.scale(-1, 1);
+          context.translate(-(carX + car.width / 2), 0);
+        }
+
+        // Body, cabin and windshield, drawn facing right.
+        context.fillStyle = palette.carBody;
+        context.fillRect(carX, carY + 6, car.width, car.height - 10);
+        context.fillRect(carX + 4, carY + 1, car.width - 14, 6);
+        context.fillStyle = palette.carShade;
+        context.fillRect(carX, carY + car.height - 5, car.width, 1);
+        context.fillStyle = palette.carGlass;
+        context.fillRect(carX + car.width - 12, carY + 2, 7, 5);
+
+        // The inflatable varano on the dashboard: it bobs, because of course
+        // it does. Googly eye included.
+        const bob = Math.floor(Math.sin(time * 6) * 1.5);
+        context.fillStyle = palette.bodyGreen;
+        context.fillRect(carX + car.width - 11, carY - 5 + bob, 8, 6);
+        context.fillRect(carX + car.width - 4, carY - 3 + bob, 3, 3);
+        context.fillStyle = palette.eye;
+        context.fillRect(carX + car.width - 5, carY - 4 + bob, 1, 1);
+
+        // Wheels, spinning hubs and a puff of dust behind.
+        context.fillStyle = palette.carWheel;
+        context.fillRect(carX + 4, carY + car.height - 4, 5, 4);
+        context.fillRect(carX + car.width - 9, carY + car.height - 4, 5, 4);
+        context.fillStyle = palette.carHub;
+        const spin = Math.floor(time * 10) % 2;
+        context.fillRect(carX + 5 + spin, carY + car.height - 3, 2, 2);
+        context.fillRect(
+          carX + car.width - 8 + spin,
+          carY + car.height - 3,
+          2,
+          2,
+        );
+        context.fillStyle = palette.dust;
+        context.fillRect(carX - 3, carY + car.height - 3, 2, 1);
+        context.fillRect(carX - 6, carY + car.height - 2, 2, 1);
+
+        context.restore();
+      }
+    };
+
+    /** The moat: animated water in the gaps between ground segments. */
+    const drawWater = (time: number): void => {
+      if (config.gapKind !== "water") {
+        return;
+      }
+      const segments = [...config.groundSegments].sort((a, b) => a.x - b.x);
+      const surfaceY = config.floorY + 8;
+      for (let index = 0; index < segments.length - 1; index += 1) {
+        const current = segments[index];
+        const following = segments[index + 1];
+        if (current === undefined || following === undefined) {
+          continue;
+        }
+        const gapStart = current.x + current.width;
+        const startX = Math.floor(gapStart - camera);
+        const gapWidth = Math.ceil(following.x - gapStart);
+        if (startX > config.viewportWidth || startX + gapWidth < 0) {
+          continue;
+        }
+        context.fillStyle = palette.water;
+        context.fillRect(
+          startX,
+          surfaceY,
+          gapWidth,
+          config.viewportHeight - surfaceY,
+        );
+        // Two rows of drifting ripples plus the odd glint.
+        context.fillStyle = palette.waterLight;
+        for (let ripple = 0; ripple < gapWidth; ripple += 10) {
+          const sway = Math.sin(time * 2 + (gapStart + ripple) * 0.2) * 1.5;
+          context.fillRect(startX + ripple + Math.floor(sway), surfaceY, 6, 1);
+          context.fillRect(
+            startX + ((ripple + 5) % gapWidth),
+            surfaceY + 5 + Math.floor(-sway),
+            4,
+            1,
+          );
+        }
+        context.fillStyle = palette.waterGlint;
+        const glintX = Math.floor(
+          (time * 14 + gapStart) % Math.max(1, gapWidth - 3),
+        );
+        context.fillRect(startX + glintX, surfaceY + 1, 3, 1);
+      }
     };
 
     const drawGround = (): void => {
@@ -1105,9 +1233,11 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         drawReeds(time);
       }
       drawCheckpoints();
+      drawWater(time);
       drawGround();
       drawPlatforms();
       drawObstacles(time);
+      drawCars(time);
       drawPickups(time);
       drawParticles();
       drawPowerRing(time);

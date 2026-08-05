@@ -131,6 +131,44 @@ export const chatLevelConfig = defineLevel({
 });
 
 /**
+ * The four role superpowers (ADR-031). One tuning, shared by every level that
+ * grants them: a player who learned a power keeps exactly that power, and the
+ * copy belongs to the role, not to a level (ADR-036).
+ */
+export const roleSuperpowers = {
+  varano: {
+    power: {
+      kind: "sprint",
+      chargeSeconds: 0.4,
+      maxSpeed: 235,
+      acceleration: 620,
+    },
+    labelKey: "core.message.power.varano.label",
+    narrativeKey: "core.message.power.varano.narrative",
+  },
+  hunter: {
+    power: { kind: "scent", chargeSeconds: 0.4, radius: 52 },
+    labelKey: "core.message.power.hunter.label",
+    narrativeKey: "core.message.power.hunter.narrative",
+  },
+  guardian: {
+    power: { kind: "call", chargeSeconds: 0.4, radius: 46 },
+    labelKey: "core.message.power.guardian.label",
+    narrativeKey: "core.message.power.guardian.narrative",
+  },
+  mayor: {
+    power: {
+      kind: "drone",
+      chargeSeconds: 0.4,
+      hoverSeconds: 2.2,
+      liftSpeed: 62,
+    },
+    labelKey: "core.message.power.mayor.label",
+    narrativeKey: "core.message.power.mayor.narrative",
+  },
+} as const;
+
+/**
  * Level 3 gates one superpower per role (ADR-031, ADR-032). Unlike level 2 its
  * geometry never *requires* a power: every gap is within the 117 px reach of a
  * plain jump and every blocking obstacle has a platform route above it, so all
@@ -241,38 +279,103 @@ export const superstarLevelConfig = defineLevel({
   narrativeCheckpointKey: "core.message.level3.narrative.checkpoint",
   narrativeRespawnKey: "core.message.level3.narrative.respawn",
   narrativeFinishKey: "core.message.level3.narrative.finish",
-  powersByRole: {
-    varano: {
-      power: {
-        kind: "sprint",
-        chargeSeconds: 0.4,
-        maxSpeed: 235,
-        acceleration: 620,
-      },
-      labelKey: "core.message.level3.power.varano.label",
-      narrativeKey: "core.message.level3.power.varano.narrative",
+  powersByRole: roleSuperpowers,
+});
+
+/**
+ * Level 4, the castle park (ADR-036). Same guarantees as level 3 — every gap
+ * within a plain jump, a platform route above every blocking obstacle — with
+ * the moat as water: falling in is the ordinary ADR-035 fall, drawn wet.
+ */
+export const parcoLevelConfig = defineLevel({
+  worldWidth: 4000,
+  groundSegments: [
+    { x: 0, width: 560 },
+    { x: 645, width: 660 },
+    { x: 1390, width: 810 },
+    { x: 2288, width: 1712 },
+  ],
+  platforms: [
+    // Set piece 1: statues over the queue at the gates.
+    { x: 770, y: 118, width: 70 },
+    { x: 865, y: 118, width: 70 },
+    // Set piece 2: the pop-up bookshop crowd, crossed on the pergola tops.
+    { x: 1540, y: 116, width: 70 },
+    { x: 1630, y: 116, width: 70 },
+    // The service door ledge.
+    { x: 1900, y: 112, width: 80 },
+    // Set piece 3: the kiosk roof, over the low-flying drone. At y=110 it sits
+    // 44px above the floor, inside the 48.8px reach of a plain jump.
+    { x: 2560, y: 110, width: 120 },
+    // A viewpoint terrace before the keep.
+    { x: 3100, y: 118, width: 140 },
+  ],
+  obstacles: [
+    { id: "ressa-1", kind: "onlooker", x: 780, y: 128, width: 22, height: 26 },
+    { id: "ressa-2", kind: "onlooker", x: 880, y: 128, width: 22, height: 26 },
+    { id: "ressa-3", kind: "onlooker", x: 1560, y: 128, width: 22, height: 26 },
+    { id: "ressa-4", kind: "onlooker", x: 1650, y: 128, width: 22, height: 26 },
+    {
+      id: "drone-basso",
+      kind: "drone",
+      x: 2600,
+      y: 124,
+      width: 30,
+      height: 26,
     },
-    hunter: {
-      power: { kind: "scent", chargeSeconds: 0.4, radius: 52 },
-      labelKey: "core.message.level3.power.hunter.label",
-      narrativeKey: "core.message.level3.power.hunter.narrative",
+  ],
+  // The gadget van shuttles along the last stretch (ADR-037). Its patrol stays
+  // clear of the kiosk roof (ends at 2680) and passes under the terrace at
+  // 3100/y118, so there is always a place to stand and let it go by.
+  cars: [
+    {
+      id: "furgoncino-gadget",
+      minX: 2750,
+      maxX: 3324,
+      width: 36,
+      height: 20,
+      speed: 55,
     },
-    guardian: {
-      power: { kind: "call", chargeSeconds: 0.4, radius: 46 },
-      labelKey: "core.message.level3.power.guardian.label",
-      narrativeKey: "core.message.level3.power.guardian.narrative",
-    },
-    mayor: {
-      power: {
-        kind: "drone",
-        chargeSeconds: 0.4,
-        hoverSeconds: 2.2,
-        liftSpeed: 62,
-      },
-      labelKey: "core.message.level3.power.mayor.label",
-      narrativeKey: "core.message.level3.power.mayor.narrative",
-    },
+  ],
+  pickups: [
+    { id: "badge", x: 800, y: 86 },
+    { id: "porta", x: 1930, y: 78 },
+    { id: "squame", x: 2330, y: 122 },
+  ],
+  checkpoints: [
+    { id: "parco-checkpoint-1", x: 1420 },
+    { id: "parco-checkpoint-2", x: 2310 },
+  ],
+  finishX: 3880,
+  finishKind: "walls",
+  gapKind: "water",
+  // Late golden afternoon of opening day, the castle now looming.
+  backdrop: {
+    sky: ["#2e4a72", "#c4763f", "#e8b25c"],
+    night: false,
+    far: "castle",
+    near: "hedges",
   },
+  objectiveKey: "core.message.level4.objective",
+  controlsKey: "core.message.level4.controls",
+  statusKeys: [
+    "core.message.level4.status.0",
+    "core.message.level4.status.1",
+    "core.message.level4.status.2",
+    "core.message.level4.status.3",
+  ],
+  finishStatusKey: "core.message.level4.status.3",
+  narrativeStartKey: "core.message.level4.narrative.start",
+  narrativePickupKeys: {
+    badge: "core.message.level4.narrative.pickup.badge",
+    porta: "core.message.level4.narrative.pickup.porta",
+    squame: "core.message.level4.narrative.pickup.squame",
+  },
+  narrativeCheckpointKey: "core.message.level4.narrative.checkpoint",
+  narrativeRespawnKey: "core.message.level4.narrative.respawn",
+  narrativeCarHitKey: "core.message.level4.narrative.car",
+  narrativeFinishKey: "core.message.level4.narrative.finish",
+  powersByRole: roleSuperpowers,
 });
 
 function descriptorKeys(config: PlatformerViewConfig): readonly MessageKey[] {
@@ -292,6 +395,9 @@ function descriptorKeys(config: PlatformerViewConfig): readonly MessageKey[] {
     ...(config.narrativeSprintKey === undefined
       ? []
       : [config.narrativeSprintKey]),
+    ...(config.narrativeCarHitKey === undefined
+      ? []
+      : [config.narrativeCarHitKey]),
     // Every role's power carries its own button label and narrative line, so a
     // missing one is a build error like any other level text.
     ...Object.values(config.powersByRole ?? {}).flatMap((entry) => [
@@ -313,6 +419,10 @@ const levelConfigs = {
   "core.level.varano-superstar": {
     configId: "core.level-config.superstar-3",
     config: superstarLevelConfig,
+  },
+  "core.level.parco-del-castello": {
+    configId: "core.level-config.parco-4",
+    config: parcoLevelConfig,
   },
 } as const satisfies Readonly<
   Record<string, { configId: string; config: PlatformerViewConfig }>

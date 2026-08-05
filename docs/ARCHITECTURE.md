@@ -481,13 +481,14 @@ export interface LevelRegistration<Config extends object> {
 
 ### Livelli attuali
 
-Tre `LevelNode` condividono lo stesso adapter platformer e la stessa fisica pura:
+Quattro `LevelNode` condividono lo stesso adapter platformer e la stessa fisica pura:
 
 | Livello                    | `levelId`                         | Meccanica aggiunta                                              |
 | -------------------------- | --------------------------------- | --------------------------------------------------------------- |
 | 1 — I campi di Montichiari | `core.level.campi-di-montichiari` | corsa, salto, raccolta, traguardo                               |
 | 2 — Le chat di paese       | `core.level.chat-di-paese`        | `sprint?`, caricato tenendo una direzione (ADR-029)             |
 | 3 — Varano superstar       | `core.level.varano-superstar`     | `power?` per ruolo e `obstacles?` non letali (ADR-031, ADR-032) |
+| 4 — Il parco del Castello  | `core.level.parco-del-castello`   | `gapKind: "water"`, fossato d'acqua di solo rendering (ADR-036) |
 
 Ogni nodo porta le proprie `headingKey` e `introKey` (ADR-030). `power?` e `obstacles?` sono opzionali come `sprint?`, quindi un livello nuovo non tocca il bilanciamento di quelli esistenti.
 
