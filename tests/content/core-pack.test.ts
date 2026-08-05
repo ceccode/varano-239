@@ -38,7 +38,10 @@ function finishRun(state: GameState): GameState {
     // Chapter 1: level 2, dialogue.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
-    // Chapter 2: level 3, dialogue, ending.
+    // Chapter 2: level 3, dialogue.
+    { type: "MINIGAME_SKIPPED" },
+    { type: "DIALOGUE_ADVANCED" },
+    // Chapter 3: level 4, dialogue, ending.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
   ] as const;

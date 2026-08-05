@@ -265,7 +265,7 @@ describe("full-screen game controller", () => {
       resolveItalianMessage("core.message.level3.recap"),
     );
     expect(mount.textContent).toContain(
-      resolveItalianMessage("core.message.level3.power.varano.label"),
+      resolveItalianMessage("core.message.power.varano.label"),
     );
     clickMessage("core.message.level.play");
     expect(mount.textContent).toContain(
@@ -274,7 +274,7 @@ describe("full-screen game controller", () => {
     // The Varano's power button carries its own accessible name.
     expect(
       queryByRole(document.body, "button", {
-        name: resolveItalianMessage("core.message.level3.power.varano.label"),
+        name: resolveItalianMessage("core.message.power.varano.label"),
       }),
     ).not.toBeNull();
     clickMessage("core.message.level.skip");
@@ -283,6 +283,23 @@ describe("full-screen game controller", () => {
     );
     expect(document.body.textContent).toContain(
       resolveItalianMessage("core.message.dialogue3.twist"),
+    );
+    clickMessage("core.message.ui.continue");
+
+    // Chapter 3: the castle park (ADR-036). The briefing card carries its own
+    // skip, so the level can be skipped without playing it.
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.park.level",
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level4.recap"),
+    );
+    clickMessage("core.message.level.skip");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue4.varano"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue4.twist"),
     );
     clickMessage("core.message.ui.continue");
 
@@ -475,6 +492,8 @@ describe("full-screen game controller", () => {
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
       { type: "OPTION_CHOSEN", optionId: "core.option.prologue.protect" },
+      { type: "MINIGAME_SKIPPED" },
+      { type: "DIALOGUE_ADVANCED" },
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
       { type: "MINIGAME_SKIPPED" },

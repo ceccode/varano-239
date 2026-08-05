@@ -28,18 +28,6 @@ export const superstarMessages = {
     "Giù dal palco. Nessun danno, solo qualche secondo e una discreta figura: si riparte dalla transenna.",
   "core.message.level3.narrative.finish":
     "Sei sotto le mura del Castello Bonoris. Tre prove, un nome solo, e un poster che ti ha appena promosso Conte.",
-  "core.message.level3.power.varano.label": "Superpotere: scatto di coda",
-  "core.message.level3.power.varano.narrative":
-    "SCATTO! Nessun curioso afferra una coda che corre a quella velocità.",
-  "core.message.level3.power.hunter.label": "Superpotere: fiuto",
-  "core.message.level3.power.hunter.narrative":
-    "FIUTO! Toni annusa l’aria: le prove si illuminano e nella fila dei curiosi si apre un varco.",
-  "core.message.level3.power.guardian.label": "Superpotere: richiamo",
-  "core.message.level3.power.guardian.narrative":
-    "RICHIAMO! Marta fa il suo verso e tutti si girano dall’altra parte. Anche il drone si posa, mortificato.",
-  "core.message.level3.power.mayor.label": "Superpotere: drone di Borgocoda",
-  "core.message.level3.power.mayor.narrative":
-    "DRONE DI BORGOCODA! Cesare si alza da terra e sorvola il problema. Metaforicamente lo fa da anni.",
   "core.message.dialogue3.ada":
     "Ada allinea le tre prove: «Un pass con il timbro sbagliato, un microfono aperto e un poster stampato dallo stesso ufficio. Signori, il mittente delle 2:41 è qui, in prima fila.»",
   "core.message.dialogue3.varano":

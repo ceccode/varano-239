@@ -386,6 +386,34 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Verifica: cinque test scritti **prima** del fix lo riproducevano su tutti e tre i livelli. Restano come regressione, insieme a un'invariante nuova che vale per ogni livello presente e futuro: la finestra utile per saltare un fossato — dal primo istante in cui il salto arriva al bordo opposto fino all'ultimo che il coyote time concede — deve superare i 250 ms. Oggi va da 345 a 708 ms, quindi nessun salto chiede precisione al frame.
 - Nota di metodo: la prima verifica nel browser dopo il fix falliva, e non per colpa del livello. Lo script di guida rilasciava il salto dopo 300 ms, il jump-cut riduceva l'arco da 117 a 108 px e il Varano atterrava tre pixel prima del bordo. Il livello resta finibile da ogni ruolo e anche senza usare alcun potere.
 
+## ADR-036 — Livello 4 «Il parco del Castello»
+
+- Stato: **Accettata**
+- Data: 5 agosto 2026
+- Attua: la prima metà dell'Atto V. Per decisione del proprietario il castello è diviso in due livelli: il 4 è il parco all'aperto, il 5 sarà l'interno con la salita alla torre.
+- Decisione narrativa: il mittente della foto delle 2:41 viene **indiziato ma non svelato**. I tre indizi — il badge stampato a biglietteria chiusa, la porta di servizio aperta con la chiave, le squame sul bordo del fossato — dicono che è entrato prima dell'apertura e non da turista; il filo di Borgocoda (il numero del Livello 2, il timbro del Livello 3, ora una chiave) continua a stringersi. Il nome arriva nel Livello 5. Due prove più una traccia del Conte, così il Varano resta al centro (pilastro 1 del game design).
+- Decisione sul fossato d'acqua: è una **variante di solo rendering** (`gapKind: "water"`). Cadere in acqua è la stessa caduta di ADR-035 — respawn alla bandierina, indizi salvi — disegnata bagnata e raccontata dalla riga narrativa («Splash nel fossato…»). Nessuna fisica nuova, quindi nessun bilanciamento nuovo da testare.
+- Decisione sui poteri: **identici al Livello 3**, stessi valori, gated per ruolo. Il giocatore li ha appena imparati e il Livello 4 li consolida su geometrie nuove. La configurazione condivisa vive in `roleSuperpowers`, e un test verifica che il parco usi esattamente quell'oggetto.
+  - Le otto chiavi di testo dei poteri sono state promosse da `core.message.level3.power.*` a `core.message.power.*` in `ui-messages.ts`: il testo appartiene al ruolo, non a un livello. È un rename di chiavi di messaggio, senza alcun impatto sui salvataggi.
+- Vincoli confermati di ADR-032: ogni fossato entro la portata del salto senza potere, ogni ostacolo bloccante coperto da una rotta di piattaforme (statue, pergolati, il tetto del chiosco), livello finibile da ogni ruolo e anche senza mai toccare ★. Ostacoli: due gruppi di curiosi e un drone che vola basso; nel parco non ci sono cavi.
+- Fondale: quarto look distinto — tardo pomeriggio dorato con il castello che ormai incombe e le siepi del parco in primo piano. Notte, notte, giorno, tramonto.
+- Costo strutturale, ed è la prova che ADR-034 funziona: una cartella di capitolo (`c03-castle-park`), una voce nell'array del pack e una configurazione `defineLevel()`. **Nessun capitolo esistente è stato modificato**; il finale si è aggiornato da solo restando in coda.
+- Verifica: suite dedicata con le invarianti del livello e cinque simulazioni (quattro ruoli più una senza potere, tutte senza cadute); il driver di simulazione è stato estratto in un helper condiviso con la suite del Livello 3. Nel browser reale: cinque percorsi completati, splash nel fossato con respawn corretto, briefing a 320 px senza overflow.
+
+## ADR-037 — Il furgoncino dei gadget: il primo ostacolo mobile
+
+- Stato: **Accettata**
+- Data: 5 agosto 2026
+- Contesto: giocato il Livello 4, il proprietario lo ha trovato piatto e ha proposto un veicolo con un varano gonfiabile da saltare, «e se non salta muore». La diagnosi è giusta — fino a qui ogni ostacolo sta fermo — ma la morte è esclusa dai vincoli non negoziabili (AGENTS.md, ADR-018: nessuna vita, nessun game over, respawn morbido). La punizione richiesta viene quindi resa con lo strumento già canonico: **il contatto è la caduta di ADR-035 in un altro costume**, ritorno alla bandierina con le prove in tasca.
+- Decisione: un `PatrolCar` opzionale nella configurazione del livello (`cars?`, come `sprint?`, `power?`, `obstacles?`). Il furgoncino del merchandising fa la spola sull'ultimo tratto del parco, con un varano gonfiabile che dondola sul cruscotto.
+  - **Movimento puro e deterministico**: la posizione è un'onda triangolare su `elapsedSeconds` (`carPositionAt`), senza clock né casualità, come impone AGENTS.md. Stesso istante, stessa posizione: testabile e riproducibile.
+  - **Sempre saltabile**: il furgoncino è alto 20 px contro i 48,8 px di un salto normale, e un test tiene il margine sopra i 20 px. È un pericolo, mai un muro; nessun potere serve né aiuta a superarlo, quindi i quattro ruoli restano pari.
+  - **Percorso senza riflessi**: la terrazza a 3100/y118 sta dentro il raggio di pattuglia e sopra il tetto del furgoncino — ci si può fermare lì e lasciarlo passare. Un test garantisce che un rifugio simile esista. «Salta il livello» resta comunque la via di ADR-018.
+  - La pattuglia vive interamente su un segmento di terreno (mai nell'acqua), parte oltre il chiosco del drone e si ferma lontana dal traguardo, così nessun set piece si somma a un altro.
+  - Riscontro: riga narrativa dedicata (`narrativeCarHitKey`, «Travolto dal furgoncino dei gadget: gonfiabile 1, Conte 0…»), effetto `respawn`, e il furgoncino disegnato con ruote che girano, polvere e il gonfiabile che dondola. Nessuna gag sul corpo, nessun danno mostrato: il tono resta 12+.
+- Verifica: test di determinismo e confini della pattuglia, contatto → respawn con indizi salvi e `respawns + 1`, salto sopra il furgoncino senza contatto, rifugio esistente; le cinque simulazioni del livello ora saltano anche il furgoncino. Nel browser: investimento deliberato → narrativa dedicata e respawn alla bandierina, screenshot del mezzo in avvicinamento.
+- Conseguenza: i livelli futuri possono usare `cars?` senza codice nuovo. Se il proprietario vorrà **davvero** morte e vite, è un cambio ai vincoli di base (ADR-018 e AGENTS.md) e richiede una decisione esplicita separata.
+
 ## ADR-028 — Documenti di trama fuori dal repository pubblico
 
 - Stato: **Accettata**

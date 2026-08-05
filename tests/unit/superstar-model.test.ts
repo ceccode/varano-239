@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Role } from "../../src/core/model";
 import { superstarLevelConfig } from "../../src/levels/registry";
+import { playthrough } from "./helpers/level-playthrough";
 import {
   createPlatformerState,
   stepPlatformer,
@@ -499,71 +500,6 @@ describe("Varano superstar level design", () => {
 describe("Varano superstar is finishable by every role", () => {
   const config: PlatformerConfig = superstarLevelConfig;
 
-  /**
-   * Runs right, jumps at the edge of a gap and before whatever still stands in
-   * the way, and holds the power while approaching an obstacle — which is how
-   * the control is actually used, rather than pinned down for the whole level.
-   * This is the proof that matters: the level design is playable, not merely
-   * that the code compiles.
-   */
-  function playthrough(power: PowerConfig | undefined): PlatformerState {
-    // The registered config carries no `power`: the registry resolves it per
-    // role at mount time, so omitting it here is the no-power run.
-    const levelConfig: PlatformerConfig =
-      power === undefined ? config : { ...config, power };
-    const gapEdges = [...levelConfig.groundSegments]
-      .sort((a, b) => a.x - b.x)
-      .slice(0, -1)
-      .map((segment) => segment.x + segment.width);
-
-    let state = createPlatformerState(levelConfig);
-    let finished = false;
-
-    for (let frame = 0; frame < 120 * 150 && !finished; frame += 1) {
-      const playerRight = state.x + levelConfig.playerWidth;
-      const atGapEdge = gapEdges.some(
-        (edge) => state.grounded && playerRight >= edge - 12 && state.x < edge,
-      );
-      const standing = (levelConfig.obstacles ?? []).filter(
-        (obstacle) =>
-          obstacle.kind !== "cables" &&
-          !state.openedObstacleIds.includes(obstacle.id) &&
-          !state.calmedObstacleIds.includes(obstacle.id),
-      );
-      // Jump early enough to clear it, or to land on the roofs, tripods and
-      // scaffolding that carry the route above it.
-      const beforeObstacle = standing.some(
-        (obstacle) =>
-          state.grounded &&
-          playerRight >= obstacle.x - 34 &&
-          state.x < obstacle.x,
-      );
-      // Charge the power on the approach, then let go: the Mayor's drone needs
-      // ground contact to refuel, so holding it down forever is not the answer.
-      const approaching = standing.some(
-        (obstacle) => playerRight >= obstacle.x - 210 && state.x < obstacle.x,
-      );
-      const jump = atGapEdge || beforeObstacle;
-
-      const result = stepPlatformer(
-        state,
-        {
-          left: false,
-          right: true,
-          jumpPressed: jump,
-          jumpHeld: !state.grounded || jump,
-          powerHeld: power !== undefined && approaching,
-        },
-        1 / 120,
-        levelConfig,
-      );
-      state = result.state;
-      finished = result.events.finished;
-    }
-
-    return state;
-  }
-
   const runs: readonly {
     readonly label: string;
     readonly power?: PowerConfig;
@@ -590,7 +526,7 @@ describe("Varano superstar is finishable by every role", () => {
 
   for (const run of runs) {
     it(`completes the level with no falls: ${run.label}`, () => {
-      const state = playthrough(run.power);
+      const state = playthrough(config, run.power);
       expect(state.completed).toBe(true);
       expect(state.respawns).toBe(0);
     });
