@@ -400,6 +400,7 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Perché: il progetto è un caso di studio naturale per AIDA — un gioco costruito quasi per intero in sessioni agentiche — e AIDA è il modo di renderlo misurabile invece che aneddotico. La persistenza per coorte (quanto sopravvive il codice d'agente prima di essere riscritto) diventerà interessante man mano che il repo invecchia.
 - Limite dichiarato: l'hook è volontario e locale a ogni clone; il `defaultMode` è una dichiarazione retroattiva. La copertura _dichiarata_ comincia da questo commit.
 - Conseguenza: le metriche si leggono con `npm run aida` in locale o dall'artifact `aida-report` in Actions. Nessun dato lascia la macchina o il runner CI.
+
 ## ADR-036 — Livello 4 «Il parco del Castello»
 
 - Stato: **Accettata**
