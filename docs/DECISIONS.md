@@ -278,6 +278,16 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Perché: il gioco è inseparabile dalla propria storia, grafica e musica, quindi vincolare i contenuti a `NonCommercial` impedisce di vendere l'opera pur lasciando il motore riusabile e realmente aperto.
 - Conseguenza: il titolare del copyright è **Francesco Falanga**; i testi di credits e termini nel gioco, il README e il registro asset dichiarano la doppia licenza. Le due licenze non sono combinabili in un'opera commerciale: chi vuole usare il gioco a fini commerciali deve chiedere un permesso esplicito.
 
+## ADR-028 — Documenti di trama fuori dal repository pubblico
+
+- Stato: **Accettata**
+- Data: 2 agosto 2026
+- Contesto: `STORY_TREATMENT.md`, `NARRATIVE.md`, `GAME_DESIGN.md` e la roadmap descrivono per intero la trama, i finali e le piste inventate sull'origine del Varano. Pubblicarli annulla la suspance che il gioco costruisce fra un livello e il successivo.
+- Decisione: quei documenti vivono in `docs/private/`, ignorata da git, e vengono rimossi anche dallo storico dei commit. Restano pubblici i documenti tecnici, editoriali e legali: architettura, modello dei contenuti, espansioni, qualità, privacy, fonti, asset, scouting del formato e questo registro.
+- Perché: la scelta è stata fatta quando il repository aveva un giorno di vita, zero fork e zero star, quindi la riscrittura della storia costava poco. `SOURCES.md` e `PRIVACY.md` restano pubblici perché il gioco li collega da credits e menù.
+- Limite noto e accettato: i testi del livello già pubblicato sono comunque leggibili nel bundle JavaScript. La riservatezza protegge la trama **non ancora uscita**, non il contenuto già distribuito. Dopo un force-push GitHub può mantenere per un periodo gli oggetti non più referenziati raggiungibili via SHA.
+- Conseguenza: `AGENTS.md` e `docs/README.md` indicano il percorso privato; i documenti privati non sono versionati, quindi vanno conservati a parte dal proprietario.
+
 ## ADR-029 — Superpotere corsa e capitolo 2
 
 - Stato: **Accettata**
@@ -386,21 +396,6 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Verifica: cinque test scritti **prima** del fix lo riproducevano su tutti e tre i livelli. Restano come regressione, insieme a un'invariante nuova che vale per ogni livello presente e futuro: la finestra utile per saltare un fossato — dal primo istante in cui il salto arriva al bordo opposto fino all'ultimo che il coyote time concede — deve superare i 250 ms. Oggi va da 345 a 708 ms, quindi nessun salto chiede precisione al frame.
 - Nota di metodo: la prima verifica nel browser dopo il fix falliva, e non per colpa del livello. Lo script di guida rilasciava il salto dopo 300 ms, il jump-cut riduceva l'arco da 117 a 108 px e il Varano atterrava tre pixel prima del bordo. Il livello resta finibile da ogni ruolo e anche senza usare alcun potere.
 
-## ADR-038 — AIDA Metrics: contabilità dello sviluppo AI del repository
-
-- Stato: **Accettata**
-- Data: 5 agosto 2026
-- Contesto: il proprietario vuole misurare quanto di questo repository è costruito dall'AI e come quel codice regge nel tempo, usando il proprio strumento [AIDA Metrics](https://github.com/ceccode/AIDA-Metrics) (`@aida-dev/cli`, MIT). Il primo test locale ha dato il risultato più istruttivo possibile: **copertura di attribuzione 0%** su 9 commit — il repository è interamente scritto con Claude Code, ma nessun commit lo dichiarava, e le euristiche leggono solo ciò che i messaggi ammettono.
-- Compatibilità con i vincoli, verificata prima dell'adozione: è uno **strumento di sviluppo**, non una dipendenza runtime — `dependencies` resta `{}` (ADR-003) e il test di fondazione non cambia. Analizza la storia git in locale; non tocca il gioco, il bundle né i giocatori, quindi ADR-009/025 non sono interessate. L'unico comando che usa la rete (`fetch-prs`) è opt-in, richiede un token esplicito e **non** viene adottato.
-- Decisione, in quattro parti:
-  1. `@aida-dev/cli` **pinnata esatta** (0.15.0) nei `devDependencies`, con gli script `npm run aida` (collect 90d → analyze → report) e `npm run aida:hooks`; `aida-output/` in `.gitignore`.
-  2. `.aida.json` con **`defaultMode: "agent"`**: dichiarazione del proprietario che i commit senza evidenza di questo repository sono lavoro d'agente. AIDA la tratta correttamente come _prior_, non come dato osservato, e non la conta nella copertura.
-  3. **Da ora ogni commit fatto dall'agente porta il trailer `AI-Mode: agent`**, così la provenienza diventa `declared` e la copertura sale dai commit nuovi. L'hook `prepare-commit-msg` di AIDA (shell POSIX autonoma, non blocca mai un commit, si disinstalla pulito) è installato nel clone locale; ogni altro clone lo attiva con `npm run aida:hooks`.
-  4. **Workflow CI** su push a `main`: checkout con storia completa, `aida collect --redact-authors` (identità sostituite da hash salato, come raccomandato in CI), report caricato come artifact per 30 giorni. Il workflow è **informativo e mai bloccante**: una metrica non è un gate.
-- Perché: il progetto è un caso di studio naturale per AIDA — un gioco costruito quasi per intero in sessioni agentiche — e AIDA è il modo di renderlo misurabile invece che aneddotico. La persistenza per coorte (quanto sopravvive il codice d'agente prima di essere riscritto) diventerà interessante man mano che il repo invecchia.
-- Limite dichiarato: l'hook è volontario e locale a ogni clone; il `defaultMode` è una dichiarazione retroattiva. La copertura _dichiarata_ comincia da questo commit.
-- Conseguenza: le metriche si leggono con `npm run aida` in locale o dall'artifact `aida-report` in Actions. Nessun dato lascia la macchina o il runner CI.
-
 ## ADR-036 — Livello 4 «Il parco del Castello»
 
 - Stato: **Accettata**
@@ -429,12 +424,17 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Verifica: test di determinismo e confini della pattuglia, contatto → respawn con indizi salvi e `respawns + 1`, salto sopra il furgoncino senza contatto, rifugio esistente; le cinque simulazioni del livello ora saltano anche il furgoncino. Nel browser: investimento deliberato → narrativa dedicata e respawn alla bandierina, screenshot del mezzo in avvicinamento.
 - Conseguenza: i livelli futuri possono usare `cars?` senza codice nuovo. Se il proprietario vorrà **davvero** morte e vite, è un cambio ai vincoli di base (ADR-018 e AGENTS.md) e richiede una decisione esplicita separata.
 
-## ADR-028 — Documenti di trama fuori dal repository pubblico
+## ADR-038 — AIDA Metrics: contabilità dello sviluppo AI del repository
 
 - Stato: **Accettata**
-- Data: 2 agosto 2026
-- Contesto: `STORY_TREATMENT.md`, `NARRATIVE.md`, `GAME_DESIGN.md` e la roadmap descrivono per intero la trama, i finali e le piste inventate sull'origine del Varano. Pubblicarli annulla la suspance che il gioco costruisce fra un livello e il successivo.
-- Decisione: quei documenti vivono in `docs/private/`, ignorata da git, e vengono rimossi anche dallo storico dei commit. Restano pubblici i documenti tecnici, editoriali e legali: architettura, modello dei contenuti, espansioni, qualità, privacy, fonti, asset, scouting del formato e questo registro.
-- Perché: la scelta è stata fatta quando il repository aveva un giorno di vita, zero fork e zero star, quindi la riscrittura della storia costava poco. `SOURCES.md` e `PRIVACY.md` restano pubblici perché il gioco li collega da credits e menù.
-- Limite noto e accettato: i testi del livello già pubblicato sono comunque leggibili nel bundle JavaScript. La riservatezza protegge la trama **non ancora uscita**, non il contenuto già distribuito. Dopo un force-push GitHub può mantenere per un periodo gli oggetti non più referenziati raggiungibili via SHA.
-- Conseguenza: `AGENTS.md` e `docs/README.md` indicano il percorso privato; i documenti privati non sono versionati, quindi vanno conservati a parte dal proprietario.
+- Data: 5 agosto 2026
+- Contesto: il proprietario vuole misurare quanto di questo repository è costruito dall'AI e come quel codice regge nel tempo, usando il proprio strumento [AIDA Metrics](https://github.com/ceccode/AIDA-Metrics) (`@aida-dev/cli`, MIT). Il primo test locale ha dato il risultato più istruttivo possibile: **copertura di attribuzione 0%** su 9 commit — il repository è interamente scritto con Claude Code, ma nessun commit lo dichiarava, e le euristiche leggono solo ciò che i messaggi ammettono.
+- Compatibilità con i vincoli, verificata prima dell'adozione: è uno **strumento di sviluppo**, non una dipendenza runtime — `dependencies` resta `{}` (ADR-003) e il test di fondazione non cambia. Analizza la storia git in locale; non tocca il gioco, il bundle né i giocatori, quindi ADR-009/025 non sono interessate. L'unico comando che usa la rete (`fetch-prs`) è opt-in, richiede un token esplicito e **non** viene adottato.
+- Decisione, in quattro parti:
+  1. `@aida-dev/cli` **pinnata esatta** (0.15.0) nei `devDependencies`, con gli script `npm run aida` (collect 90d → analyze → report) e `npm run aida:hooks`; `aida-output/` in `.gitignore`.
+  2. `.aida.json` con **`defaultMode: "agent"`**: dichiarazione del proprietario che i commit senza evidenza di questo repository sono lavoro d'agente. AIDA la tratta correttamente come _prior_, non come dato osservato, e non la conta nella copertura.
+  3. **Da ora ogni commit fatto dall'agente porta il trailer `AI-Mode: agent`**, così la provenienza diventa `declared` e la copertura sale dai commit nuovi. L'hook `prepare-commit-msg` di AIDA (shell POSIX autonoma, non blocca mai un commit, si disinstalla pulito) è installato nel clone locale; ogni altro clone lo attiva con `npm run aida:hooks`.
+  4. **Workflow CI** su push a `main`: checkout con storia completa, `aida collect --redact-authors` (identità sostituite da hash salato, come raccomandato in CI), report caricato come artifact per 30 giorni. Il workflow è **informativo e mai bloccante**: una metrica non è un gate.
+- Perché: il progetto è un caso di studio naturale per AIDA — un gioco costruito quasi per intero in sessioni agentiche — e AIDA è il modo di renderlo misurabile invece che aneddotico. La persistenza per coorte (quanto sopravvive il codice d'agente prima di essere riscritto) diventerà interessante man mano che il repo invecchia.
+- Limite dichiarato: l'hook è volontario e locale a ogni clone; il `defaultMode` è una dichiarazione retroattiva. La copertura _dichiarata_ comincia da questo commit.
+- Conseguenza: le metriche si leggono con `npm run aida` in locale o dall'artifact `aida-report` in Actions. Nessun dato lascia la macchina o il runner CI.
