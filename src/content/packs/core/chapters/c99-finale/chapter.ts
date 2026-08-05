@@ -33,9 +33,9 @@ export const finaleChapter: ChapterBundle = {
   clues: [],
   messages: {
     "core.message.chapter.finale.title": "Il mistero resta aperto",
-    "core.message.ending.title": "Il Conte è entrato nel parco",
+    "core.message.ending.title": "La porta della torre è socchiusa",
     "core.message.ending.body":
-      "Tre notti, nove indizi e un nome solo: la foto delle 2:39 non è arrivata per caso ai telefoni del paese, e chi l’ha spedita voleva esattamente questo circo. Adesso il poster ha incoronato il Varano «Conte dei Sei Colli», il Castello Bonoris ha aperto i cancelli e il Varano è entrato nel parco da solo. Questa ricostruzione è Leggenda: specie, provenienza e destino reale del Varano restano tutti da scoprire.",
+      "Tre notti, un giorno di gloria e dodici indizi: chi ha spedito la foto delle 2:39 è entrato nel castello prima di tutti, con le chiavi giuste, e ha lasciato la strada aperta fino alla torre. Il Varano ci è già passato: da qualche parte là sopra c’è una pietra al sole che aspetta il suo Conte. Manca solo un nome, e sta un piano più su. Questa ricostruzione è Leggenda: specie, provenienza e destino reale del Varano restano tutti da scoprire.",
   },
   sources: [],
 };

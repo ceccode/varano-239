@@ -4,6 +4,7 @@ import type { MessageCatalog, StoryPack } from "../../story-pack.ts";
 import { firstSightingChapter } from "./chapters/c00-first-sighting/chapter.ts";
 import { villageChatsChapter } from "./chapters/c01-village-chats/chapter.ts";
 import { superstarChapter } from "./chapters/c02-superstar/chapter.ts";
+import { castleParkChapter } from "./chapters/c03-castle-park/chapter.ts";
 import { finaleChapter } from "./chapters/c99-finale/chapter.ts";
 import { uiMessages } from "./ui-messages.ts";
 
@@ -16,16 +17,17 @@ const chapters = chainChapters([
   firstSightingChapter,
   villageChatsChapter,
   superstarChapter,
+  castleParkChapter,
   finaleChapter,
 ]);
 
 export const corePack = {
   id: "core",
-  version: 3,
+  version: 4,
   kind: "core",
   titleKey: "core.message.pack.title",
   descriptionKey: "core.message.pack.description",
-  estimatedMinutes: 8,
+  estimatedMinutes: 10,
   requires: [],
   chapters,
   mysteries: [],

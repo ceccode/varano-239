@@ -180,6 +180,30 @@ test("completes the gentle flow with the keyboard and restarts", async ({
     .focus();
   await page.keyboard.press("Enter");
 
+  // Chapter 3: the castle park, with the moat drawn as water (ADR-036).
+  await expect(
+    page.getByText(message("core.message.level4.recap")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.level.play") })
+    .click();
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+  await expect(
+    page.getByText(message("core.message.level4.narrative.start")),
+  ).toBeVisible();
+  const skipFourth = page.getByRole("button", {
+    name: message("core.message.level.skip"),
+  });
+  await skipFourth.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByText(message("core.message.dialogue4.twist")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+
   await expect(
     page.getByRole("heading", { name: message("core.message.ending.title") }),
   ).toBeVisible();
@@ -302,14 +326,11 @@ test("grants the run superpower in level 2", async ({ page }) => {
 });
 
 const powerLabelKeys = {
-  "core.message.ui.role-select.varano.title":
-    "core.message.level3.power.varano.label",
-  "core.message.ui.role-select.hunter.title":
-    "core.message.level3.power.hunter.label",
+  "core.message.ui.role-select.varano.title": "core.message.power.varano.label",
+  "core.message.ui.role-select.hunter.title": "core.message.power.hunter.label",
   "core.message.ui.role-select.guardian.title":
-    "core.message.level3.power.guardian.label",
-  "core.message.ui.role-select.mayor.title":
-    "core.message.level3.power.mayor.label",
+    "core.message.power.guardian.label",
+  "core.message.ui.role-select.mayor.title": "core.message.power.mayor.label",
 } as const;
 
 for (const [roleKey, labelKey] of Object.entries(powerLabelKeys) as [

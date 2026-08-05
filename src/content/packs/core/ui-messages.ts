@@ -43,6 +43,21 @@ export const uiMessages = {
   "core.message.level.briefing.objective": "Che cosa devi fare",
   "core.message.level.briefing.power": "Il tuo superpotere",
 
+  // The role superpowers (ADR-031). The copy belongs to the role, not to a
+  // level, so every level that grants them reuses these keys (ADR-036).
+  "core.message.power.varano.label": "Superpotere: scatto di coda",
+  "core.message.power.varano.narrative":
+    "SCATTO! Nessun curioso afferra una coda che corre a quella velocità.",
+  "core.message.power.hunter.label": "Superpotere: fiuto",
+  "core.message.power.hunter.narrative":
+    "FIUTO! Toni annusa l’aria: le prove si illuminano e nella fila dei curiosi si apre un varco.",
+  "core.message.power.guardian.label": "Superpotere: richiamo",
+  "core.message.power.guardian.narrative":
+    "RICHIAMO! Marta fa il suo verso e tutti si girano dall’altra parte. Anche il drone si posa, mortificato.",
+  "core.message.power.mayor.label": "Superpotere: drone di Borgocoda",
+  "core.message.power.mayor.narrative":
+    "DRONE DI BORGOCODA! Cesare si alza da terra e sorvola il problema. Metaforicamente lo fa da anni.",
+
   "core.message.ui.clear-save": "Cancella progressi e preferenze locali",
   "core.message.ui.disclaimer":
     "Gioco 12+ di finzione: tutto ciò che giochi è LEGGENDA, una ricostruzione inventata. I fatti documentati e le loro fonti restano nel registro editoriale del progetto. Non cercare, inseguire o toccare animali selvatici o esotici nella realtà.",
@@ -82,11 +97,11 @@ export const uiMessages = {
   "core.message.ui.card.level": "LE NOTTI DI MONTICHIARI",
   "core.message.ui.card.record": "NUOVO RECORD!",
   "core.message.ui.next-level.label": "PROSSIMO EPISODIO",
-  "core.message.ui.next-level.title": "Livello 4 — Il Castello Bonoris",
+  "core.message.ui.next-level.title": "Livello 5 — Dentro il Castello",
   "core.message.ui.next-level.body":
-    "Fossato, ponte levatoio, saracinesche e una cassaforte che qualcuno ha già aperto una volta. Il Varano è dentro il parco e c’è un solo posto dove un Conte può salire: la pietra al sole sopra le mura. Il Livello 4 arriva a breve.",
+    "Saracinesche, scale a chiocciola, una cassaforte con dentro la cosa meno utile del mondo e una torre con la pietra al sole. Dentro il castello c’è anche chi ha spedito la foto: al Livello 5 si sale, e si scopre il nome. Arriva a breve.",
   "core.message.ui.next-level.install":
-    "Aggiungi il gioco alla schermata Home: quando il Livello 4 esce, lo trovi già qui.",
+    "Aggiungi il gioco alla schermata Home: quando il Livello 5 esce, lo trovi già qui.",
   "core.message.ui.menu.open": "Menù",
   "core.message.ui.menu.heading": "Menù",
   "core.message.ui.menu.close": "Torna al gioco",
