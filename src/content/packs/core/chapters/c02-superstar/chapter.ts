@@ -7,6 +7,7 @@ export const superstarChapterId = "core.chapter.c02-superstar";
 
 const levelNodeId = "core.node.superstar.level";
 const dialogueId = "core.node.superstar.dialogue";
+const choiceId = "core.node.superstar.choice";
 
 const nodes: readonly StoryNode[] = [
   {
@@ -58,7 +59,43 @@ const nodes: readonly StoryNode[] = [
         textKey: "core.message.dialogue3.twist",
       },
     ],
-    next: nextChapterNodeId,
+    next: choiceId,
+  },
+  {
+    id: choiceId,
+    chapterId: superstarChapterId,
+    type: "choice",
+    narrativeLayer: "legend",
+    headingKey: "core.message.choice3.heading",
+    promptKey: "core.message.choice3.prompt",
+    options: [
+      {
+        id: "core.option.superstar.hand-over",
+        textKey: "core.message.choice3.hand-over",
+        effects: [
+          { type: "adjust-score", score: "evidence", delta: 1 },
+          {
+            type: "record-choice",
+            choiceId: "core.choice.superstar.recording",
+            optionId: "core.option.superstar.hand-over",
+          },
+        ],
+        targetNodeId: nextChapterNodeId,
+      },
+      {
+        id: "core.option.superstar.delete",
+        textKey: "core.message.choice3.delete",
+        effects: [
+          { type: "adjust-score", score: "care", delta: 1 },
+          {
+            type: "record-choice",
+            choiceId: "core.choice.superstar.recording",
+            optionId: "core.option.superstar.delete",
+          },
+        ],
+        targetNodeId: nextChapterNodeId,
+      },
+    ],
   },
 ];
 
@@ -68,7 +105,7 @@ export const superstarChapter: ChapterBundle = {
     titleKey: "core.message.chapter.superstar.title",
     entryNodeId: levelNodeId,
     checkpointNodeId: levelNodeId,
-    exitNodeId: dialogueId,
+    exitNodeId: choiceId,
   },
   nodes,
   dossierCards: [],

@@ -9,10 +9,18 @@ export type GameSoundEffect =
   | "blocked"
   | "select";
 
+/** One looping tune per level (ADR-042): five levels, five songs. */
+export type MusicTrackId = "fields" | "chats" | "fanfare" | "sunset" | "keep";
+
 export interface GameAudio {
   readonly setMusicEnabled: (enabled: boolean) => void;
   readonly setEffectsEnabled: (enabled: boolean) => void;
-  readonly startMusic: () => void;
+  /**
+   * Starts the given track; the original A-minor loop when omitted or
+   * unknown. The name is a plain string so the levels layer never has to
+   * import audio types (the port stays small).
+   */
+  readonly startMusic: (track?: string) => void;
   readonly stopMusic: () => void;
   readonly playEffect: (effect: GameSoundEffect) => void;
 }
@@ -35,8 +43,6 @@ export class NoopGameAudio implements GameAudio {
   }
 }
 
-const tempoBeatsPerMinute = 108;
-const stepSeconds = 60 / tempoBeatsPerMinute / 2;
 const schedulerIntervalMs = 80;
 const lookAheadSeconds = 0.2;
 
@@ -44,15 +50,97 @@ function noteFrequency(midi: number): number {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
-// Original 4-bar loop in A minor: lead melody and bass roots A, F, G, E.
-const leadPattern: readonly number[] = [
-  69, 0, 72, 74, 76, 0, 74, 72, 69, 0, 67, 69, 64, 0, 67, 0, 65, 0, 69, 72, 71,
-  0, 69, 67, 69, 0, 76, 0, 74, 72, 71, 69,
-];
-const bassPattern: readonly number[] = [
-  45, 0, 57, 0, 45, 0, 52, 0, 41, 0, 53, 0, 41, 0, 48, 0, 43, 0, 55, 0, 43, 0,
-  50, 0, 40, 0, 52, 0, 40, 47, 0, 0,
-];
+interface MusicTrack {
+  readonly beatsPerMinute: number;
+  readonly leadType: OscillatorType;
+  readonly bassType: OscillatorType;
+  /** 32 steps (two per beat): a 4-bar loop. 0 is a rest. */
+  readonly lead: readonly number[];
+  readonly bass: readonly number[];
+}
+
+/**
+ * Five original 4-bar chiptune loops, one per level (ADR-042). `fields` is
+ * the shipped A-minor loop, untouched: level 1 must sound exactly as it
+ * always has. Everything is synthesised at runtime — no files, no deps.
+ */
+const musicTracks: Readonly<Record<MusicTrackId, MusicTrack>> = {
+  // 2:39 in the fields: the original loop in A minor, lead over A, F, G, E.
+  fields: {
+    beatsPerMinute: 108,
+    leadType: "square",
+    bassType: "triangle",
+    lead: [
+      69, 0, 72, 74, 76, 0, 74, 72, 69, 0, 67, 69, 64, 0, 67, 0, 65, 0, 69, 72,
+      71, 0, 69, 67, 69, 0, 76, 0, 74, 72, 71, 69,
+    ],
+    bass: [
+      45, 0, 57, 0, 45, 0, 52, 0, 41, 0, 53, 0, 41, 0, 48, 0, 43, 0, 55, 0, 43,
+      0, 50, 0, 40, 0, 52, 0, 40, 47, 0, 0,
+    ],
+  },
+  // The village chats at 2:41: fast, jittery E minor — eighty messages a
+  // minute and everyone typing.
+  chats: {
+    beatsPerMinute: 132,
+    leadType: "square",
+    bassType: "square",
+    lead: [
+      76, 76, 0, 74, 71, 0, 74, 71, 69, 0, 71, 69, 67, 69, 71, 0, 76, 76, 0, 74,
+      71, 0, 74, 76, 79, 0, 76, 74, 71, 74, 71, 0,
+    ],
+    bass: [
+      40, 0, 40, 52, 36, 0, 36, 48, 38, 0, 38, 50, 35, 0, 47, 0, 40, 0, 40, 52,
+      36, 0, 36, 48, 38, 0, 50, 0, 35, 47, 0, 0,
+    ],
+  },
+  // Opening day outside the walls: a bright C-major fanfare for the circus.
+  fanfare: {
+    beatsPerMinute: 120,
+    leadType: "square",
+    bassType: "triangle",
+    lead: [
+      72, 0, 76, 0, 79, 0, 76, 79, 81, 0, 79, 76, 72, 0, 74, 76, 77, 0, 74, 0,
+      72, 0, 74, 77, 79, 0, 76, 72, 74, 76, 74, 72,
+    ],
+    bass: [
+      48, 0, 60, 0, 48, 0, 55, 0, 53, 0, 65, 0, 53, 0, 60, 0, 50, 0, 62, 0, 50,
+      0, 57, 0, 55, 0, 55, 0, 48, 55, 0, 0,
+    ],
+  },
+  // Golden hour in the park: warm, unhurried D dorian.
+  sunset: {
+    beatsPerMinute: 96,
+    leadType: "triangle",
+    bassType: "triangle",
+    lead: [
+      62, 0, 0, 65, 67, 0, 69, 0, 72, 0, 69, 67, 65, 0, 67, 0, 62, 0, 0, 65, 67,
+      0, 69, 72, 74, 0, 72, 69, 67, 0, 65, 0,
+    ],
+    bass: [
+      38, 0, 50, 0, 36, 0, 48, 0, 43, 0, 55, 0, 38, 0, 45, 0, 38, 0, 50, 0, 36,
+      0, 48, 0, 43, 0, 55, 0, 38, 45, 0, 0,
+    ],
+  },
+  // Inside the castle: slow, low D minor under the vaults — until the roof.
+  keep: {
+    beatsPerMinute: 84,
+    leadType: "triangle",
+    bassType: "square",
+    lead: [
+      50, 0, 53, 0, 57, 0, 53, 50, 48, 0, 52, 0, 55, 0, 52, 48, 50, 0, 53, 57,
+      62, 0, 57, 53, 48, 0, 55, 0, 45, 0, 0, 0,
+    ],
+    bass: [
+      38, 0, 0, 38, 36, 0, 0, 36, 33, 0, 0, 33, 34, 0, 0, 34, 38, 0, 0, 38, 36,
+      0, 0, 36, 33, 0, 34, 0, 38, 0, 0, 0,
+    ],
+  },
+};
+
+function isMusicTrackId(value: string | undefined): value is MusicTrackId {
+  return value !== undefined && Object.hasOwn(musicTracks, value);
+}
 
 export class ChiptuneAudio implements GameAudio {
   private readonly view: Window & typeof globalThis;
@@ -64,6 +152,7 @@ export class ChiptuneAudio implements GameAudio {
   private schedulerId: number | undefined;
   private nextStepTime = 0;
   private stepIndex = 0;
+  private track: MusicTrack = musicTracks.fields;
 
   constructor(
     view: Window & typeof globalThis,
@@ -140,14 +229,16 @@ export class ChiptuneAudio implements GameAudio {
       return;
     }
 
+    const track = this.track;
+    const stepSeconds = 60 / track.beatsPerMinute / 2;
     while (this.nextStepTime < context.currentTime + lookAheadSeconds) {
-      const step = this.stepIndex % leadPattern.length;
-      const lead = leadPattern[step];
-      const bass = bassPattern[step];
+      const step = this.stepIndex % track.lead.length;
+      const lead = track.lead[step];
+      const bass = track.bass[step];
       if (lead !== undefined && lead > 0) {
         this.playNote(
           musicGain,
-          "square",
+          track.leadType,
           noteFrequency(lead),
           this.nextStepTime,
           stepSeconds * 0.9,
@@ -157,7 +248,7 @@ export class ChiptuneAudio implements GameAudio {
       if (bass !== undefined && bass > 0) {
         this.playNote(
           musicGain,
-          "triangle",
+          track.bassType,
           noteFrequency(bass),
           this.nextStepTime,
           stepSeconds * 0.95,
@@ -180,7 +271,15 @@ export class ChiptuneAudio implements GameAudio {
     this.effectsEnabled = enabled;
   }
 
-  startMusic(): void {
+  startMusic(track?: string): void {
+    const nextTrack = isMusicTrackId(track)
+      ? musicTracks[track]
+      : musicTracks.fields;
+    if (this.schedulerId !== undefined && this.track !== nextTrack) {
+      // A different level asked for its own song: switch cleanly.
+      this.stopMusic();
+    }
+    this.track = nextTrack;
     if (!this.musicEnabled || this.schedulerId !== undefined) {
       return;
     }
