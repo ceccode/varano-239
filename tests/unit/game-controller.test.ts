@@ -255,6 +255,9 @@ describe("full-screen game controller", () => {
       resolveItalianMessage("core.message.dialogue2.twist"),
     );
     clickMessage("core.message.ui.continue");
+    // The interlude choice of ADR-043: the player decides something between
+    // one level and the next.
+    clickMessage("core.message.choice2.mute");
 
     // Chapter 2: the media circus outside the castle walls (ADR-032).
     expect(controller.getState().run?.currentNodeId).toBe(
@@ -285,6 +288,7 @@ describe("full-screen game controller", () => {
       resolveItalianMessage("core.message.dialogue3.twist"),
     );
     clickMessage("core.message.ui.continue");
+    clickMessage("core.message.choice3.delete");
 
     // Chapter 3: the castle park (ADR-036). The briefing card carries its own
     // skip, so the level can be skipped without playing it.
@@ -302,6 +306,7 @@ describe("full-screen game controller", () => {
       resolveItalianMessage("core.message.dialogue4.twist"),
     );
     clickMessage("core.message.ui.continue");
+    clickMessage("core.message.choice4.close");
 
     // Chapter 4: inside the castle, where the sender is named (ADR-039).
     expect(controller.getState().run?.currentNodeId).toBe(
@@ -371,10 +376,18 @@ describe("full-screen game controller", () => {
     clickMessage("core.message.level.skip");
     clickMessage("core.message.ui.continue");
     clickMessage("core.message.choice.document");
-    for (let chapter = 0; chapter < 4; chapter += 1) {
+    for (const interlude of [
+      "core.message.choice2.call",
+      "core.message.choice3.hand-over",
+      "core.message.choice4.photograph",
+    ] as const) {
       clickMessage("core.message.level.skip");
       clickMessage("core.message.ui.continue");
+      clickMessage(interlude);
     }
+    // Chapter 4 has no interlude: its dialogue hands over to the tower.
+    clickMessage("core.message.level.skip");
+    clickMessage("core.message.ui.continue");
 
     // The confrontation shows the lethal option to this setup only.
     expect(document.body.textContent).toContain(
@@ -582,10 +595,13 @@ describe("full-screen game controller", () => {
       { type: "OPTION_CHOSEN", optionId: "core.option.prologue.protect" },
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
+      { type: "OPTION_CHOSEN", optionId: "core.option.chat.mute" },
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
+      { type: "OPTION_CHOSEN", optionId: "core.option.superstar.delete" },
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
+      { type: "OPTION_CHOSEN", optionId: "core.option.park.close" },
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
       { type: "OPTION_CHOSEN", optionId: "core.option.finale.corridor" },

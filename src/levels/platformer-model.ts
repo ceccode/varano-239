@@ -15,6 +15,49 @@ export interface PlatformerPickup {
   readonly y: number;
 }
 
+/**
+ * A platform that shuttles along one axis (ADR-044): the same pure triangle
+ * wave as the patrol cars (ADR-037), so the motion is deterministic and a
+ * player standing on it is carried along. One-way like every platform.
+ */
+export interface MovingPlatform {
+  readonly id: string;
+  /** Base position; the offset sweeps from 0 to `range` and back. */
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly axis: "x" | "y";
+  readonly range: number;
+  readonly speed: number;
+}
+
+/** Where a moving platform is at a given moment. */
+export function movingPlatformAt(
+  mover: MovingPlatform,
+  elapsedSeconds: number,
+): PlatformerPlatform {
+  if (mover.range <= 0) {
+    return { x: mover.x, y: mover.y, width: mover.width };
+  }
+  const phase = (elapsedSeconds * mover.speed) % (2 * mover.range);
+  const offset = phase <= mover.range ? phase : 2 * mover.range - phase;
+  return {
+    x: mover.x + (mover.axis === "x" ? offset : 0),
+    y: mover.y + (mover.axis === "y" ? offset : 0),
+    width: mover.width,
+  };
+}
+
+/**
+ * The legend star (ADR-044): an optional bonus worth score, collectible only
+ * while the role superpower is engaged. Never a clue, never required.
+ */
+export interface BonusStar {
+  readonly id: string;
+  readonly x: number;
+  readonly y: number;
+}
+
 export interface PlatformerCheckpoint {
   readonly id: string;
   readonly x: number;
@@ -153,6 +196,10 @@ export interface PlatformerConfig {
   readonly obstacles?: readonly PlatformerObstacle[];
   /** Omitted on levels without patrol cars (ADR-037). */
   readonly cars?: readonly PatrolCar[];
+  /** Omitted on levels without moving platforms (ADR-044). */
+  readonly movingPlatforms?: readonly MovingPlatform[];
+  /** Omitted on levels without a legend star (ADR-044). */
+  readonly bonus?: BonusStar;
 }
 
 export interface PlatformerInput {
@@ -183,6 +230,8 @@ export interface PlatformerState {
   readonly livesRemaining: number;
   /** True once the last life is gone (ADR-041): the attempt is over. */
   readonly gameOver: boolean;
+  /** The legend star, once grabbed with the power engaged (ADR-044). */
+  readonly bonusCollected: boolean;
   /** Seconds of uninterrupted running in the same direction. */
   readonly sprintCharge: number;
   readonly sprinting: boolean;
@@ -206,6 +255,8 @@ export interface PlatformerEvents {
   readonly finished: boolean;
   /** The last life just went (ADR-041): no respawn, the attempt ends here. */
   readonly gameOver: boolean;
+  /** The legend star just collected (ADR-044). */
+  readonly bonusCollected: boolean;
   readonly sprintStarted: boolean;
   readonly powerStarted: boolean;
   readonly openedObstacleIds: readonly string[];
@@ -235,6 +286,7 @@ const noEvents: PlatformerEvents = {
   respawned: false,
   finished: false,
   gameOver: false,
+  bonusCollected: false,
   sprintStarted: false,
   powerStarted: false,
   openedObstacleIds: [],
@@ -356,6 +408,7 @@ export function createPlatformerState(
     completed: false,
     livesRemaining: config.lives ?? Number.POSITIVE_INFINITY,
     gameOver: false,
+    bonusCollected: false,
     sprintCharge: 0,
     sprinting: false,
     powerCharge: 0,
@@ -386,20 +439,16 @@ function groundTopAt(
 }
 
 function landingPlatform(
-  config: PlatformerConfig,
+  platforms: readonly PlatformerPlatform[],
+  playerWidth: number,
   previousBottom: number,
   nextBottom: number,
   x: number,
 ): PlatformerPlatform | undefined {
-  return config.platforms
+  return platforms
     .filter(
       (platform) =>
-        overlapsHorizontally(
-          x,
-          config.playerWidth,
-          platform.x,
-          platform.width,
-        ) &&
+        overlapsHorizontally(x, playerWidth, platform.x, platform.width) &&
         previousBottom <= platform.y &&
         nextBottom >= platform.y,
     )
@@ -563,11 +612,37 @@ export function stepPlatformer(
         : Math.min(0, velocityX + step);
   }
 
+  // A moving platform carries whoever stands on it (ADR-044): the player's
+  // base position shifts by the platform's own travel over this step, so an
+  // elevator lifts you and a raft ferries you.
+  const elapsedAfter = state.elapsedSeconds + delta;
+  let carryX = 0;
+  let carryY = 0;
+  if (state.grounded) {
+    for (const mover of config.movingPlatforms ?? []) {
+      const before = movingPlatformAt(mover, state.elapsedSeconds);
+      if (
+        overlapsHorizontally(
+          state.x,
+          config.playerWidth,
+          before.x,
+          before.width,
+        ) &&
+        Math.abs(state.y + config.playerHeight - before.y) < 1.5
+      ) {
+        const after = movingPlatformAt(mover, elapsedAfter);
+        carryX = after.x - before.x;
+        carryY = after.y - before.y;
+        break;
+      }
+    }
+  }
+
   const contact = resolveObstacleContacts(
     config,
     standingObstacles,
     clamp(
-      state.x + velocityX * delta,
+      state.x + carryX + velocityX * delta,
       0,
       config.worldWidth - config.playerWidth,
     ),
@@ -606,13 +681,30 @@ export function stepPlatformer(
 
   velocityY = Math.min(velocityY, config.terminalFallSpeed);
 
-  const proposedY = state.y + velocityY * delta;
-  const previousBottom = state.y + config.playerHeight;
+  const baseY = state.y + carryY;
+  const proposedY = baseY + velocityY * delta;
+  const previousBottom = baseY + config.playerHeight;
   const proposedBottom = proposedY + config.playerHeight;
 
+  // Moving platforms land like static ones, at wherever they are right now.
+  const platformsNow =
+    config.movingPlatforms === undefined
+      ? config.platforms
+      : [
+          ...config.platforms,
+          ...config.movingPlatforms.map((mover) =>
+            movingPlatformAt(mover, elapsedAfter),
+          ),
+        ];
   const platform =
     velocityY > 0
-      ? landingPlatform(config, previousBottom, proposedBottom, nextX)
+      ? landingPlatform(
+          platformsNow,
+          config.playerWidth,
+          previousBottom,
+          proposedBottom,
+          nextX,
+        )
       : undefined;
   const groundTop =
     velocityY > 0 ? groundTopAt(config, nextX, config.playerWidth) : undefined;
@@ -740,6 +832,25 @@ export function stepPlatformer(
     };
   }
 
+  // The legend star (ADR-044): only a hand with the power engaged can take
+  // it. Optional by contract — never a clue, never needed to finish.
+  const bonus = config.bonus;
+  let bonusCollected = false;
+  if (
+    bonus !== undefined &&
+    !gameOver &&
+    !next.bonusCollected &&
+    next.powerActive &&
+    Math.hypot(
+      next.x + config.playerWidth / 2 - bonus.x,
+      next.y + config.playerHeight / 2 - bonus.y,
+    ) <=
+      pickupRadius + 4
+  ) {
+    next = { ...next, bonusCollected: true };
+    bonusCollected = true;
+  }
+
   const checkpoint = gameOver ? undefined : reachedCheckpoint(next, config);
   if (checkpoint !== undefined) {
     next = { ...next, activeCheckpointId: checkpoint.id };
@@ -761,6 +872,7 @@ export function stepPlatformer(
       respawned,
       finished,
       gameOver,
+      bonusCollected,
       sprintStarted: sprintStarted && !respawned && !gameOver,
       powerStarted: powerStarted && !respawned && !gameOver,
       openedObstacleIds: newlyOpenedIds,

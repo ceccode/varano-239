@@ -156,6 +156,15 @@ test("completes the whole story with the keyboard and restarts", async ({
     .focus();
   await page.keyboard.press("Enter");
 
+  // The interlude choice (ADR-043): the player decides between levels.
+  await expect(
+    page.getByText(message("core.message.choice2.prompt")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.choice2.mute") })
+    .focus();
+  await page.keyboard.press("Enter");
+
   // Chapter 2: the media circus, where the level grants a power per role.
   await expect(
     page.getByText(message("core.message.level3.recap")),
@@ -177,6 +186,10 @@ test("completes the whole story with the keyboard and restarts", async ({
   ).toBeVisible();
   await page
     .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+  await page
+    .getByRole("button", { name: message("core.message.choice3.delete") })
     .focus();
   await page.keyboard.press("Enter");
 
@@ -201,6 +214,10 @@ test("completes the whole story with the keyboard and restarts", async ({
   ).toBeVisible();
   await page
     .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+  await page
+    .getByRole("button", { name: message("core.message.choice4.close") })
     .focus();
   await page.keyboard.press("Enter");
 
@@ -300,15 +317,27 @@ test("guards the lethal choice behind an explicit confirmation", async ({
     .getByRole("button", { name: message("core.message.choice.document") })
     .click();
 
-  // Chapters 1-4: every briefing card carries its own skip.
-  for (let chapter = 0; chapter < 4; chapter += 1) {
+  // Chapters 1-3: skip the level, advance the dialogue, take the interlude
+  // choice (ADR-043). Chapter 4's dialogue hands over to the tower directly.
+  for (const interlude of [
+    "core.message.choice2.call",
+    "core.message.choice3.hand-over",
+    "core.message.choice4.photograph",
+  ] as const) {
     await page
       .getByRole("button", { name: message("core.message.level.skip") })
       .click();
     await page
       .getByRole("button", { name: message("core.message.ui.continue") })
       .click();
+    await page.getByRole("button", { name: message(interlude) }).click();
   }
+  await page
+    .getByRole("button", { name: message("core.message.level.skip") })
+    .click();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .click();
 
   // The confrontation shows the lethal option to this setup only, always
   // alongside the non-lethal stands (ADR-013).
@@ -489,6 +518,10 @@ for (const [roleKey, labelKey] of Object.entries(powerLabelKeys) as [
       .click();
     await page
       .getByRole("button", { name: message("core.message.ui.continue") })
+      .click();
+    // Chapter 1's interlude choice (ADR-043) sits before level 3's briefing.
+    await page
+      .getByRole("button", { name: message("core.message.choice2.call") })
       .click();
 
     await page

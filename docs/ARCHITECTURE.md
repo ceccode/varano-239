@@ -493,6 +493,8 @@ Cinque `LevelNode` condividono lo stesso adapter platformer e la stessa fisica p
 
 Ogni livello ha **3 vite per tentativo** (ADR-041): cadute e veicoli di pattuglia costano una vita; a zero la card KO offre «Riprova il livello» (stato di sessione ricreato da zero) e il consueto «Salta il livello». La storia non perde mai progressi e il grafo narrativo non sa nulla di vite.
 
+Dalle ADR-042/043/044: ogni livello dichiara la propria traccia chiptune (`music?`), può avere piattaforme mobili one-way che trasportano chi ci sta sopra (`movingPlatforms?`, onda triangolare pura come ADR-037), una stella bonus presa solo col superpotere ingaggiato (`bonus?`, +500 punti, mai richiesta) e un cameo deterministico del Varano (`cameo?`, solo presentazione). I dialoghi sono bolle con il nome del parlante (chiave `<pack>.message.speaker.X` derivata dallo `speakerId` e validata in build) e i capitoli 1-3 hanno una micro-scelta d'interludio con effetti sui punteggi, mostrati nella scheda di briefing.
+
 Ogni nodo porta le proprie `headingKey` e `introKey` (ADR-030). `power?` e `obstacles?` sono opzionali come `sprint?`, quindi un livello nuovo non tocca il bilanciamento di quelli esistenti.
 
 Ogni livello dichiara inoltre un `backdrop` obbligatorio (ADR-033) con cielo, ora del giorno e i due strati di parallasse. Vive in `PlatformerViewConfig` perché è presentazione: `PlatformerConfig`, la fisica pura, non conosce colori. `registeredLevels` espone tutti i livelli con la loro configurazione, così le invarianti di design si affermano sull'intero registro invece che su un livello alla volta.

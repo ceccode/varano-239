@@ -473,3 +473,38 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Modello: `lives?` in `PlatformerConfig` con il default condiviso `lives: 3` in `platformerDefaults`; senza limite quando omesso, così i test mirati del modello restano validi. `livesRemaining` e `gameOver` vivono nello stato puro; il reducer e il grafo narrativo non sanno nulla di vite.
 - Verifica: test del modello (caduta e veicolo scalano una vita, ostacoli statici mai, ultimo respawn negato e stato terminale), test DOM della card (focus su «Riprova», retry che azzera, skip equivalente), E2E con le vite in stato, e nel browser reale un KO provocato con tre cadute e il retry che riparte pieno.
 - Conseguenza: il punteggio continua a pesare i respawn; un KO non assegna né toglie punti di partita, semplicemente il livello ricomincia. Se in futuro si vorranno vite condivise sull'intera partita o continue limitati, è una nuova decisione.
+
+## ADR-042 — Una musica per livello
+
+- Stato: **Accettata**
+- Data: 7 agosto 2026
+- Contesto: cinque livelli con fondali distinti (ADR-033) suonavano tutti uguali — un solo loop chiptune di 4 battute in La minore a 108 BPM per l'intero gioco. L'analisi sulla monotonia del proprietario ha indicato la musica come la modifica dal miglior rapporto resa/costo.
+- Decisione: le tracce diventano **dati** (`musicTracks` in `chiptune-audio.ts`): tempo, timbri degli oscillatori e pattern di 32 step per lead e basso. Cinque loop originali sintetizzati a runtime (ADR-019, zero file e zero dipendenze): `fields` è **il loop pubblicato, intoccato** (il livello 1 suona come ha sempre suonato); `chats` (Mi minore, 132 BPM, nervoso), `fanfare` (Do maggiore, 120), `sunset` (Re dorico, 96, caldo), `keep` (Re minore basso, 84, sotto le volte).
+- La porta resta piccola: `startMusic(track?: string)` — il layer dei livelli passa un nome (`music?` nella configurazione del livello) e non importa tipi audio; un nome sconosciuto o assente degrada al loop originale.
+- Verifica: un test afferma che ogni livello registrato dichiara una traccia distinta (con `fields` implicito sul livello 1); i test esistenti dell'adapter audio non cambiano.
+- Conseguenza: un livello futuro aggiunge un pattern e un nome. Cambiare la musica a metà livello (es. sul tetto del livello 5) resta possibile ma è un'altra decisione.
+
+## ADR-043 — Interludi vivi: dialoghi a battute, micro-scelte e reputazione visibile
+
+- Stato: **Accettata**
+- Data: 7 agosto 2026
+- Contesto: fra il prologo e il confronto finale il giocatore non decideva mai nulla: due sole scelte nell'intera partita, e i dialoghi erano un muro di testo con un pulsante. I punteggi `evidence/care/publicTrust` esistevano nel dominio dal primo giorno ma non erano mai mostrati.
+- Decisione, in tre parti:
+  1. **Dialoghi a battute.** Ogni riga diventa una bolla con il nome del parlante (chiave derivata per convenzione: `<pack>.speaker.X` → `<pack>.message.speaker.X`, validata in build) e un ingresso scaglionato via CSS. Tutto il testo è nel DOM da subito: lettori di schermo e `prefers-reduced-motion` vedono la scena intera, l'animazione è solo presentazione.
+  2. **Una micro-scelta per interludio** nei capitoli 1-3 (il numero sconosciuto, il microfono aperto, la porta di servizio): due opzioni, effetti sui punteggi e `record-choice`, stesso capitolo e stesso ritorno a `nextChapterNodeId`. Il capitolo 4 non ne ha: il suo sbocco è il confronto (ADR-040). Il giocatore decide qualcosa ogni due-tre minuti.
+  3. **Reputazione visibile**: la scheda di briefing mostra «Prove · Cura · Fiducia» della partita, così le scelte hanno un riscontro leggibile.
+- Vincoli: le scelte non bloccano mai il percorso (entrambe le opzioni proseguono); nessun dato nuovo raccolto; la satira resta sul mittente e sul paese, mai sul giocatore.
+- Conseguenza: i walkthrough di test e gli E2E attraversano tre scelte in più; l'ADR-034 resta vera per i livelli (le scelte vivono nei capitoli esistenti come contenuto, non come struttura).
+
+## ADR-044 — Livelli vivi: piattaforme mobili, indizio guadagnato, stella da potere e cameo
+
+- Stato: **Accettata**
+- Data: 7 agosto 2026
+- Contesto: dentro il livello il ritmo era piatto — tutto fermo tranne i veicoli (ADR-037), indizi su mensole lungo la linea principale, superpoteri ignorabili per l'intera partita («salto tutto» era sempre ottimale).
+- Decisione, in quattro parti:
+  1. **Piattaforme mobili** (`movingPlatforms?`): la stessa onda triangolare pura di ADR-037 applicata a una piattaforma one-way, su un asse; chi ci sta sopra viene **trasportato** (il delta della piattaforma si somma alla base del giocatore, per step, deterministico). Debutti: la **zattera** sul terzo tratto del fossato del parco (asse x) e il **montacarichi** sulla seconda tromba delle scale del castello (asse y). Invariante confermata: ogni fossato resta saltabile da solo — i mover sono rotte sceniche, mai chiavi.
+  2. **Indizio guadagnato**: in ogni livello uno dei tre indizi chiede una deviazione — la percia alta nei livelli 1 e 2, le squame spostate **dentro il raggio di pattuglia del furgoncino** nel 4; nei livelli 3 e 5 la collocazione lo era già. Con le vite (ADR-041) il rischio/ricompensa ha finalmente un prezzo. L'invariante «ogni indizio ha un appoggio sotto» è promossa a test su **tutti** i livelli registrati.
+  3. **La stella della Leggenda** (`bonus?`): un raccoglibile facoltativo nei livelli con superpotere (3-5), preso **solo mentre il potere è ingaggiato** (`powerActive`), +500 punti e nessun altro effetto. È spettro finché il potere è spento, si accende quando è attivo: il pulsante ★ smette di essere decorativo e ogni ruolo ha il suo modo di arrivarci. Non è mai un indizio e non serve a finire il livello; la collocazione è a portata di piattaforma, così la sfida è «essere lì col potere acceso», non il pixel-perfect.
+  4. **Il cameo del Varano** (`cameo?`): l'apparizione gentile prevista dal game design entra nei livelli — una per livello (coda dietro il covone, occhi nella siepe, coda dietro il poster, occhi nel fossato, occhi nella feritoia), deterministica, una sola volta, con la propria riga narrativa. Pura presentazione nell'adapter; con movimento ridotto il livello non gira affatto, quindi il vincolo sui popup resta rispettato.
+- Verifica: determinismo e confini dei mover, atterraggio e trasporto (montacarichi giù, zattera avanti), stella presa solo col potere e una sola volta, cameo e traccia musicale distinti per livello, indizi con appoggio su tutti i livelli; verifica nel browser reale con zattera, montacarichi, stella raccolta e cameo fotografati.
+- Conseguenza: `dataset.playerY` si aggiunge ai ganci di guida dei test. I livelli futuri hanno quattro strumenti nuovi senza codice nuovo; se un mover dovrà mai essere una chiave di percorso, quella è una decisione da prendere esplicitamente contro l'invariante di ADR-032.

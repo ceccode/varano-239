@@ -7,6 +7,7 @@ export const castleParkChapterId = "core.chapter.c03-castle-park";
 
 const levelNodeId = "core.node.park.level";
 const dialogueId = "core.node.park.dialogue";
+const choiceId = "core.node.park.choice";
 
 const nodes: readonly StoryNode[] = [
   {
@@ -54,7 +55,43 @@ const nodes: readonly StoryNode[] = [
         textKey: "core.message.dialogue4.twist",
       },
     ],
-    next: nextChapterNodeId,
+    next: choiceId,
+  },
+  {
+    id: choiceId,
+    chapterId: castleParkChapterId,
+    type: "choice",
+    narrativeLayer: "legend",
+    headingKey: "core.message.choice4.heading",
+    promptKey: "core.message.choice4.prompt",
+    options: [
+      {
+        id: "core.option.park.photograph",
+        textKey: "core.message.choice4.photograph",
+        effects: [
+          { type: "adjust-score", score: "evidence", delta: 1 },
+          {
+            type: "record-choice",
+            choiceId: "core.choice.park.door",
+            optionId: "core.option.park.photograph",
+          },
+        ],
+        targetNodeId: nextChapterNodeId,
+      },
+      {
+        id: "core.option.park.close",
+        textKey: "core.message.choice4.close",
+        effects: [
+          { type: "adjust-score", score: "care", delta: 1 },
+          {
+            type: "record-choice",
+            choiceId: "core.choice.park.door",
+            optionId: "core.option.park.close",
+          },
+        ],
+        targetNodeId: nextChapterNodeId,
+      },
+    ],
   },
 ];
 
@@ -64,7 +101,7 @@ export const castleParkChapter: ChapterBundle = {
     titleKey: "core.message.chapter.park.title",
     entryNodeId: levelNodeId,
     checkpointNodeId: levelNodeId,
-    exitNodeId: dialogueId,
+    exitNodeId: choiceId,
   },
   nodes,
   dossierCards: [],

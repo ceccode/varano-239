@@ -27,17 +27,25 @@ export const campiLevelConfig = defineLevel({
     { x: 1880, y: 82, width: 60 },
     { x: 2380, y: 118, width: 72 },
     { x: 2500, y: 96, width: 64 },
+    // The earned clue's perch (ADR-044): one of the three asks for a climb.
+    { x: 2560, y: 68, width: 56 },
   ],
   pickups: [
     { id: "photo", x: 668, y: 66 },
     { id: "trace", x: 1910, y: 64 },
-    { id: "water", x: 2532, y: 78 },
+    { id: "water", x: 2588, y: 36 },
   ],
   checkpoints: [
     { id: "checkpoint-1", x: 990 },
     { id: "checkpoint-2", x: 2245 },
   ],
   finishX: 3080,
+  cameo: {
+    x: 1530,
+    y: 100,
+    kind: "tail",
+    narrativeKey: "core.message.level.narrative.cameo",
+  },
   // 2:39 in the fields: exactly the colours shipped before ADR-033.
   backdrop: {
     sky: ["#0a0f26", "#10203f", "#1c3350"],
@@ -89,19 +97,28 @@ export const chatLevelConfig = defineLevel({
     { x: 1410, y: 108, width: 80 },
     { x: 1980, y: 116, width: 72 },
     { x: 2100, y: 90, width: 64 },
+    // The earned clue's perch (ADR-044), above the two-step climb.
+    { x: 2088, y: 62, width: 56 },
     { x: 2660, y: 100, width: 84 },
     { x: 2900, y: 112, width: 70 },
   ],
   pickups: [
     { id: "screenshot", x: 780, y: 72 },
     { id: "vocale", x: 1450, y: 68 },
-    { id: "numero", x: 2700, y: 62 },
+    { id: "numero", x: 2116, y: 30 },
   ],
   checkpoints: [
     { id: "chat-checkpoint-1", x: 1240 },
     { id: "chat-checkpoint-2", x: 2500 },
   ],
   finishX: 3480,
+  music: "chats",
+  cameo: {
+    x: 1620,
+    y: 112,
+    kind: "eyes",
+    narrativeKey: "core.message.level2.narrative.cameo",
+  },
   // 2:41 among the houses: still night, but the village is awake.
   backdrop: {
     sky: ["#0d1430", "#152a4c", "#24405e"],
@@ -254,6 +271,14 @@ export const superstarLevelConfig = defineLevel({
   ],
   finishX: 3780,
   finishKind: "walls",
+  music: "fanfare",
+  bonus: { id: "stella-superstar", x: 2570, y: 88 },
+  cameo: {
+    x: 2790,
+    y: 100,
+    kind: "tail",
+    narrativeKey: "core.message.level3.narrative.cameo",
+  },
   // Opening day: the one level in broad daylight, with the Castello in sight.
   backdrop: {
     sky: ["#3f8fc4", "#79bade", "#bcdcee"],
@@ -340,7 +365,8 @@ export const parcoLevelConfig = defineLevel({
   pickups: [
     { id: "badge", x: 800, y: 86 },
     { id: "porta", x: 1930, y: 78 },
-    { id: "squame", x: 2330, y: 122 },
+    // The earned clue (ADR-044): right in the gadget van's patrol stretch.
+    { id: "squame", x: 3050, y: 122 },
   ],
   checkpoints: [
     { id: "parco-checkpoint-1", x: 1420 },
@@ -349,6 +375,27 @@ export const parcoLevelConfig = defineLevel({
   finishX: 3880,
   finishKind: "walls",
   gapKind: "water",
+  music: "sunset",
+  // The raft ferries across the third stretch of the moat (ADR-044); the gap
+  // stays jumpable on its own, the raft is the scenic route.
+  movingPlatforms: [
+    {
+      id: "zattera",
+      x: 2200,
+      y: 158,
+      width: 40,
+      axis: "x",
+      range: 48,
+      speed: 30,
+    },
+  ],
+  bonus: { id: "stella-parco", x: 2620, y: 88 },
+  cameo: {
+    x: 1345,
+    y: 158,
+    kind: "eyes",
+    narrativeKey: "core.message.level4.narrative.cameo",
+  },
   // Late golden afternoon of opening day, the castle now looming.
   backdrop: {
     sky: ["#2e4a72", "#c4763f", "#e8b25c"],
@@ -517,6 +564,27 @@ export const castelloLevelConfig = defineLevel({
   ],
   finishX: 4080,
   finishKind: "sunstone",
+  music: "keep",
+  // The dumbwaiter rides over the second stairwell (ADR-044); the gap stays
+  // jumpable on its own.
+  movingPlatforms: [
+    {
+      id: "montacarichi",
+      x: 1345,
+      y: 110,
+      width: 70,
+      axis: "y",
+      range: 34,
+      speed: 28,
+    },
+  ],
+  bonus: { id: "stella-castello", x: 2710, y: 94 },
+  cameo: {
+    x: 1200,
+    y: 76,
+    kind: "eyes",
+    narrativeKey: "core.message.level5.narrative.cameo",
+  },
   groundKind: "stone",
   platformKind: "stone",
   // The one level without a sky (ADR-039): stone vaults until the doorway at
@@ -574,6 +642,9 @@ function descriptorKeys(config: PlatformerViewConfig): readonly MessageKey[] {
     ...(config.narrativeCarHitKey === undefined
       ? []
       : [config.narrativeCarHitKey]),
+    ...(config.cameo === undefined ? [] : [config.cameo.narrativeKey]),
+    // The legend star's line is shared chrome, validated where it is used.
+    ...(config.bonus === undefined ? [] : ["core.message.level.bonus"]),
     // Every role's power carries its own button label and narrative line, so a
     // missing one is a build error like any other level text.
     ...Object.values(config.powersByRole ?? {}).flatMap((entry) => [

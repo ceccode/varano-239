@@ -7,6 +7,7 @@ export const villageChatsChapterId = "core.chapter.c01-village-chats";
 
 const levelNodeId = "core.node.chat.level";
 const dialogueId = "core.node.chat.dialogue";
+const choiceId = "core.node.chat.choice";
 
 const nodes: readonly StoryNode[] = [
   {
@@ -54,7 +55,43 @@ const nodes: readonly StoryNode[] = [
         textKey: "core.message.dialogue2.twist",
       },
     ],
-    next: nextChapterNodeId,
+    next: choiceId,
+  },
+  {
+    id: choiceId,
+    chapterId: villageChatsChapterId,
+    type: "choice",
+    narrativeLayer: "legend",
+    headingKey: "core.message.choice2.heading",
+    promptKey: "core.message.choice2.prompt",
+    options: [
+      {
+        id: "core.option.chat.call",
+        textKey: "core.message.choice2.call",
+        effects: [
+          { type: "adjust-score", score: "evidence", delta: 1 },
+          {
+            type: "record-choice",
+            choiceId: "core.choice.chat.number",
+            optionId: "core.option.chat.call",
+          },
+        ],
+        targetNodeId: nextChapterNodeId,
+      },
+      {
+        id: "core.option.chat.mute",
+        textKey: "core.message.choice2.mute",
+        effects: [
+          { type: "adjust-score", score: "publicTrust", delta: 1 },
+          {
+            type: "record-choice",
+            choiceId: "core.choice.chat.number",
+            optionId: "core.option.chat.mute",
+          },
+        ],
+        targetNodeId: nextChapterNodeId,
+      },
+    ],
   },
 ];
 
@@ -64,7 +101,7 @@ export const villageChatsChapter: ChapterBundle = {
     titleKey: "core.message.chapter.chat.title",
     entryNodeId: levelNodeId,
     checkpointNodeId: levelNodeId,
-    exitNodeId: dialogueId,
+    exitNodeId: choiceId,
   },
   nodes,
   dossierCards: [],

@@ -5,6 +5,7 @@ import {
   carDirectionAt,
   carPositionAt,
   createPlatformerState,
+  movingPlatformAt,
   stepPlatformer,
   type PlatformerConfig,
   type PlatformerEvents,
@@ -52,6 +53,17 @@ export type ObstacleLook = "portcullis" | "fake-varano";
 /** A patrol car drawn as something else: same triangle wave, new dress. */
 export type CarLook = "robot";
 
+/**
+ * The Varano's cameo (ADR-044): a gentle, deterministic one-off apparition —
+ * a tail or a pair of eyes — with its own narrative line. Pure presentation.
+ */
+export interface CameoConfig {
+  readonly x: number;
+  readonly y: number;
+  readonly kind: "tail" | "eyes";
+  readonly narrativeKey: MessageKey;
+}
+
 export interface PlatformerViewConfig extends PlatformerConfig {
   readonly objectiveKey: MessageKey;
   readonly controlsKey: MessageKey;
@@ -76,6 +88,8 @@ export interface PlatformerViewConfig extends PlatformerConfig {
   readonly narrativeSprintKey?: MessageKey;
   /** Only on levels that gate a superpower per role (ADR-031). */
   readonly powersByRole?: Readonly<Partial<Record<Role, LevelPowerEntry>>>;
+  /** The level's own looping tune (ADR-042); the original loop when omitted. */
+  readonly music?: "fields" | "chats" | "fanfare" | "sunset" | "keep";
   /** What the finish line looks like; reeds when omitted. */
   readonly finishKind?: "reeds" | "walls" | "sunstone";
   /**
@@ -91,6 +105,8 @@ export interface PlatformerViewConfig extends PlatformerConfig {
   readonly obstacleLooks?: Readonly<Record<string, ObstacleLook>>;
   /** Costumes by car id (ADR-039); the gadget van otherwise. */
   readonly carLooks?: Readonly<Record<string, CarLook>>;
+  /** The level's one gentle apparition (ADR-044), if it has one. */
+  readonly cameo?: CameoConfig;
   readonly backdrop: BackdropConfig;
 }
 
@@ -248,9 +264,11 @@ function pseudoRandom(seed: number): number {
 
 export function levelScore(state: PlatformerState): number {
   const clues = state.collectedIds.length * 300;
+  // The legend star (ADR-044): a superpower's own reward, score only.
+  const star = state.bonusCollected ? 500 : 0;
   const timeBonus = Math.max(0, 1500 - Math.round(state.elapsedSeconds * 10));
   const spillMalus = state.respawns * 50;
-  return Math.max(0, clues + timeBonus - spillMalus);
+  return Math.max(0, clues + star + timeBonus - spillMalus);
 }
 
 export function levelOutcome(
@@ -294,6 +312,7 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
     let camera = 0;
     let runPhase = 0;
     let wasBlocked = false;
+    let cameoTriggeredAt: number | undefined;
     const particles: Particle[] = [];
 
     const instructions = createElement(document, "p", "arcade-instructions");
@@ -312,7 +331,7 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
     const ensureMusic = (): void => {
       if (!musicStarted) {
         musicStarted = true;
-        request.audio.startMusic();
+        request.audio.startMusic(config.music);
       }
     };
 
@@ -447,6 +466,7 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       }
       host.dataset.collected = String(collected);
       host.dataset.playerX = String(Math.round(state.x));
+      host.dataset.playerY = String(Math.round(state.y));
       // The level clock, for tests that need to read a patrol's phase.
       host.dataset.elapsed = state.elapsedSeconds.toFixed(2);
       if (Number.isFinite(state.livesRemaining)) {
@@ -533,6 +553,11 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         spawnDust(14, palette.pickup);
         narrate(config.narrativeFinishKey);
       }
+      if (events.bonusCollected) {
+        request.audio.playEffect("power");
+        spawnDust(10, palette.pickup);
+        narrate("core.message.level.bonus");
+      }
       if (events.gameOver) {
         // The last life is gone (ADR-041): the KO card takes over from here.
         request.audio.playEffect("respawn");
@@ -552,6 +577,16 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
           accumulator = 0;
           break;
         }
+      }
+      // The cameo fires once, when the player gets close (ADR-044).
+      const cameo = config.cameo;
+      if (
+        cameo !== undefined &&
+        cameoTriggeredAt === undefined &&
+        state.x + config.playerWidth >= cameo.x - 90
+      ) {
+        cameoTriggeredAt = state.elapsedSeconds;
+        narrate(cameo.narrativeKey);
       }
     };
 
@@ -1119,6 +1154,118 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       }
     };
 
+    /** Moving platforms (ADR-044): a slab with its rope or its wake. */
+    const drawMovingPlatforms = (time: number): void => {
+      const stone = config.platformKind === "stone";
+      for (const mover of config.movingPlatforms ?? []) {
+        const position = movingPlatformAt(mover, time);
+        const startX = Math.floor(position.x - camera);
+        const startY = Math.floor(position.y);
+        if (startX > config.viewportWidth || startX + position.width < 0) {
+          continue;
+        }
+        context.fillStyle = stone ? palette.stoneFloor : palette.hay;
+        context.fillRect(startX, startY, position.width, 8);
+        context.fillStyle = stone ? palette.stoneFloorDark : palette.hayDark;
+        context.fillRect(startX, startY + 6, position.width, 2);
+        context.fillStyle = stone ? palette.stoneFloorLight : palette.hayLight;
+        context.fillRect(startX, startY, position.width, 1);
+        if (mover.axis === "y") {
+          // The hoist rope, so an elevator reads as an elevator.
+          context.fillStyle = palette.cableLine;
+          const ropeX = startX + Math.floor(position.width / 2);
+          context.fillRect(ropeX, 0, 1, startY);
+        } else {
+          // A small wake behind a ferrying raft.
+          context.fillStyle = palette.waterGlint;
+          context.fillRect(startX - 3, startY + 4, 2, 1);
+          context.fillRect(startX + position.width + 1, startY + 4, 2, 1);
+        }
+      }
+    };
+
+    /**
+     * The legend star (ADR-044): a ghost until the superpower is engaged,
+     * bright while it is — the ★ button's own reward.
+     */
+    const drawBonus = (time: number): void => {
+      const bonus = config.bonus;
+      if (bonus === undefined || state.bonusCollected) {
+        return;
+      }
+      const drawX = Math.floor(bonus.x - camera);
+      if (drawX > config.viewportWidth + 10 || drawX < -10) {
+        return;
+      }
+      const float = Math.sin(time * 2.4) * 2;
+      const drawY = Math.floor(bonus.y + float);
+      const lit = state.powerActive;
+      context.globalAlpha = lit ? 1 : 0.35;
+      context.fillStyle = lit ? palette.pickupCore : palette.power;
+      // A chunky pixel star.
+      context.fillRect(drawX - 1, drawY - 4, 2, 8);
+      context.fillRect(drawX - 4, drawY - 1, 8, 2);
+      context.fillRect(drawX - 2, drawY - 2, 4, 4);
+      if (lit) {
+        context.fillStyle = palette.pickup;
+        const sparkle = Math.floor(time * 6) % 2;
+        context.fillRect(drawX - 6 + sparkle, drawY - 6, 1, 1);
+        context.fillRect(drawX + 5 - sparkle, drawY + 5, 1, 1);
+      }
+      context.globalAlpha = 1;
+    };
+
+    /** The cameo (ADR-044): a tail or two eyes, once, then gone. */
+    const drawCameo = (time: number): void => {
+      const cameo = config.cameo;
+      if (cameo === undefined || cameoTriggeredAt === undefined) {
+        return;
+      }
+      const age = time - cameoTriggeredAt;
+      if (age > 1.8) {
+        return;
+      }
+      const drawX = Math.floor(cameo.x - camera);
+      if (drawX > config.viewportWidth + 20 || drawX < -20) {
+        return;
+      }
+      // Peek in, hold, slip away: 0..1 over the apparition's life.
+      const peek =
+        age < 0.5 ? age / 0.5 : age > 1.3 ? Math.max(0, (1.8 - age) / 0.5) : 1;
+
+      if (cameo.kind === "eyes") {
+        const blink = Math.floor(time * 3) % 5 === 0;
+        if (!blink) {
+          context.fillStyle = palette.wallWindow;
+          context.globalAlpha = peek;
+          context.fillRect(drawX - 4, Math.floor(cameo.y), 3, 3);
+          context.fillRect(drawX + 2, Math.floor(cameo.y), 3, 3);
+          context.fillStyle = palette.eye;
+          context.fillRect(drawX - 3, Math.floor(cameo.y) + 1, 1, 1);
+          context.fillRect(drawX + 3, Math.floor(cameo.y) + 1, 1, 1);
+          context.globalAlpha = 1;
+        }
+        return;
+      }
+
+      // The tail, rising from behind the scenery and swaying.
+      const rise = Math.floor(14 * peek);
+      context.fillStyle = palette.bodyGreen;
+      for (let index = 0; index < rise; index += 1) {
+        const sway = Math.sin(time * 5 + index * 0.6) * 2;
+        context.fillRect(
+          drawX + Math.floor(sway) + Math.floor(index * 0.4),
+          Math.floor(cameo.y) - index,
+          3,
+          2,
+        );
+      }
+      context.fillStyle = palette.bodyDark;
+      if (rise > 3) {
+        context.fillRect(drawX + 1, Math.floor(cameo.y) - rise + 2, 2, 2);
+      }
+    };
+
     const drawCheckpoints = (): void => {
       for (const checkpoint of config.checkpoints) {
         const poleX = Math.floor(checkpoint.x - camera);
@@ -1597,9 +1744,12 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       drawWater(time);
       drawGround();
       drawPlatforms();
+      drawMovingPlatforms(time);
+      drawCameo(time);
       drawObstacles(time);
       drawCars(time);
       drawPickups(time);
+      drawBonus(time);
       drawParticles();
       drawPowerRing(time);
       drawPlayer(time);
@@ -1642,6 +1792,7 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       input.powerHeld = false;
       // The next gesture restarts the music from the top.
       musicStarted = false;
+      cameoTriggeredAt = undefined;
       gameOverCard?.remove();
       gameOverCard = undefined;
       narrative.textContent = request.message(config.narrativeStartKey);
