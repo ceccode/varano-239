@@ -269,6 +269,23 @@ function renderLevelBriefing(
     );
   }
 
+  // The run's reputation, in plain language (ADR-043): the three scores the
+  // domain always tracked, finally readable between one level and the next.
+  const run = context.state.run;
+  if (run !== undefined) {
+    const reputation = element(
+      context.document,
+      "p",
+      context.content.message("core.message.level.briefing.reputation", {
+        evidence: run.evidence,
+        care: run.care,
+        publicTrust: run.publicTrust,
+      }),
+    );
+    reputation.className = "quiet-copy briefing__reputation";
+    card.append(reputation);
+  }
+
   const actions = element(context.document, "div");
   actions.className = "briefing__actions";
 
@@ -400,6 +417,11 @@ function renderScene(
   card.append(scene, listHeading, list);
 }
 
+/** The speaker's display-name key, derived by convention (ADR-043). */
+function speakerNameKey(speakerId: string): MessageKey {
+  return speakerId.replace(".speaker.", ".message.speaker.");
+}
+
 function renderDialogue(
   context: RenderContext,
   node: StoryNode & { type: "dialogue" },
@@ -411,11 +433,27 @@ function renderDialogue(
   if (setup !== undefined && context.state.run !== undefined) {
     const dialogue = element(context.document, "div");
     dialogue.className = "dialogue";
+    let index = 0;
     for (const line of node.lines) {
       if (matchesConditions(line.when, { setup, run: context.state.run })) {
-        dialogue.append(
+        // One bubble per line, named and staggered like a conversation
+        // (ADR-043). Everything is in the DOM at once — the stagger is CSS
+        // only, so screen readers and reduced motion see the whole scene.
+        const bubble = element(context.document, "div");
+        bubble.className = "dialogue__line";
+        bubble.style.animationDelay = `${String(index * 320)}ms`;
+        const speaker = element(
+          context.document,
+          "strong",
+          context.content.message(speakerNameKey(line.speakerId)),
+        );
+        speaker.className = "dialogue__speaker";
+        bubble.append(
+          speaker,
           element(context.document, "p", context.content.message(line.textKey)),
         );
+        dialogue.append(bubble);
+        index += 1;
       }
     }
     card.append(dialogue);

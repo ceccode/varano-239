@@ -26,6 +26,8 @@ export const superstarMessages = {
     "Transenna presa. Da qui si riparte, e stavolta con il pubblico già scaldato.",
   "core.message.level3.narrative.respawn":
     "Giù dal palco. Nessun danno, solo qualche secondo e una discreta figura: si riparte dalla transenna.",
+  "core.message.level3.narrative.cameo":
+    "Dietro il poster del Conte spunta una coda vera. Nessuno se ne accorge: stanno tutti fotografando quella finta.",
   "core.message.level3.narrative.finish":
     "Sei sotto le mura del Castello Bonoris. Tre prove, un nome solo, e un poster che ti ha appena promosso Conte.",
   "core.message.dialogue3.ada":
@@ -42,4 +44,10 @@ export const superstarMessages = {
     "Una curiosa indica un secondo manifesto: «Ma quello ha sei dita e due code.» Ada sospira: «Fatto col computer. Adesso persino le leggende hanno una versione finta.»",
   "core.message.dialogue3.twist":
     "Ada chiude il taccuino: «Una cosa alla volta. Chi ha spedito la foto voleva un Conte, e il Conte è appena entrato nel parco del castello. Da solo.»",
+  "core.message.choice3.heading": "Il microfono aperto",
+  "core.message.choice3.prompt":
+    "Nel registratore c’è la voce del mittente: «la foto l’ho girata io alle chat». Diciotto telecamere non l’hanno sentita. Tu sì.",
+  "core.message.choice3.hand-over": "Consegna la registrazione ad Ada",
+  "core.message.choice3.delete":
+    "Cancella il file: prima il Varano, poi lo scoop",
 } as const;

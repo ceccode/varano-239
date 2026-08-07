@@ -39,11 +39,14 @@ function nodeMessageKeys(node: StoryNode): readonly MessageKey[] {
         ...node.hotspots.map((hotspot) => hotspot.labelKey),
       ];
     case "dialogue":
-      return node.lines.flatMap((line) =>
-        line.dialectTextKey === undefined
+      // Every speaker needs a display name for its bubble (ADR-043); the key
+      // is derived from the speaker id by convention, per pack namespace.
+      return node.lines.flatMap((line) => [
+        line.speakerId.replace(".speaker.", ".message.speaker."),
+        ...(line.dialectTextKey === undefined
           ? [line.textKey]
-          : [line.textKey, line.dialectTextKey],
-      );
+          : [line.textKey, line.dialectTextKey]),
+      ]);
     case "choice":
       return [
         ...(node.headingKey === undefined ? [] : [node.headingKey]),

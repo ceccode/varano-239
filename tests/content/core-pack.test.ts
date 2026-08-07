@@ -39,15 +39,18 @@ function finishRun(
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
     { type: "OPTION_CHOSEN", optionId: "core.option.prologue.document" },
-    // Chapter 1: level 2, dialogue.
+    // Chapter 1: level 2, dialogue, the interlude choice (ADR-043).
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
-    // Chapter 2: level 3, dialogue.
+    { type: "OPTION_CHOSEN", optionId: "core.option.chat.call" },
+    // Chapter 2: level 3, dialogue, interlude choice.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
-    // Chapter 3: level 4, dialogue.
+    { type: "OPTION_CHOSEN", optionId: "core.option.superstar.hand-over" },
+    // Chapter 3: level 4, dialogue, interlude choice.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
+    { type: "OPTION_CHOSEN", optionId: "core.option.park.photograph" },
     // Chapter 4: level 5, the reveal dialogue (ADR-039).
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },

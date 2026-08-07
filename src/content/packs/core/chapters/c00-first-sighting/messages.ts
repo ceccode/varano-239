@@ -25,6 +25,8 @@ export const firstSightingMessages = {
     "Bandierina presa! Da qui non si torna indietro. Cioè sì, ma hai capito.",
   "core.message.level.narrative.respawn":
     "Ops. Il fosso era più fosso del previsto: si riparte dalla bandierina.",
+  "core.message.level.narrative.cameo":
+    "Qualcosa si muove dietro il covone. Sparito. Mezzo paese giurerebbe di aver visto una coda.",
   "core.message.level.narrative.finish":
     "Il canneto ti nasconde. Colpo di scena: nessuno ti ha visto. O forse sì?",
   "core.message.dialogue.ada":

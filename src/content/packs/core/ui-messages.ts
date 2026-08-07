@@ -49,6 +49,20 @@ export const uiMessages = {
   "core.message.level.briefing.recap": "Dove eravamo",
   "core.message.level.briefing.objective": "Che cosa devi fare",
   "core.message.level.briefing.power": "Il tuo superpotere",
+  // The run's reputation, finally visible (ADR-043).
+  "core.message.level.briefing.reputation":
+    "Reputazione — Prove: {evidence} · Cura: {care} · Fiducia: {publicTrust}",
+  // The legend star (ADR-044): the ★ button's own reward, score only.
+  "core.message.level.bonus":
+    "STELLA DELLA LEGGENDA! Solo un superpotere poteva prenderla: +500.",
+
+  // Speaker names for the dialogue bubbles (ADR-043).
+  "core.message.speaker.ada": "Ada Cartella",
+  "core.message.speaker.varano": "Il Varano",
+  "core.message.speaker.toni": "Toni Pista",
+  "core.message.speaker.marta": "Marta Ramarro",
+  "core.message.speaker.cesare": "Cesare Cerimonia",
+  "core.message.speaker.pina": "Pina Protocollo",
 
   // The role superpowers (ADR-031). The copy belongs to the role, not to a
   // level, so every level that grants them reuses these keys (ADR-036).
