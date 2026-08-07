@@ -161,6 +161,8 @@ export interface DialogueNode extends BaseNode {
 
 export interface ChoiceNode extends BaseNode {
   readonly type: "choice";
+  /** Own title, like a level's (ADR-030); the shared default when omitted. */
+  readonly headingKey?: MessageKey;
   readonly promptKey: MessageKey;
   readonly options: readonly ChoiceOption[];
 }

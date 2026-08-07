@@ -139,6 +139,12 @@ export interface PlatformerConfig {
   readonly pickups: readonly PlatformerPickup[];
   readonly checkpoints: readonly PlatformerCheckpoint[];
   readonly finishX: number;
+  /**
+   * Lives per attempt (ADR-041): a fall or a vehicle hit costs one; at zero
+   * the run is over and the level restarts from scratch. Omitted means
+   * unlimited — the pre-ADR-041 behaviour, kept for focused tests.
+   */
+  readonly lives?: number;
   /** Omitted on levels that do not grant the sprint. */
   readonly sprint?: SprintConfig;
   /** Omitted on levels without a role superpower; resolved per role by the registry. */
@@ -173,6 +179,10 @@ export interface PlatformerState {
   readonly respawns: number;
   readonly elapsedSeconds: number;
   readonly completed: boolean;
+  /** Lives left in this attempt; infinite when the config sets no limit. */
+  readonly livesRemaining: number;
+  /** True once the last life is gone (ADR-041): the attempt is over. */
+  readonly gameOver: boolean;
   /** Seconds of uninterrupted running in the same direction. */
   readonly sprintCharge: number;
   readonly sprinting: boolean;
@@ -194,6 +204,8 @@ export interface PlatformerEvents {
   readonly checkpointId: string | undefined;
   readonly respawned: boolean;
   readonly finished: boolean;
+  /** The last life just went (ADR-041): no respawn, the attempt ends here. */
+  readonly gameOver: boolean;
   readonly sprintStarted: boolean;
   readonly powerStarted: boolean;
   readonly openedObstacleIds: readonly string[];
@@ -222,6 +234,7 @@ const noEvents: PlatformerEvents = {
   checkpointId: undefined,
   respawned: false,
   finished: false,
+  gameOver: false,
   sprintStarted: false,
   powerStarted: false,
   openedObstacleIds: [],
@@ -341,6 +354,8 @@ export function createPlatformerState(
     respawns: 0,
     elapsedSeconds: 0,
     completed: false,
+    livesRemaining: config.lives ?? Number.POSITIVE_INFINITY,
+    gameOver: false,
     sprintCharge: 0,
     sprinting: false,
     powerCharge: 0,
@@ -426,7 +441,7 @@ export function stepPlatformer(
   deltaSeconds: number,
   config: PlatformerConfig,
 ): PlatformerStepResult {
-  if (state.completed) {
+  if (state.completed || state.gameOver) {
     return { state, events: noEvents };
   }
 
@@ -647,7 +662,8 @@ export function stepPlatformer(
   };
 
   // The soft respawn of ADR-018/035: back to the flag, clues and everything
-  // the scent found intact; sprint and power have to be charged again.
+  // the scent found intact; sprint and power have to be charged again. Since
+  // ADR-041 it also costs one of the attempt's lives.
   const respawnedState = (current: PlatformerState): PlatformerState => ({
     ...current,
     x: respawnX(current, config),
@@ -659,6 +675,7 @@ export function stepPlatformer(
     jumpBufferRemaining: 0,
     jumpCutAvailable: false,
     respawns: current.respawns + 1,
+    livesRemaining: current.livesRemaining - 1,
     sprintCharge: 0,
     sprinting: false,
     powerCharge: 0,
@@ -667,17 +684,34 @@ export function stepPlatformer(
     calmedObstacleIds: [],
   });
 
+  // On the last life there is no flag to come back to (ADR-041): the attempt
+  // ends and the adapter offers a fresh start or the usual skip.
+  const knockedOutState = (current: PlatformerState): PlatformerState => ({
+    ...current,
+    livesRemaining: current.livesRemaining - 1,
+    gameOver: true,
+    velocityX: 0,
+    velocityY: 0,
+  });
+  const lastLife = next.livesRemaining <= 1;
+
   let respawned = false;
+  let gameOver = false;
   if (next.y > config.worldHeight + fallRespawnMargin) {
-    next = respawnedState(next);
-    respawned = true;
+    if (lastLife) {
+      gameOver = true;
+      next = knockedOutState(next);
+    } else {
+      respawned = true;
+      next = respawnedState(next);
+    }
   }
 
   // A patrol car is the same fall in another costume (ADR-037): touching it
-  // sends the player back to the flag. Jumping clears it — the cars are lower
-  // than a jump by design, and the tests hold that line.
+  // costs a life like any fall. Jumping clears it — the cars are lower than a
+  // jump by design, and the tests hold that line.
   let carHit = false;
-  if (!respawned) {
+  if (!respawned && !gameOver) {
     const hit = (config.cars ?? []).some((car) => {
       const carX = carPositionAt(car, next.elapsedSeconds);
       const carY = config.floorY - car.height;
@@ -687,13 +721,18 @@ export function stepPlatformer(
       );
     });
     if (hit) {
-      next = respawnedState(next);
-      respawned = true;
       carHit = true;
+      if (lastLife) {
+        gameOver = true;
+        next = knockedOutState(next);
+      } else {
+        respawned = true;
+        next = respawnedState(next);
+      }
     }
   }
 
-  const collectedNow = collectPickups(next, config);
+  const collectedNow = gameOver ? [] : collectPickups(next, config);
   if (collectedNow.length > 0) {
     next = {
       ...next,
@@ -701,13 +740,13 @@ export function stepPlatformer(
     };
   }
 
-  const checkpoint = reachedCheckpoint(next, config);
+  const checkpoint = gameOver ? undefined : reachedCheckpoint(next, config);
   if (checkpoint !== undefined) {
     next = { ...next, activeCheckpointId: checkpoint.id };
   }
 
   const finished =
-    next.grounded && next.x + config.playerWidth >= config.finishX;
+    !gameOver && next.grounded && next.x + config.playerWidth >= config.finishX;
   if (finished) {
     next = { ...next, completed: true, velocityX: 0 };
   }
@@ -721,8 +760,9 @@ export function stepPlatformer(
       checkpointId: checkpoint?.id,
       respawned,
       finished,
-      sprintStarted: sprintStarted && !respawned,
-      powerStarted: powerStarted && !respawned,
+      gameOver,
+      sprintStarted: sprintStarted && !respawned && !gameOver,
+      powerStarted: powerStarted && !respawned && !gameOver,
       openedObstacleIds: newlyOpenedIds,
       blocked: contact.blocked,
       carHit,

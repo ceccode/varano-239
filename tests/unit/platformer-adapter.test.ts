@@ -111,9 +111,11 @@ describe("platformer canvas adapter", () => {
         HTMLButtonElement,
       );
     }
+    // Status carries the clue count and, since ADR-041, the lives left.
     expect(getByRole(host, "status").textContent).toBe(
-      "core.message.level.status.0",
+      "core.message.level.status.0 core.message.level.lives",
     );
+    expect(host.dataset.lives).toBe("3");
     expect(host.querySelector(".arcade-narrative")?.textContent).toBe(
       "core.message.level.narrative.start",
     );
@@ -127,6 +129,65 @@ describe("platformer canvas adapter", () => {
 
     handle.destroy();
     expect(request.audio.stopMusic).toHaveBeenCalled();
+  });
+
+  it("ends the attempt with a KO card and restarts it in place (ADR-041)", () => {
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    // Two lives over a walkable ledge: two walk-offs end the attempt.
+    const request = createRequest({
+      lives: 2,
+      groundSegments: [
+        { x: 0, width: 60 },
+        { x: 200, width: 200 },
+      ],
+      platforms: [],
+      pickups: [],
+      checkpoints: [],
+      cars: [],
+      finishX: 380,
+    });
+    const handle = platformerMiniGame.mount(host, request);
+
+    expect(host.dataset.lives).toBe("2");
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(400);
+
+    // First fall: one life gone, back at the start, still playing.
+    // Second fall: the KO card, with the focus on «Riprova il livello».
+    expect(host.dataset.lives).toBe("0");
+    const card = host.querySelector<HTMLElement>(".arcade-gameover");
+    expect(card).not.toBeNull();
+    expect(card?.getAttribute("role")).toBe("dialog");
+    expect(card?.textContent).toContain("core.message.level.gameover.title");
+    expect(document.activeElement?.textContent).toBe(
+      "core.message.level.gameover.retry",
+    );
+    // The equivalent skip stays available right on the card (ADR-018). The
+    // standalone host renders no HUD, so this is the card's own button.
+    expect(
+      getByRole(host, "button", { name: "core.message.level.skip" }),
+    ).toBeInstanceOf(HTMLButtonElement);
+
+    // «Riprova il livello» is a fresh attempt: full lives, card gone.
+    fireEvent.keyUp(window, { key: "ArrowRight" });
+    fireEvent.click(
+      getByRole(host, "button", { name: "core.message.level.gameover.retry" }),
+    );
+    expect(host.querySelector(".arcade-gameover")).toBeNull();
+    expect(host.dataset.lives).toBe("2");
+
+    // A second KO: this time the player skips with the same narrative exit.
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(400);
+    expect(host.querySelector(".arcade-gameover")).not.toBeNull();
+    fireEvent.click(
+      getByRole(host, "button", { name: "core.message.level.skip" }),
+    );
+    expect(request.onExit).toHaveBeenCalledOnce();
+    expect(request.onComplete).not.toHaveBeenCalled();
+    handle.destroy();
   });
 
   it("renders every registered level's backdrop without failing", () => {

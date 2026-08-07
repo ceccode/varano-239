@@ -29,7 +29,11 @@ function startRun(
   return reduce(state, { type: "RUN_STARTED" }, coreStoryGraph).state;
 }
 
-function finishRun(state: GameState): GameState {
+function finishRun(
+  state: GameState,
+  standOptionId = "core.option.finale.document",
+  confirmed?: boolean,
+): GameState {
   const actions = [
     // Chapter 0: level 1, dialogue, first choice.
     { type: "MINIGAME_SKIPPED" },
@@ -41,12 +45,25 @@ function finishRun(state: GameState): GameState {
     // Chapter 2: level 3, dialogue.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
-    // Chapter 3: level 4, dialogue, ending.
+    // Chapter 3: level 4, dialogue.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
+    // Chapter 4: level 5, the reveal dialogue (ADR-039).
+    { type: "MINIGAME_SKIPPED" },
+    { type: "DIALOGUE_ADVANCED" },
+    // The confrontation on the tower picks the ending family (ADR-040).
+    ...(confirmed === undefined
+      ? [{ type: "OPTION_CHOSEN", optionId: standOptionId } as const]
+      : [
+          {
+            type: "OPTION_CHOSEN",
+            optionId: standOptionId,
+            confirmed,
+          } as const,
+        ]),
   ] as const;
 
-  return actions.reduce(
+  return actions.reduce<GameState>(
     (current, action) => reduce(current, action, coreStoryGraph).state,
     state,
   );
@@ -102,20 +119,72 @@ describe("M1 core content", () => {
     expect(new Set(intros).size).toBe(levels.length);
   });
 
-  it("lets all 16 core setup combinations reach the temporary ending", () => {
+  it("lets all 16 core setup combinations reach an ending", () => {
     for (const role of roles) {
       for (const approach of approaches) {
         for (const sensitivity of sensitivities) {
-          const finished = finishRun(startRun(role, approach, sensitivity));
-          expect(finished.phase).toBe("ending");
-          expect(finished.run?.outcomeId).toBe("core.outcome.open-mystery");
+          // Chasing the perfect proof keeps the mystery open for everyone.
+          const open = finishRun(startRun(role, approach, sensitivity));
+          expect(open.phase).toBe("ending");
+          expect(open.run?.outcomeId).toBe("core.outcome.open-mystery");
+
+          // Opening the corridor rescues the Varano for everyone too.
+          const rescued = finishRun(
+            startRun(role, approach, sensitivity),
+            "core.option.finale.corridor",
+          );
+          expect(rescued.phase).toBe("ending");
+          expect(rescued.run?.outcomeId).toBe(
+            "core.outcome.varano-chooses-rescue",
+          );
+          expect(rescued.run?.varanoFate).toBe("rescued");
         }
       }
     }
   });
 
-  it("keeps all post-setup gentle content free of death language", () => {
+  it("gates the lethal choice to the hunter who documents, behind a confirmation", () => {
+    // Without the explicit confirmation nothing happens (ADR-013): the state
+    // stays on the confrontation.
+    const unconfirmed = finishRun(
+      startRun("hunter", "evidence", "complete"),
+      "core.option.finale.shoot",
+    );
+    expect(unconfirmed.phase).toBe("playing");
+    expect(unconfirmed.run?.currentNodeId).toBe(
+      "core.node.finale.confrontation",
+    );
+
+    // Confirmed, the hunter who chose «Documenta» reaches the lethal ending.
+    const confirmed = finishRun(
+      startRun("hunter", "evidence", "complete"),
+      "core.option.finale.shoot",
+      true,
+    );
+    expect(confirmed.phase).toBe("ending");
+    expect(confirmed.run?.outcomeId).toBe("core.outcome.hunter-killed-varano");
+    expect(confirmed.run?.varanoFate).toBe("killedByHunter");
+
+    // Every other role is refused even with the confirmation in hand.
+    for (const role of ["guardian", "mayor", "varano"] as const) {
+      const refused = finishRun(
+        startRun(role, "evidence", "complete"),
+        "core.option.finale.shoot",
+        true,
+      );
+      expect(refused.phase).toBe("playing");
+      expect(refused.run?.varanoFate).toBe("unresolved");
+    }
+  });
+
+  it("keeps everything outside the ADR-013 gate free of death language", () => {
+    // The lethal option and its ending exist (ADR-040), but they carry the
+    // impliedAnimalDeath tag and sit behind the hunter+complete gate: all the
+    // content a player meets without crossing that gate stays clean.
     const graphKeys = coreStoryGraph.nodes.flatMap((node) => {
+      if (node.sensitivityTags?.includes("impliedAnimalDeath")) {
+        return [];
+      }
       switch (node.type) {
         case "scene":
           return [
@@ -127,7 +196,12 @@ describe("M1 core content", () => {
         case "choice":
           return [
             node.promptKey,
-            ...node.options.map((option) => option.textKey),
+            ...node.options
+              .filter(
+                (option) =>
+                  !option.sensitivityTags?.includes("impliedAnimalDeath"),
+              )
+              .map((option) => option.textKey),
           ];
         case "surprise":
           return node.messageKey === undefined ? [] : [node.messageKey];
@@ -301,6 +375,94 @@ describe("M1 core content", () => {
     expect(errors).toContain(
       "Missing core.outcome.open-mystery fallback ending.",
     );
+  });
+
+  it("enforces the ADR-013 rules on any lethal choice option", () => {
+    // A lethal option without confirmation, gate, tagged target or enough
+    // unconditional alternatives must fail the build, not slip online.
+    const chapterId = "core.chapter.lethal";
+    const brokenPack = {
+      id: "core",
+      version: 1,
+      kind: "core",
+      titleKey: "core.message.pack.title",
+      descriptionKey: "core.message.pack.description",
+      estimatedMinutes: 1,
+      requires: [],
+      chapters: [
+        {
+          chapter: {
+            id: chapterId,
+            titleKey: "core.message.pack.title",
+            entryNodeId: "core.node.lethal.choice",
+            checkpointNodeId: "core.node.lethal.choice",
+          },
+          nodes: [
+            {
+              id: "core.node.lethal.choice",
+              chapterId,
+              type: "choice",
+              narrativeLayer: "legend",
+              promptKey: "core.message.pack.title",
+              options: [
+                {
+                  id: "core.option.lethal.shoot",
+                  textKey: "core.message.pack.title",
+                  sensitivityTags: ["impliedAnimalDeath"],
+                  // No confirmation, no complete gate, untagged target.
+                  when: [{ type: "role-is", role: "hunter" }],
+                  targetNodeId: "core.node.lethal.end",
+                },
+                {
+                  id: "core.option.lethal.safe",
+                  textKey: "core.message.pack.title",
+                  targetNodeId: "core.node.lethal.end",
+                },
+              ],
+            },
+            {
+              id: "core.node.lethal.end",
+              chapterId,
+              type: "ending",
+              narrativeLayer: "legend",
+              outcomeId: "core.outcome.open-mystery",
+              titleKey: "core.message.pack.title",
+              bodyKey: "core.message.pack.description",
+            },
+          ],
+          dossierCards: [],
+          clues: [],
+          messages: {},
+          sources: [],
+        },
+      ],
+      mysteries: [],
+      theories: [],
+    } as const satisfies StoryPack;
+
+    const errors = validateContent(brokenPack, [], italianMessages, []);
+    expect(errors).toContain(
+      "core.option.lethal.shoot needs a confirmation with the focus on cancel.",
+    );
+    expect(errors).toContain(
+      "core.option.lethal.shoot must be gated to hunter and the complete edition.",
+    );
+    expect(errors).toContain(
+      "core.option.lethal.shoot must target an ending tagged impliedAnimalDeath.",
+    );
+    expect(errors).toContain(
+      "core.node.lethal.choice needs at least two unconditional non-lethal options.",
+    );
+
+    // The shipped confrontation, by contrast, passes those same rules.
+    expect(
+      validateContent(
+        corePack,
+        assetManifest,
+        italianMessages,
+        registeredLevelDescriptors,
+      ),
+    ).toEqual([]);
   });
 
   it("rejects a pack without an entry chapter", () => {

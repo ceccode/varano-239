@@ -40,7 +40,7 @@ Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che 
 - Nessun contenuto classificato `fact` senza almeno una fonte registrata.
 - Nessun account, classifica, pubblicità, testo libero inviato a server o identificatore persistente.
 - Analytics consentiti: visite aggregate e `game_start`, senza proprietà aggiuntive. Il provider è disabilitato se manca una configurazione esplicita.
-- Il gioco deve essere completabile senza suono, mouse, riflessi rapidi o mini-giochi obbligatori.
+- Il gioco deve essere completabile senza suono, mouse, riflessi rapidi o mini-giochi obbligatori. Le vite e il game over di livello (ADR-041) valgono per chi gioca la sfida arcade: «Salta il livello» e il percorso assistito restano sempre disponibili con lo stesso esito narrativo, un game over non cancella mai i progressi della storia e non viene mai rappresentato come morte grafica.
 - Nuovi misteri e capitoli sono Story Pack dichiarativi a build time. Un nuovo livello usa un `LevelNode` e, se introduce una meccanica, un adapter isolato nel registro compilato; niente script remoto, callback arbitrarie o modifica dei nodi core.
 
 ## Principi di implementazione

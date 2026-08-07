@@ -46,6 +46,7 @@ function nodeMessageKeys(node: StoryNode): readonly MessageKey[] {
       );
     case "choice":
       return [
+        ...(node.headingKey === undefined ? [] : [node.headingKey]),
         node.promptKey,
         ...node.options.flatMap((option) => {
           const confirmation = option.confirmation;
@@ -230,6 +231,58 @@ export function validateContent(
       errors.push(
         `${node.id} references missing dossier card ${node.dossierCardId}.`,
       );
+    }
+
+    // The lethal choice rules of ADR-013, enforced at build time: gated to the
+    // Cacciatore in the complete edition, behind a confirmation that opens on
+    // the cancel action, with at least two unconditional non-lethal options.
+    if (node.type === "choice") {
+      const lethalOptions = node.options.filter((option) =>
+        option.sensitivityTags?.includes("impliedAnimalDeath"),
+      );
+      for (const option of lethalOptions) {
+        if (option.confirmation?.safeInitialFocus !== "cancel") {
+          errors.push(
+            `${option.id} needs a confirmation with the focus on cancel.`,
+          );
+        }
+        const conditions = option.when ?? [];
+        const gatedToHunter = conditions.some(
+          (condition) =>
+            condition.type === "role-is" && condition.role === "hunter",
+        );
+        const gatedToComplete = conditions.some(
+          (condition) =>
+            condition.type === "sensitivity-is" &&
+            condition.sensitivity === "complete",
+        );
+        if (!gatedToHunter || !gatedToComplete) {
+          errors.push(
+            `${option.id} must be gated to hunter and the complete edition.`,
+          );
+        }
+        const target = nodeById.get(option.targetNodeId);
+        if (
+          target?.type !== "ending" ||
+          !target.sensitivityTags?.includes("impliedAnimalDeath")
+        ) {
+          errors.push(
+            `${option.id} must target an ending tagged impliedAnimalDeath.`,
+          );
+        }
+      }
+      if (lethalOptions.length > 0) {
+        const alwaysVisibleAlternatives = node.options.filter(
+          (option) =>
+            option.sensitivityTags === undefined &&
+            (option.when === undefined || option.when.length === 0),
+        );
+        if (alwaysVisibleAlternatives.length < 2) {
+          errors.push(
+            `${node.id} needs at least two unconditional non-lethal options.`,
+          );
+        }
+      }
     }
 
     if (node.type === "surprise") {

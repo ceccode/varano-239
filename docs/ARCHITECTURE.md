@@ -481,14 +481,17 @@ export interface LevelRegistration<Config extends object> {
 
 ### Livelli attuali
 
-Quattro `LevelNode` condividono lo stesso adapter platformer e la stessa fisica pura:
+Cinque `LevelNode` condividono lo stesso adapter platformer e la stessa fisica pura:
 
-| Livello                    | `levelId`                         | Meccanica aggiunta                                              |
-| -------------------------- | --------------------------------- | --------------------------------------------------------------- |
-| 1 — I campi di Montichiari | `core.level.campi-di-montichiari` | corsa, salto, raccolta, traguardo                               |
-| 2 — Le chat di paese       | `core.level.chat-di-paese`        | `sprint?`, caricato tenendo una direzione (ADR-029)             |
-| 3 — Varano superstar       | `core.level.varano-superstar`     | `power?` per ruolo e `obstacles?` non letali (ADR-031, ADR-032) |
-| 4 — Il parco del Castello  | `core.level.parco-del-castello`   | `gapKind: "water"`, fossato d'acqua di solo rendering (ADR-036) |
+| Livello                    | `levelId`                         | Meccanica aggiunta                                                                                                        |
+| -------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 1 — I campi di Montichiari | `core.level.campi-di-montichiari` | corsa, salto, raccolta, traguardo                                                                                         |
+| 2 — Le chat di paese       | `core.level.chat-di-paese`        | `sprint?`, caricato tenendo una direzione (ADR-029)                                                                       |
+| 3 — Varano superstar       | `core.level.varano-superstar`     | `power?` per ruolo e `obstacles?` non letali (ADR-031, ADR-032)                                                           |
+| 4 — Il parco del Castello  | `core.level.parco-del-castello`   | `gapKind: "water"` e `cars?`, il furgoncino di pattuglia (ADR-036/037)                                                    |
+| 5 — Dentro il Castello     | `core.level.dentro-il-castello`   | fondale `indoor` con ritorno del cielo, costumi `obstacleLooks`/`carLooks`, suolo `stone`, traguardo `sunstone` (ADR-039) |
+
+Ogni livello ha **3 vite per tentativo** (ADR-041): cadute e veicoli di pattuglia costano una vita; a zero la card KO offre «Riprova il livello» (stato di sessione ricreato da zero) e il consueto «Salta il livello». La storia non perde mai progressi e il grafo narrativo non sa nulla di vite.
 
 Ogni nodo porta le proprie `headingKey` e `introKey` (ADR-030). `power?` e `obstacles?` sono opzionali come `sprint?`, quindi un livello nuovo non tocca il bilanciamento di quelli esistenti.
 
