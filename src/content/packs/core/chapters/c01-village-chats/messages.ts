@@ -28,6 +28,8 @@ export const villageChatsMessages = {
     "Muretto raggiunto: da qui si riparte, e con lo slancio giusto.",
   "core.message.level2.narrative.respawn":
     "Giù nella roggia. Serviva più corsa: tieni premuto e riprova.",
+  "core.message.level2.narrative.cameo":
+    "Due occhi fra le siepi ti guardano passare. Quando ti volti, la siepe è solo una siepe.",
   "core.message.level2.narrative.finish":
     "Sei sotto il Castello Bonoris. I tre indizi portano tutti alla stessa persona… e non è chi pensavi.",
   "core.message.dialogue2.ada":
@@ -42,4 +44,10 @@ export const villageChatsMessages = {
     "Cesare Cerimonia sbianca: «Quel numero… è del mio ufficio. Borgocoda ha un problema di comunicazione interna.»",
   "core.message.dialogue2.twist":
     "Ada chiude il taccuino: «Una cosa è certa: chi ha spedito la foto sapeva dov’era il Varano prima di tutti noi. E domani il Castello apre le porte al pubblico.»",
+  "core.message.choice2.heading": "Il numero sconosciuto",
+  "core.message.choice2.prompt":
+    "Il numero che ha spedito la foto è salvato come «non rispondere». Il pollice è già sul tasto verde.",
+  "core.message.choice2.call": "Richiama il numero, adesso",
+  "core.message.choice2.mute":
+    "Non svegliare il paese: silenzia le chat e tieni la pista per te",
 } as const;

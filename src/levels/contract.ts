@@ -12,7 +12,8 @@ export type LevelSoundEffect =
   | "blocked";
 
 export interface LevelAudioPort {
-  readonly startMusic: () => void;
+  /** Starts the level's own track (ADR-042); the default loop when omitted. */
+  readonly startMusic: (track?: string) => void;
   readonly stopMusic: () => void;
   readonly playEffect: (effect: LevelSoundEffect) => void;
 }

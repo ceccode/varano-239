@@ -31,6 +31,8 @@ export const castleKeepMessages = {
     "Agganciato dal robot di pattuglia: scansione completata, dignità no. Si riparte dalla bandierina, prove in tasca.",
   "core.message.level5.narrative.finish":
     "Il tetto. Il cielo torna tutto in una volta: luna, stelle, le 2:39 di un’altra notte. Sulla pietra al sole c’è posto per un Conte — e lassù non sei solo.",
+  "core.message.level5.narrative.cameo":
+    "Da una feritoia, due occhi ti osservano salire. Il castello ha già un padrone di casa.",
   "core.message.dialogue5.ada":
     "Ada allinea le prove sul parapetto: «Registro delle chiavi siglato P.P., una bozza di comunicato scritta alle 3:05 e il telefono del mittente. Pina Protocollo, ufficio protocollo di Borgocoda: di turno al coordinamento alle 2:39, prima a ricevere la foto, prima a girarla alle chat. E i varani con due code li ha fatti generare a un computer, per confondere le tracce.»",
   "core.message.dialogue5.pina":

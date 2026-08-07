@@ -29,6 +29,8 @@ export const castleParkMessages = {
     "Splash nel fossato! Solo un bagno fuori programma: si riparte dalla bandierina, prove in tasca.",
   "core.message.level4.narrative.car":
     "Travolto dal furgoncino dei gadget: gonfiabile 1, Conte 0. Si riparte dalla bandierina, prove in tasca.",
+  "core.message.level4.narrative.cameo":
+    "Due occhi affiorano dal fossato e ti seguono per un metro. Poi solo cerchi nell’acqua.",
   "core.message.level4.narrative.finish":
     "L’ingresso del maschio. La porta interna è socchiusa e dalle scale arriva un rumore di coda su pietra.",
   "core.message.dialogue4.ada":
@@ -43,4 +45,10 @@ export const castleParkMessages = {
     "Cesare Cerimonia conta sulle dita: «Un numero del mio ufficio, il mio timbro, e adesso una chiave che non è la mia ma apre come la mia. Borgocoda non ha una talpa: ha un intero ufficio parallelo.»",
   "core.message.dialogue4.twist":
     "Ada chiude il taccuino: «Chiunque sia, aveva le chiavi giuste ed è ancora qui dentro. E la porta della torre è socchiusa: il Conte ci è già passato. Domani sapremo chi voleva un Varano sul trono… perché saliremo anche noi.»",
+  "core.message.choice4.heading": "La porta di servizio",
+  "core.message.choice4.prompt":
+    "La porta di servizio è ancora accostata: di là è passato il Conte, e prima di lui chi gli ha aperto. Nessuno l’ha ancora notata.",
+  "core.message.choice4.photograph": "Lasciala com’è e fotografa la serratura",
+  "core.message.choice4.close":
+    "Chiudila piano dietro di lui: che nessuno lo segua",
 } as const;
