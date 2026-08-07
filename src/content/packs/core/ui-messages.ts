@@ -39,6 +39,13 @@ export const uiMessages = {
   "core.message.level.continue": "Continua la storia",
   "core.message.level.assisted":
     "Il livello arcade non è richiesto: puoi proseguire subito con lo stesso esito narrativo.",
+  // Lives and the KO card (ADR-041): arcade language, no death vocabulary —
+  // the tone stays 12+ and the story never loses progress.
+  "core.message.level.lives": "Vite: {lives}.",
+  "core.message.level.gameover.title": "KO!",
+  "core.message.level.gameover.body":
+    "Vite finite: il Conte si ritira a leccarsi la coda. Si ricomincia il livello da capo, con le vite piene; la storia resta salva.",
+  "core.message.level.gameover.retry": "Riprova il livello",
   "core.message.level.briefing.recap": "Dove eravamo",
   "core.message.level.briefing.objective": "Che cosa devi fare",
   "core.message.level.briefing.power": "Il tuo superpotere",
@@ -97,11 +104,11 @@ export const uiMessages = {
   "core.message.ui.card.level": "LE NOTTI DI MONTICHIARI",
   "core.message.ui.card.record": "NUOVO RECORD!",
   "core.message.ui.next-level.label": "PROSSIMO EPISODIO",
-  "core.message.ui.next-level.title": "Livello 5 — Dentro il Castello",
+  "core.message.ui.next-level.title": "Il Dossier Origini",
   "core.message.ui.next-level.body":
-    "Saracinesche, scale a chiocciola, una cassaforte con dentro la cosa meno utile del mondo e una torre con la pietra al sole. Dentro il castello c’è anche chi ha spedito la foto: al Livello 5 si sale, e si scopre il nome. Arriva a breve.",
+    "Il destino del Conte è deciso; da dove venisse, no. Tre piste aspettano nel Dossier Origini: una fuga, un abbandono e un complotto che nessuna fonte ha mai dimostrato. Arriva a breve.",
   "core.message.ui.next-level.install":
-    "Aggiungi il gioco alla schermata Home: quando il Livello 5 esce, lo trovi già qui.",
+    "Aggiungi il gioco alla schermata Home: quando il Dossier esce, lo trovi già qui.",
   "core.message.ui.menu.open": "Menù",
   "core.message.ui.menu.heading": "Menù",
   "core.message.ui.menu.close": "Torna al gioco",

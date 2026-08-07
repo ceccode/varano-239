@@ -8,6 +8,8 @@ import { matchesConditions } from "../../core/conditions";
 import { completeSetup, type GameState } from "../../core/game-state";
 import type {
   Approach,
+  ChoiceConfirmation,
+  ChoiceOption,
   MessageKey,
   Role,
   StoryGraph,
@@ -464,13 +466,79 @@ function renderSurprise(
   context.screen.append(dialog);
 }
 
+/**
+ * The confirmation dialog of ADR-013: a second, explicit act with the focus
+ * opening on «Torna indietro», so nothing irreversible happens by accident.
+ * Cancelling returns the focus to the option that opened it.
+ */
+function openChoiceConfirmation(
+  context: RenderContext,
+  option: ChoiceOption & { confirmation: ChoiceConfirmation },
+  opener: HTMLButtonElement,
+): void {
+  const confirmation = option.confirmation;
+  const dialog = element(context.document, "section");
+  dialog.className = "overlay-card game-screen choice-confirmation";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+
+  const title = element(
+    context.document,
+    "h2",
+    context.content.message(confirmation.titleKey),
+  );
+  title.id = "choice-confirmation-heading";
+  dialog.setAttribute("aria-labelledby", title.id);
+
+  const body = element(
+    context.document,
+    "p",
+    context.content.message(confirmation.bodyKey),
+  );
+
+  const actions = element(context.document, "div");
+  actions.className = "choice-list";
+
+  const cancel = element(
+    context.document,
+    "button",
+    context.content.message(confirmation.cancelKey),
+  );
+  cancel.type = "button";
+  cancel.addEventListener("click", () => {
+    dialog.remove();
+    opener.focus();
+  });
+
+  const confirm = element(
+    context.document,
+    "button",
+    context.content.message(confirmation.confirmKey),
+  );
+  confirm.type = "button";
+  confirm.className = "choice-confirmation__confirm";
+  confirm.addEventListener("click", () => {
+    context.dispatch({
+      type: "OPTION_CHOSEN",
+      optionId: option.id,
+      confirmed: true,
+    });
+  });
+
+  // Cancelling first, in reading order and in focus order alike.
+  actions.append(cancel, confirm);
+  dialog.append(title, body, actions);
+  context.screen.append(dialog);
+  cancel.focus();
+}
+
 function renderChoice(
   context: RenderContext,
   node: StoryNode & { type: "choice" },
 ): void {
   const card = overlayCard(context);
   const cardContext: RenderContext = { ...context, screen: card };
-  heading(cardContext, "core.message.ui.choice.heading");
+  heading(cardContext, node.headingKey ?? "core.message.ui.choice.heading");
   card.append(
     element(context.document, "p", context.content.message(node.promptKey)),
   );
@@ -489,8 +557,13 @@ function renderChoice(
         context.content.message(option.textKey),
       );
       control.type = "button";
+      const confirmation = option.confirmation;
       control.addEventListener("click", () => {
-        context.dispatch({ type: "OPTION_CHOSEN", optionId: option.id });
+        if (confirmation === undefined) {
+          context.dispatch({ type: "OPTION_CHOSEN", optionId: option.id });
+        } else {
+          openChoiceConfirmation(context, { ...option, confirmation }, control);
+        }
       });
       choices.append(control);
     }

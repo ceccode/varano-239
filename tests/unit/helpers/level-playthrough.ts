@@ -1,4 +1,5 @@
 import {
+  carDirectionAt,
   carPositionAt,
   createPlatformerState,
   stepPlatformer,
@@ -52,20 +53,46 @@ export function playthrough(
     const approaching = standing.some(
       (obstacle) => playerRight >= obstacle.x - 210 && state.x < obstacle.x,
     );
-    // A patrol car close ahead gets hopped over (ADR-037): the arc of a plain
-    // jump comfortably outlasts the crossing, so no frame-perfect timing.
-    const carAhead = (levelConfig.cars ?? []).some((car) => {
-      const carX = carPositionAt(car, state.elapsedSeconds);
-      const distance = carX - playerRight;
-      return state.grounded && distance < 56 && distance > -car.width;
-    });
+    // Patrol cars (ADR-037), read like a player reads them. Head on and away
+    // from its turnaround, a car gets hopped over: the arc of a plain jump
+    // comfortably outlasts the crossing. A car fleeing in the same direction
+    // is never jumped — no arc outruns it — so the player tails it from a
+    // distance. And nobody walks into the patrol corridor while the car is
+    // coming AT the entrance: they wait just outside until it turns.
+    const carsNearby = (levelConfig.cars ?? []).map((car) => ({
+      minX: car.minX,
+      carX: carPositionAt(car, state.elapsedSeconds),
+      towardPlayer: carDirectionAt(car, state.elapsedSeconds) === "left",
+      width: car.width,
+    }));
+    const carAhead = carsNearby.some(
+      (car) =>
+        state.grounded &&
+        car.towardPlayer &&
+        playerRight > car.minX + 20 &&
+        car.carX - playerRight < 56 &&
+        car.carX - playerRight > -car.width,
+    );
+    const tailingCar = carsNearby.some(
+      (car) =>
+        !car.towardPlayer &&
+        car.carX - playerRight < 40 &&
+        car.carX - playerRight > -car.width,
+    );
+    const waitAtEnvelope = carsNearby.some(
+      (car) =>
+        car.towardPlayer &&
+        car.carX > playerRight &&
+        playerRight >= car.minX - 46 &&
+        playerRight < car.minX,
+    );
     const jump = atGapEdge || beforeObstacle || carAhead;
 
     const result = stepPlatformer(
       state,
       {
         left: false,
-        right: true,
+        right: !tailingCar && !waitAtEnvelope,
         jumpPressed: jump,
         jumpHeld: !state.grounded || jump,
         powerHeld: power !== undefined && approaching,

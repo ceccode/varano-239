@@ -30,7 +30,16 @@ export type GameAction =
   | { readonly type: "MINIGAME_COMPLETED" }
   | { readonly type: "MINIGAME_SKIPPED" }
   | { readonly type: "DOSSIER_CLOSED" }
-  | { readonly type: "OPTION_CHOSEN"; readonly optionId: OptionId }
+  | {
+      readonly type: "OPTION_CHOSEN";
+      readonly optionId: OptionId;
+      /**
+       * Required true for an option that declares a `confirmation` (ADR-013):
+       * the reducer refuses the plain action, so the second, explicit act of
+       * confirming is enforced by the domain, not just by the dialog.
+       */
+      readonly confirmed?: boolean;
+    }
   | { readonly type: "RUN_RESUMED"; readonly savedState: GameState }
   | { readonly type: "LOCAL_DATA_CLEARED" };
 

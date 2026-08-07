@@ -90,7 +90,7 @@ test("boots straight into an accessible, local-only full-screen game", async ({
   expect(consoleErrors).toEqual([]);
 });
 
-test("completes the gentle flow with the keyboard and restarts", async ({
+test("completes the whole story with the keyboard and restarts", async ({
   page,
 }) => {
   await page.goto("./");
@@ -204,8 +204,60 @@ test("completes the gentle flow with the keyboard and restarts", async ({
     .focus();
   await page.keyboard.press("Enter");
 
+  // Chapter 4: inside the castle (ADR-039), where the sender is named.
   await expect(
-    page.getByRole("heading", { name: message("core.message.ending.title") }),
+    page.getByText(message("core.message.level5.recap")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.level.play") })
+    .click();
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+  await expect(
+    page.getByText(message("core.message.level5.narrative.start")),
+  ).toBeVisible();
+  // Lives are announced in the status line (ADR-041).
+  await expect(
+    page.getByText(message("core.message.level.lives", { lives: 3 })),
+  ).toBeVisible();
+  const skipFifth = page.getByRole("button", {
+    name: message("core.message.level.skip"),
+  });
+  await skipFifth.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByText(message("core.message.dialogue5.pina")),
+  ).toBeVisible();
+  await expect(
+    page.getByText(message("core.message.dialogue5.twist")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+
+  // The confrontation on the tower (ADR-040): the varano never sees the
+  // lethal option, and opening the corridor rescues the Count.
+  await expect(
+    page.getByRole("heading", {
+      name: message("core.message.finale.heading"),
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: message("core.message.finale.option.shoot"),
+    }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", {
+      name: message("core.message.finale.option.corridor"),
+    })
+    .focus();
+  await page.keyboard.press("Enter");
+
+  await expect(
+    page.getByRole("heading", {
+      name: message("core.message.ending.rescued.title"),
+    }),
   ).toBeVisible();
   await expect(page.locator("[data-app-root]")).not.toContainText(
     /morte|morto|uccid|abbatt|sparare/i,
@@ -227,6 +279,82 @@ test("completes the gentle flow with the keyboard and restarts", async ({
     .click();
   await expect(
     page.getByText(message("core.message.ui.role-select.heading")),
+  ).toBeVisible();
+});
+
+test("guards the lethal choice behind an explicit confirmation", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await pickRole(page, "core.message.ui.role-select.hunter.title");
+
+  // Prologue: skip level 1, advance, choose «Documenta la scena» — the
+  // evidence stance ADR-013 requires of the hunter.
+  await page
+    .getByRole("button", { name: message("core.message.level.skip") })
+    .click();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .click();
+  await page
+    .getByRole("button", { name: message("core.message.choice.document") })
+    .click();
+
+  // Chapters 1-4: every briefing card carries its own skip.
+  for (let chapter = 0; chapter < 4; chapter += 1) {
+    await page
+      .getByRole("button", { name: message("core.message.level.skip") })
+      .click();
+    await page
+      .getByRole("button", { name: message("core.message.ui.continue") })
+      .click();
+  }
+
+  // The confrontation shows the lethal option to this setup only, always
+  // alongside the non-lethal stands (ADR-013).
+  const shoot = page.getByRole("button", {
+    name: message("core.message.finale.option.shoot"),
+  });
+  await expect(shoot).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: message("core.message.finale.option.corridor"),
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: message("core.message.finale.option.garden"),
+    }),
+  ).toBeVisible();
+
+  // Selecting it only opens the confirmation, focused on «Torna indietro».
+  await shoot.click();
+  await expect(
+    page.getByText(message("core.message.finale.confirm.body")),
+  ).toBeVisible();
+  const cancel = page.getByRole("button", {
+    name: message("core.message.finale.confirm.cancel"),
+  });
+  await expect(cancel).toBeFocused();
+
+  // Cancelling from the keyboard returns to the confrontation, unrecorded.
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByText(message("core.message.finale.confirm.body")),
+  ).toHaveCount(0);
+  await expect(shoot).toBeFocused();
+
+  // The second, explicit act reaches «La prova che pesa», off screen.
+  await shoot.click();
+  await page
+    .getByRole("button", {
+      name: message("core.message.finale.confirm.confirm"),
+    })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: message("core.message.ending.killed.title"),
+    }),
   ).toBeVisible();
 });
 

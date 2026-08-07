@@ -124,6 +124,41 @@
   image-rendering: pixelated;
 }
 
+/* The KO card (ADR-041): an arcade game over inside the frame, never a loss
+   of story progress. */
+.arcade-gameover {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  text-align: center;
+  background: rgb(8 10 18 / 84%);
+}
+
+.arcade-gameover h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  text-transform: uppercase;
+}
+
+.arcade-gameover p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.arcade-gameover__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
 .arcade-narrative {
   margin: 0 auto;
   inline-size: min(100%, 40rem);
@@ -698,6 +733,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+/* The ADR-013 confirmation: a centred modal over the choice card, with a
+   scrim so the second act reads as a separate, deliberate step. */
+.choice-confirmation {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  inline-size: min(calc(100% - 2 * var(--space-3)), 30rem);
+  block-size: fit-content;
+  max-block-size: calc(100% - 2 * var(--space-3));
+  margin: auto;
+  border-block-end: 3px solid var(--color-accent);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 60%);
 }
 
 .surprise-dialog {

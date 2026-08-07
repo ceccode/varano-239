@@ -33,7 +33,10 @@ export interface MiniGameRequest<Config extends object> {
   /** Which superpower the level grants, when it gates them per role (ADR-031). */
   readonly role: Role;
   readonly settings: AccessibilitySettings;
-  readonly message: (key: MessageKey) => string;
+  readonly message: (
+    key: MessageKey,
+    values?: Readonly<Record<string, string | number>>,
+  ) => string;
   readonly audio: LevelAudioPort;
   readonly onComplete: (outcome: LevelOutcome) => void;
   readonly onExit: () => void;

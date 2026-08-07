@@ -378,6 +378,182 @@ export const parcoLevelConfig = defineLevel({
   powersByRole: roleSuperpowers,
 });
 
+/**
+ * Level 5, the climb inside the castle (ADR-039). The only level with no sky:
+ * stone, torches and Pina's AI decoys — inflatable varani the AI got wrong,
+ * watch drones, a patrol robot on the gadget van's mechanics (ADR-037). The
+ * sky returns only past the tower doorway, out on the roof. Same guarantees
+ * as levels 3-4: every gap within a plain jump, a platform route above every
+ * blocking obstacle, finishable by every role without ever touching ★.
+ */
+export const castelloLevelConfig = defineLevel({
+  worldWidth: 4200,
+  groundSegments: [
+    // The stairwell voids between segments are the level's gaps (ADR-035).
+    { x: 0, width: 620 },
+    { x: 700, width: 640 },
+    { x: 1420, width: 860 },
+    { x: 2360, width: 1840 },
+  ],
+  platforms: [
+    // Set piece 1: the entrance hall — the ledger ledge, then the guided
+    // tour's crates over the half-lowered portcullis. The last stretch before
+    // the first stairwell stays clear, like in every level.
+    { x: 180, y: 118, width: 70 },
+    { x: 340, y: 110, width: 120 },
+    // Set piece 2: the grand staircase, with a gallery over the watch drone.
+    { x: 760, y: 118, width: 64 },
+    { x: 870, y: 112, width: 60 },
+    { x: 970, y: 110, width: 120 },
+    { x: 1150, y: 118, width: 70 },
+    // Set piece 3: the exhibition halls — tripods over the projector cables,
+    // crates over the inflatable decoys, the ledge by the open safe.
+    { x: 1530, y: 112, width: 60 },
+    { x: 1650, y: 112, width: 60 },
+    { x: 1770, y: 112, width: 60 },
+    { x: 1880, y: 118, width: 70 },
+    { x: 1970, y: 118, width: 70 },
+    { x: 2070, y: 114, width: 70 },
+    // Set piece 4: the long corridor — the window seat inside the robot's
+    // patrol, so waiting it out is always an option (ADR-037).
+    { x: 2650, y: 118, width: 120 },
+    { x: 3040, y: 118, width: 70 },
+    // The tower: the phone ledge and the landing over the last watch drone.
+    { x: 3200, y: 112, width: 70 },
+    { x: 3360, y: 110, width: 120 },
+    // The roof, under the open sky again.
+    { x: 3700, y: 118, width: 70 },
+    { x: 3850, y: 118, width: 70 },
+  ],
+  obstacles: [
+    {
+      id: "saracinesca",
+      kind: "drone",
+      x: 380,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+    {
+      id: "drone-scalone",
+      kind: "drone",
+      x: 1010,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+    {
+      id: "cavi-proiettori",
+      kind: "cables",
+      x: 1500,
+      y: 134,
+      width: 320,
+      height: 20,
+    },
+    {
+      id: "gonfiabile-1",
+      kind: "onlooker",
+      x: 1900,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "gonfiabile-2",
+      kind: "onlooker",
+      x: 1990,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "gonfiabile-3",
+      kind: "onlooker",
+      x: 3060,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "drone-torre",
+      kind: "drone",
+      x: 3400,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+  ],
+  // The patrol robot shuttles along the corridor (ADR-037 mechanics, ADR-039
+  // costume): always jumpable, with the window seat at 2650/y118 inside its
+  // range, and it stops well short of the tower and the finish.
+  cars: [
+    {
+      id: "robot-pattuglia",
+      minX: 2450,
+      maxX: 2950,
+      width: 30,
+      // Low and flat, like the cleaning robot it is: a plain jump clears it
+      // with margin even against its own approach speed.
+      height: 14,
+      speed: 55,
+    },
+  ],
+  obstacleLooks: {
+    saracinesca: "portcullis",
+    "gonfiabile-1": "fake-varano",
+    "gonfiabile-2": "fake-varano",
+    "gonfiabile-3": "fake-varano",
+  },
+  carLooks: { "robot-pattuglia": "robot" },
+  pickups: [
+    { id: "registro", x: 215, y: 86 },
+    { id: "bozza", x: 2105, y: 82 },
+    { id: "telefono", x: 3235, y: 80 },
+  ],
+  checkpoints: [
+    { id: "castello-checkpoint-1", x: 1180 },
+    { id: "castello-checkpoint-2", x: 2200 },
+    { id: "castello-checkpoint-3", x: 2390 },
+  ],
+  finishX: 4080,
+  finishKind: "sunstone",
+  groundKind: "stone",
+  platformKind: "stone",
+  // The one level without a sky (ADR-039): stone vaults until the doorway at
+  // 3600, then the 2:39 night of the following day — the sky the story
+  // started under, seen again from the top.
+  backdrop: {
+    sky: ["#211d2b", "#322d3c", "#443f4e"],
+    night: true,
+    indoor: {
+      skyFromX: 3600,
+      sky: ["#0a1233", "#142a52", "#1f3d66"],
+    },
+    far: "arches",
+    near: "torches",
+  },
+  objectiveKey: "core.message.level5.objective",
+  controlsKey: "core.message.level5.controls",
+  statusKeys: [
+    "core.message.level5.status.0",
+    "core.message.level5.status.1",
+    "core.message.level5.status.2",
+    "core.message.level5.status.3",
+  ],
+  finishStatusKey: "core.message.level5.status.3",
+  narrativeStartKey: "core.message.level5.narrative.start",
+  narrativePickupKeys: {
+    registro: "core.message.level5.narrative.pickup.registro",
+    bozza: "core.message.level5.narrative.pickup.bozza",
+    telefono: "core.message.level5.narrative.pickup.telefono",
+  },
+  narrativeCheckpointKey: "core.message.level5.narrative.checkpoint",
+  narrativeRespawnKey: "core.message.level5.narrative.respawn",
+  narrativeCarHitKey: "core.message.level5.narrative.robot",
+  narrativeFinishKey: "core.message.level5.narrative.finish",
+  powersByRole: roleSuperpowers,
+});
+
 function descriptorKeys(config: PlatformerViewConfig): readonly MessageKey[] {
   return [
     config.objectiveKey,
@@ -423,6 +599,10 @@ const levelConfigs = {
   "core.level.parco-del-castello": {
     configId: "core.level-config.parco-4",
     config: parcoLevelConfig,
+  },
+  "core.level.dentro-il-castello": {
+    configId: "core.level-config.castello-5",
+    config: castelloLevelConfig,
   },
 } as const satisfies Readonly<
   Record<string, { configId: string; config: PlatformerViewConfig }>
@@ -470,7 +650,10 @@ export interface MountRegisteredLevelOptions {
   readonly node: LevelNode;
   readonly role: Role;
   readonly settings: AccessibilitySettings;
-  readonly message: (key: MessageKey) => string;
+  readonly message: (
+    key: MessageKey,
+    values?: Readonly<Record<string, string | number>>,
+  ) => string;
   readonly audio: LevelAudioPort;
   readonly onComplete: (outcome: LevelOutcome) => void;
   readonly onExit: () => void;

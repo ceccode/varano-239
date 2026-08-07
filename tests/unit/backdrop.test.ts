@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   campiLevelConfig,
+  castelloLevelConfig,
   chatLevelConfig,
   registeredLevels,
   superstarLevelConfig,
@@ -49,5 +50,17 @@ describe("level backdrops", () => {
   it("shows the castle in the distance on the level that heads there", () => {
     expect(superstarLevelConfig.backdrop.far).toBe("castle");
     expect(superstarLevelConfig.finishKind).toBe("walls");
+  });
+
+  it("keeps level 5 indoors until the roof, under the 2:39 night", () => {
+    // ADR-039: the one level with no sky — stone, arches and torches — and
+    // the open night returns only past the tower doorway.
+    const backdrop = castelloLevelConfig.backdrop;
+    expect(backdrop.night).toBe(true);
+    expect(backdrop.far).toBe("arches");
+    expect(backdrop.near).toBe("torches");
+    expect(backdrop.indoor.skyFromX).toBeGreaterThan(0);
+    // The stone shell and the night outside are two different palettes.
+    expect(backdrop.indoor.sky).not.toEqual(backdrop.sky);
   });
 });

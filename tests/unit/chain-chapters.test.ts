@@ -81,18 +81,25 @@ describe("chapter chaining", () => {
     expect(links).not.toContain(nextChapterNodeId);
   });
 
-  it("keeps the ending in its own chapter, always last", () => {
+  it("keeps the finale in its own chapter, always last", () => {
     // This is what lets a new level be one array entry: nothing has to move
-    // the ending, and no chapter that already shipped gets edited (ADR-034).
+    // the finale, and no chapter that already shipped gets edited (ADR-034).
+    // Since ADR-040 the finale opens on the tower confrontation and owns all
+    // of the ending families.
     const last = corePack.chapters.at(-1);
     expect(last?.chapter.id).toBe("core.chapter.c99-finale");
-    expect(last?.nodes).toHaveLength(1);
-    expect(last?.nodes[0]?.type).toBe("ending");
+    expect(last?.chapter.entryNodeId).toBe("core.node.finale.confrontation");
+    expect(
+      last?.nodes.find((node) => node.id === last.chapter.entryNodeId)?.type,
+    ).toBe("choice");
 
     const endings = coreStoryGraph.nodes.filter(
       (node) => node.type === "ending",
     );
-    expect(endings).toHaveLength(1);
+    expect(endings).toHaveLength(5);
+    for (const ending of endings) {
+      expect(ending.chapterId).toBe("core.chapter.c99-finale");
+    }
   });
 
   it("gives every chapter a distinct recap for its level", () => {

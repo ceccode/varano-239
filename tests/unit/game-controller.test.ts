@@ -182,7 +182,7 @@ describe("full-screen game controller", () => {
     expect(mount.querySelector("canvas")).toBeNull();
   });
 
-  it("asks for a role on first boot, then plays to the open ending", () => {
+  it("asks for a role on first boot, then plays to an ending", () => {
     const { mount } = prepareDocument();
     const save = new MemorySave();
     const track = vi.fn<AnalyticsPort["track"]>();
@@ -303,9 +303,38 @@ describe("full-screen game controller", () => {
     );
     clickMessage("core.message.ui.continue");
 
-    expect(controller.getState().phase).toBe("ending");
+    // Chapter 4: inside the castle, where the sender is named (ADR-039).
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.keep.level",
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level5.recap"),
+    );
+    clickMessage("core.message.level.skip");
     expect(document.body.textContent).toContain(
-      resolveItalianMessage("core.message.ending.body"),
+      resolveItalianMessage("core.message.dialogue5.pina"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue5.varano"),
+    );
+    clickMessage("core.message.ui.continue");
+
+    // The confrontation on the tower (ADR-040): the varano sees no lethal
+    // option, and leaving the sunstone alone crowns the provisional Count.
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.finale.prompt"),
+    );
+    expect(
+      queryByRole(document.body, "button", {
+        name: resolveItalianMessage("core.message.finale.option.shoot"),
+      }),
+    ).toBeNull();
+    clickMessage("core.message.finale.option.tower");
+
+    expect(controller.getState().phase).toBe("ending");
+    expect(controller.getState().run?.varanoFate).toBe("escaped");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.ending.count.body"),
     );
     // The level was skipped, so there is no score to show or share.
     expect(
@@ -321,6 +350,65 @@ describe("full-screen game controller", () => {
     expect(controller.getState().phase).toBe("title");
     expect(mount.textContent).toContain(
       resolveItalianMessage("core.message.ui.role-select.heading"),
+    );
+  });
+
+  it("guards the lethal choice behind a confirmation that opens on cancel", () => {
+    const { mount } = prepareDocument();
+    const controller = createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+      reducedMotion: false,
+    });
+    void mount;
+
+    // The hunter who documents the scene: the one setup ADR-013 admits.
+    pickRole("core.message.ui.role-select.hunter.title");
+    clickMessage("core.message.level.skip");
+    clickMessage("core.message.ui.continue");
+    clickMessage("core.message.choice.document");
+    for (let chapter = 0; chapter < 4; chapter += 1) {
+      clickMessage("core.message.level.skip");
+      clickMessage("core.message.ui.continue");
+    }
+
+    // The confrontation shows the lethal option to this setup only.
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.finale.prompt"),
+    );
+    clickMessage("core.message.finale.option.shoot");
+
+    // Selecting it does NOT act: a dialog opens with the focus on cancel.
+    expect(controller.getState().phase).toBe("playing");
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog?.textContent).toContain(
+      resolveItalianMessage("core.message.finale.confirm.body"),
+    );
+    expect(document.activeElement?.textContent).toBe(
+      resolveItalianMessage("core.message.finale.confirm.cancel"),
+    );
+
+    // Cancelling returns to the choice, focus back on the opener.
+    clickMessage("core.message.finale.confirm.cancel");
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.finale.confrontation",
+    );
+    expect(document.activeElement?.textContent).toBe(
+      resolveItalianMessage("core.message.finale.option.shoot"),
+    );
+
+    // Confirming is the second, explicit act that reaches the ending.
+    clickMessage("core.message.finale.option.shoot");
+    clickMessage("core.message.finale.confirm.confirm");
+    expect(controller.getState().phase).toBe("ending");
+    expect(controller.getState().run?.varanoFate).toBe("killedByHunter");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.ending.killed.title"),
     );
   });
 
@@ -498,6 +586,9 @@ describe("full-screen game controller", () => {
       { type: "DIALOGUE_ADVANCED" },
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
+      { type: "MINIGAME_SKIPPED" },
+      { type: "DIALOGUE_ADVANCED" },
+      { type: "OPTION_CHOSEN", optionId: "core.option.finale.corridor" },
     ] as const) {
       state = reduce(state, action, coreStoryGraph).state;
     }

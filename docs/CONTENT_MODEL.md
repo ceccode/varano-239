@@ -128,6 +128,8 @@ export interface DialogueNode extends LinearNode {
 
 export interface ChoiceNode extends BaseNode {
   readonly type: "choice";
+  /** Titolo proprio, come per i livelli (ADR-030/040); default condiviso se assente. */
+  readonly headingKey?: MessageKey;
   readonly promptKey: MessageKey;
   readonly options: readonly ChoiceOption[];
 }

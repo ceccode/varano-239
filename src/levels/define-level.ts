@@ -6,6 +6,9 @@ import type { PlatformerViewConfig } from "./adapters/platformer";
  * are defaults rather than per-level copy-paste (ADR-034).
  */
 export const platformerDefaults = {
+  // Three lives per attempt on every level (ADR-041): falls and vehicles cost
+  // one; at zero the level restarts. Story progress is never lost.
+  lives: 3,
   worldHeight: 180,
   viewportWidth: 320,
   viewportHeight: 180,

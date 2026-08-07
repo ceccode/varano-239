@@ -321,6 +321,11 @@ export function reduce(
         node?.type === "choice"
           ? node.options.find((candidate) => candidate.id === action.optionId)
           : undefined;
+      // An option guarded by a confirmation needs the second, explicit act
+      // (ADR-013): without it the choice simply does not happen.
+      if (option?.confirmation !== undefined && action.confirmed !== true) {
+        return unchanged(state);
+      }
       return option === undefined
         ? unchanged(state)
         : chooseOption(state, option, story);
