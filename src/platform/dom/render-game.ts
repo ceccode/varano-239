@@ -269,8 +269,9 @@ function renderLevelBriefing(
     );
   }
 
-  // The run's reputation, in plain language (ADR-043): the three scores the
-  // domain always tracked, finally readable between one level and the next.
+  // The run's reputation, in plain language (ADR-043/045): the three scores,
+  // the Sei Colli seals once any are held, and the Varano's condition once it
+  // is known.
   const run = context.state.run;
   if (run !== undefined) {
     const reputation = element(
@@ -280,7 +281,19 @@ function renderLevelBriefing(
         evidence: run.evidence,
         care: run.care,
         publicTrust: run.publicTrust,
-      }),
+      }) +
+        (run.seals.length > 0
+          ? ` ${context.content.message("core.message.level.briefing.seals", {
+              seals: run.seals.length,
+            })}`
+          : "") +
+        (run.condition === "healthy" || run.condition === "weak"
+          ? ` ${context.content.message(
+              run.condition === "healthy"
+                ? "core.message.level.briefing.condition.healthy"
+                : "core.message.level.briefing.condition.weak",
+            )}`
+          : ""),
     );
     reputation.className = "quiet-copy briefing__reputation";
     card.append(reputation);

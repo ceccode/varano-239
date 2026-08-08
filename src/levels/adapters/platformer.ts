@@ -40,7 +40,8 @@ export interface BackdropConfig {
     readonly sky: readonly [string, string, string];
   };
   readonly far: "hills" | "rooftops" | "castle" | "arches" | "none";
-  readonly near: "corn" | "hedges" | "crowd" | "torches" | "none";
+  readonly near:
+    "corn" | "hedges" | "crowd" | "torches" | "reeds" | "laundry" | "none";
 }
 
 /**
@@ -48,7 +49,7 @@ export interface BackdropConfig {
  * physics as their kind, drawn as castle furniture or as one of Pina's AI
  * decoys. Purely visual, like `gapKind: "water"` (ADR-036).
  */
-export type ObstacleLook = "portcullis" | "fake-varano";
+export type ObstacleLook = "portcullis" | "fake-varano" | "nutria" | "cage";
 
 /** A patrol car drawn as something else: same triangle wave, new dress. */
 export type CarLook = "robot";
@@ -89,7 +90,17 @@ export interface PlatformerViewConfig extends PlatformerConfig {
   /** Only on levels that gate a superpower per role (ADR-031). */
   readonly powersByRole?: Readonly<Partial<Record<Role, LevelPowerEntry>>>;
   /** The level's own looping tune (ADR-042); the original loop when omitted. */
-  readonly music?: "fields" | "chats" | "fanfare" | "sunset" | "keep";
+  readonly music?:
+    | "fields"
+    | "chats"
+    | "redzone"
+    | "lab"
+    | "hills"
+    | "versions"
+    | "dawn"
+    | "fanfare"
+    | "sunset"
+    | "keep";
   /** What the finish line looks like; reeds when omitted. */
   readonly finishKind?: "reeds" | "walls" | "sunstone";
   /**
@@ -867,6 +878,80 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         return;
       }
 
+      if (backdrop.near === "reeds") {
+        // The reed beds along the ditches (ADR-045): tall swaying canes with
+        // their seed heads, denser than the corn.
+        context.fillStyle = palette.reedDark;
+        context.fillRect(0, 128, width, bandHeight);
+        for (let index = -1; index < 56; index += 1) {
+          const seed = index + Math.floor(offset / 6);
+          const reedX = index * 6 - (offset % 6);
+          const reedHeight = 12 + pseudoRandom(seed) * 12;
+          const sway = Math.sin(time * 1.3 + index * 0.7) * 1.5;
+          context.fillStyle = index % 3 === 0 ? palette.reed : palette.reedDark;
+          context.fillRect(
+            Math.floor(reedX + sway),
+            128 - Math.floor(reedHeight),
+            2,
+            Math.floor(reedHeight),
+          );
+          if (pseudoRandom(seed + 9) > 0.6) {
+            context.fillStyle = palette.reedHead;
+            context.fillRect(
+              Math.floor(reedX + sway) - 1,
+              128 - Math.floor(reedHeight) - 4,
+              3,
+              5,
+            );
+          }
+        }
+        return;
+      }
+
+      if (backdrop.near === "laundry") {
+        // Ada's investigative clothesline (ADR-045): posts, a sagging line,
+        // and a row of sheets and clippings pinned side by side.
+        context.fillStyle = palette.hedge;
+        context.fillRect(0, 128, width, bandHeight);
+        context.fillStyle = palette.cableLine;
+        for (let index = -1; index < 8; index += 1) {
+          const spanX = index * 58 - (offset % 58);
+          for (let along = 0; along < 58; along += 4) {
+            const sag = Math.sin((along / 58) * Math.PI) * 3;
+            context.fillRect(
+              Math.floor(spanX + along),
+              Math.floor(104 + sag),
+              3,
+              1,
+            );
+          }
+          // The post between spans.
+          context.fillStyle = palette.torchWood;
+          context.fillRect(Math.floor(spanX), 104, 2, 24);
+          context.fillStyle = palette.cableLine;
+          // Sheets and clippings pinned along the span, gently swinging.
+          for (let item = 0; item < 3; item += 1) {
+            const seed = index * 7 + item;
+            const itemX = spanX + 10 + item * 15;
+            const swing = Math.sin(time * 1.8 + seed) * 1.5;
+            const isClipping = pseudoRandom(seed + 21) > 0.55;
+            context.fillStyle = isClipping ? palette.cloud : palette.belly;
+            context.fillRect(
+              Math.floor(itemX + swing),
+              107,
+              isClipping ? 6 : 10,
+              isClipping ? 8 : 12,
+            );
+            if (isClipping) {
+              context.fillStyle = palette.cables;
+              context.fillRect(Math.floor(itemX + swing) + 1, 109, 4, 1);
+              context.fillRect(Math.floor(itemX + swing) + 1, 112, 4, 1);
+            }
+          }
+        }
+        return;
+      }
+
       if (backdrop.near === "torches") {
         // Skirting of the near wall, with brackets and flames that flicker
         // deterministically: elapsed time in, same flame out.
@@ -1436,6 +1521,75 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
             obstacle.width,
             1,
           );
+          continue;
+        }
+
+        if (look === "cage") {
+          // A capture cage with its bait untouched (ADR-045): the solid block
+          // of the drone kind as a mesh box. Calmed, its door swings open.
+          context.fillStyle = palette.portcullis;
+          context.fillRect(drawX, obstacle.y, obstacle.width, 2);
+          context.fillRect(
+            drawX,
+            obstacle.y + obstacle.height - 2,
+            obstacle.width,
+            2,
+          );
+          for (let bar = 0; bar <= obstacle.width - 2; bar += 6) {
+            context.fillRect(drawX + bar, obstacle.y, 2, obstacle.height);
+          }
+          if (inert) {
+            // The door flung open against the side.
+            context.fillStyle = palette.portcullisLight;
+            context.fillRect(drawX - 6, obstacle.y + 2, 6, 2);
+          }
+          // The bait: a small pale lump, famously ignored.
+          context.fillStyle = palette.pickupCore;
+          context.fillRect(
+            drawX + Math.floor(obstacle.width / 2) - 1,
+            obstacle.y + obstacle.height - 5,
+            3,
+            3,
+          );
+          continue;
+        }
+
+        if (look === "nutria") {
+          // One of the six warm shapes the drone keeps finding (ADR-045): a
+          // round little nutria. Calm ones sit down and mind their business.
+          const bodyY = obstacle.y + obstacle.height - 12;
+          const waddle = inert ? 0 : Math.floor(Math.sin(time * 6 + drawX) * 1);
+          context.fillStyle = palette.reedHead;
+          context.fillRect(
+            drawX + 2,
+            bodyY + waddle,
+            obstacle.width - 4,
+            10 - (inert ? 2 : 0),
+          );
+          // Head, ear and the two famous teeth.
+          context.fillRect(
+            drawX + obstacle.width - 8,
+            bodyY - 4 + waddle,
+            8,
+            7,
+          );
+          context.fillStyle = palette.eye;
+          context.fillRect(
+            drawX + obstacle.width - 3,
+            bodyY - 2 + waddle,
+            1,
+            1,
+          );
+          context.fillStyle = palette.pickupCore;
+          context.fillRect(
+            drawX + obstacle.width - 3,
+            bodyY + 2 + waddle,
+            2,
+            2,
+          );
+          // The bald tail, trailing.
+          context.fillStyle = palette.crowdHead;
+          context.fillRect(drawX - 5, bodyY + 6 + waddle, 8, 2);
           continue;
         }
 
