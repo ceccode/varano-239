@@ -620,6 +620,178 @@ export const acquaLevelConfig = defineLevel({
 });
 
 /**
+ * «Il borgo delle versioni» (ADR-045), sixth in story order: the upper
+ * village at night, awake behind its windows, with Ada's investigative
+ * clothesline strung across the backdrop. Built against the "every level is
+ * ditches and jumps" complaint (owner playtest note): the level is a choice
+ * of routes — the street through the curiosi in dressing gowns, or the
+ * rooftop line above them — plus the game's tallest climb so far and the
+ * laundry basket on its pulley, the first vertical ride outside the castle.
+ * The alleys are plain drops, not water: two water levels in a row already.
+ */
+export const borgoLevelConfig = defineLevel({
+  worldWidth: 3800,
+  sprint: {
+    holdSeconds: 0.9,
+    maxSpeed: 235,
+    acceleration: 620,
+  },
+  groundSegments: [
+    // Three alleys between the housefronts, all inside a plain jump.
+    { x: 0, width: 700 },
+    { x: 780, width: 910 },
+    { x: 1770, width: 680 },
+    { x: 2530, width: 1270 },
+  ],
+  platforms: [
+    // Set piece 1: the first rooftop line. Street or roofs — the curiosi
+    // below nudge (or get barged at full sprint), the roofs cost two jumps.
+    { x: 180, y: 118, width: 70 },
+    { x: 290, y: 96, width: 120 },
+    { x: 430, y: 96, width: 110 },
+    // Set piece 3: the second rooftop, over the one curioso who never sleeps.
+    { x: 1180, y: 112, width: 90 },
+    { x: 1300, y: 92, width: 100 },
+    // Set piece 4: boards over the piazza, where the dressing gowns gather.
+    { x: 1830, y: 112, width: 100 },
+    { x: 1940, y: 104, width: 80 },
+    // Set piece 5: the pulley courtyard — the tallest climb of the game so
+    // far, three steps up to the meme's perch, with the basket alongside.
+    { x: 2620, y: 118, width: 64 },
+    { x: 2720, y: 88, width: 64 },
+    { x: 2820, y: 56, width: 64 },
+    // The last balcony before the finish.
+    { x: 3230, y: 112, width: 90 },
+  ],
+  obstacles: [
+    {
+      id: "curioso-1",
+      kind: "onlooker",
+      x: 300,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "curioso-2",
+      kind: "onlooker",
+      x: 460,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    // Set piece 2: Ada's threads with the clippings, low across the street.
+    // Cables kill the sprint (ADR-039): under the investigation, no barging.
+    {
+      id: "fili-ritagli",
+      kind: "cables",
+      x: 900,
+      y: 134,
+      width: 280,
+      height: 20,
+    },
+    {
+      id: "curioso-3",
+      kind: "onlooker",
+      x: 1320,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "vestaglia-1",
+      kind: "onlooker",
+      x: 1850,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "vestaglia-2",
+      kind: "onlooker",
+      x: 1900,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "vestaglia-3",
+      kind: "onlooker",
+      x: 1950,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "nottambulo",
+      kind: "onlooker",
+      x: 3250,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+  ],
+  // The laundry basket on its pulley (ADR-044): the scenic lift up to the
+  // meme's perch. The three-step climb beside it keeps it optional.
+  movingPlatforms: [
+    {
+      id: "cesta",
+      x: 2904,
+      y: 56,
+      width: 40,
+      axis: "y",
+      range: 64,
+      speed: 22,
+    },
+  ],
+  pickups: [
+    { id: "ritaglio", x: 340, y: 64 },
+    { id: "filo", x: 1340, y: 60 },
+    { id: "meme", x: 2850, y: 26 },
+  ],
+  checkpoints: [
+    { id: "borgo-checkpoint-1", x: 820 },
+    { id: "borgo-checkpoint-2", x: 1800 },
+    { id: "borgo-checkpoint-3", x: 2560 },
+  ],
+  finishX: 3680,
+  music: "versions",
+  cameo: {
+    x: 1120,
+    y: 126,
+    kind: "tail",
+    narrativeKey: "core.message.borgo.narrative.cameo",
+  },
+  // Around five: a violet night with warm windows, nothing like the blue of
+  // the ditches an hour earlier. Rooftops far, the clothesline up close.
+  backdrop: {
+    sky: ["#151226", "#241d44", "#3a2f63"],
+    night: true,
+    far: "rooftops",
+    near: "laundry",
+  },
+  objectiveKey: "core.message.borgo.objective",
+  controlsKey: "core.message.borgo.controls",
+  statusKeys: [
+    "core.message.borgo.status.0",
+    "core.message.borgo.status.1",
+    "core.message.borgo.status.2",
+    "core.message.borgo.status.3",
+  ],
+  finishStatusKey: "core.message.borgo.status.3",
+  narrativeStartKey: "core.message.borgo.narrative.start",
+  narrativePickupKeys: {
+    ritaglio: "core.message.borgo.narrative.pickup.ritaglio",
+    filo: "core.message.borgo.narrative.pickup.filo",
+    meme: "core.message.borgo.narrative.pickup.meme",
+  },
+  narrativeCheckpointKey: "core.message.borgo.narrative.checkpoint",
+  narrativeRespawnKey: "core.message.borgo.narrative.respawn",
+  narrativeFinishKey: "core.message.borgo.narrative.finish",
+  narrativeSprintKey: "core.message.borgo.narrative.sprint",
+});
+
+/**
  * The four role superpowers (ADR-031). One tuning, shared by every level that
  * grants them: a player who learned a power keeps exactly that power, and the
  * copy belongs to the role, not to a level (ADR-036).
@@ -1158,6 +1330,10 @@ const levelConfigs = {
   "core.level.acqua-e-impronte": {
     configId: "core.level-config.acqua-8",
     config: acquaLevelConfig,
+  },
+  "core.level.borgo-delle-versioni": {
+    configId: "core.level-config.borgo-9",
+    config: borgoLevelConfig,
   },
 } as const satisfies Readonly<
   Record<string, { configId: string; config: PlatformerViewConfig }>

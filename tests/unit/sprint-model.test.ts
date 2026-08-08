@@ -143,6 +143,71 @@ describe("run superpower", () => {
   });
 });
 
+describe("barging through onlookers (ADR-032)", () => {
+  // The pass-through is design — a full sprint carries the Varano straight
+  // through a crowd — but it must be reported, so the presentation can kick
+  // up dust instead of looking like a collision bug (owner playtest note).
+  const crowdConfig: PlatformerConfig = {
+    ...sprintConfig,
+    obstacles: [
+      {
+        id: "curioso",
+        kind: "onlooker",
+        x: 700,
+        y: 128,
+        width: 22,
+        height: 26,
+      },
+    ],
+  };
+
+  it("walks into the crowd and gets nudged back, with no barge reported", () => {
+    let state = createPlatformerState(crowdConfig);
+    let barged = 0;
+    // 0.8s bursts with a pause between them: the sprint never charges.
+    for (let burst = 0; burst < 12; burst += 1) {
+      for (let elapsed = 0; elapsed < 0.8; elapsed += step) {
+        const result = stepPlatformer(
+          state,
+          { ...idle, right: true },
+          step,
+          crowdConfig,
+        );
+        state = result.state;
+        barged += result.events.bargedObstacleIds.length;
+      }
+      state = stepPlatformer(state, idle, step, crowdConfig).state;
+    }
+    expect(barged).toBe(0);
+    expect(state.x).toBeLessThan(700);
+  });
+
+  it("reports the barge exactly while sprinting through, then leaves it behind", () => {
+    let state = createPlatformerState(crowdConfig);
+    const bargedAt: number[] = [];
+    for (let elapsed = 0; elapsed < 6; elapsed += step) {
+      const result = stepPlatformer(
+        state,
+        { ...idle, right: true },
+        step,
+        crowdConfig,
+      );
+      state = result.state;
+      if (result.events.bargedObstacleIds.includes("curioso")) {
+        bargedAt.push(state.x);
+      }
+    }
+    // The barge happened, only across the obstacle's own footprint…
+    expect(bargedAt.length).toBeGreaterThan(0);
+    expect(Math.min(...bargedAt)).toBeGreaterThan(
+      700 - crowdConfig.playerWidth,
+    );
+    expect(Math.max(...bargedAt)).toBeLessThan(722 + crowdConfig.playerWidth);
+    // …and the runner is far past the crowd, never pushed back.
+    expect(state.x).toBeGreaterThan(900);
+  });
+});
+
 describe("Le chat di paese level design", () => {
   const config = chatLevelConfig;
 

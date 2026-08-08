@@ -327,6 +327,30 @@ describe("full-screen game controller", () => {
       "core.seal.generale",
     ]);
 
+    // Sixth in story order: the upper village, its clothesline and the
+    // second pair of seals (ADR-045).
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.borgo.level",
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.borgo.recap"),
+    );
+    clickMessage("core.message.level.skip");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-borgo.varano"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-borgo.twist"),
+    );
+    clickMessage("core.message.ui.continue");
+    clickMessage("core.message.choice-borgo.order");
+    expect(controller.getState().run?.seals).toEqual([
+      "core.seal.rotondo",
+      "core.seal.generale",
+      "core.seal.san-giorgio",
+      "core.seal.san-zeno",
+    ]);
+
     // Chapter 2: the media circus outside the castle walls (ADR-032).
     expect(controller.getState().run?.currentNodeId).toBe(
       "core.node.superstar.level",
