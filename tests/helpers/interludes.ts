@@ -25,6 +25,11 @@ export const coreInterludes: readonly (CoreInterlude | undefined)[] = [
     optionId: "core.option.zona.photo",
     textKey: "core.message.choice-zona.photo",
   },
+  // c06 — Tre identità.
+  {
+    optionId: "core.option.lab.doubt",
+    textKey: "core.message.choice-lab.doubt",
+  },
   // c02 — Varano superstar.
   {
     optionId: "core.option.superstar.hand-over",

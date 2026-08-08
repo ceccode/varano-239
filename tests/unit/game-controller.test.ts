@@ -287,6 +287,23 @@ describe("full-screen game controller", () => {
     clickMessage("core.message.ui.continue");
     clickMessage("core.message.choice-zona.bait");
 
+    // Fourth in story order: the versions laboratory (ADR-045).
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.lab.level",
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.lab.recap"),
+    );
+    clickMessage("core.message.level.skip");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-lab.varano"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-lab.twist"),
+    );
+    clickMessage("core.message.ui.continue");
+    clickMessage("core.message.choice-lab.prudent");
+
     // Chapter 2: the media circus outside the castle walls (ADR-032).
     expect(controller.getState().run?.currentNodeId).toBe(
       "core.node.superstar.level",
