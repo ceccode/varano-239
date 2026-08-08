@@ -169,6 +169,34 @@ test("completes the whole story with the keyboard and restarts", async ({
     .focus();
   await page.keyboard.press("Enter");
 
+  // The long night (ADR-045): the sealed zone, third in story order.
+  await expect(
+    page.getByText(message("core.message.zona.recap")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.level.play") })
+    .click();
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+  await expect(
+    page.getByText(message("core.message.zona.narrative.start")),
+  ).toBeVisible();
+  const skipZona = page.getByRole("button", {
+    name: message("core.message.level.skip"),
+  });
+  await skipZona.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByText(message("core.message.dialogue-zona.twist")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+  await page
+    .getByRole("button", { name: message("core.message.choice-zona.bait") })
+    .focus();
+  await page.keyboard.press("Enter");
+
   // Chapter 2: the media circus, where the level grants a power per role.
   await expect(
     page.getByText(message("core.message.level3.recap")),

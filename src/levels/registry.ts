@@ -148,6 +148,152 @@ export const chatLevelConfig = defineLevel({
 });
 
 /**
+ * «La zona interdetta» (ADR-045), third in story order: the sealed ditches
+ * the same night as the photo. No ★ yet — the powers stay a level-3 debut —
+ * but the level 2 sprint is available as comfort, and every water gap stays
+ * within the reach of a plain jump.
+ */
+export const zonaLevelConfig = defineLevel({
+  worldWidth: 3700,
+  sprint: {
+    holdSeconds: 0.9,
+    maxSpeed: 235,
+    acceleration: 620,
+  },
+  groundSegments: [
+    // The gaps are the irrigation ditches, drawn as water (ADR-036).
+    { x: 0, width: 540 },
+    { x: 620, width: 640 },
+    { x: 1345, width: 760 },
+    { x: 2185, width: 1515 },
+  ],
+  platforms: [
+    // Set piece 1: the ordinance ledge, then the crates over the first cage.
+    // The crates end 140px before the ditch: even a sprinting walk-off lands
+    // on the bank, never in the water.
+    { x: 180, y: 118, width: 70 },
+    { x: 280, y: 110, width: 120 },
+    // Rhythm steps along the first ditch.
+    { x: 700, y: 118, width: 64 },
+    { x: 800, y: 112, width: 60 },
+    { x: 1060, y: 118, width: 70 },
+    // Set piece 2: the walkway over the search drone.
+    { x: 1660, y: 110, width: 120 },
+    // Set piece 3: crates over the Brigade operators, well clear of the
+    // third ditch: a sprinting walk-off still lands on the bank.
+    { x: 1820, y: 118, width: 70 },
+    { x: 1900, y: 118, width: 70 },
+    // Set piece 4: the second cage, with its untouched bait alongside.
+    { x: 2280, y: 110, width: 120 },
+    // The footprint's perch (ADR-044): the earned clue asks for a climb.
+    { x: 2960, y: 112, width: 70 },
+    { x: 3050, y: 84, width: 60 },
+  ],
+  obstacles: [
+    {
+      id: "gabbia-1",
+      kind: "drone",
+      x: 320,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+    {
+      id: "drone-ricerca",
+      kind: "drone",
+      x: 1700,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+    {
+      id: "operatore-1",
+      kind: "onlooker",
+      x: 1840,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "operatore-2",
+      kind: "onlooker",
+      x: 1920,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "gabbia-2",
+      kind: "drone",
+      x: 2320,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+  ],
+  obstacleLooks: { "gabbia-1": "cage", "gabbia-2": "cage" },
+  // The floating walkway ferries across the second ditch (ADR-044); the gap
+  // stays jumpable on its own.
+  movingPlatforms: [
+    {
+      id: "passerella",
+      x: 1260,
+      y: 158,
+      width: 40,
+      axis: "x",
+      range: 45,
+      speed: 28,
+    },
+  ],
+  pickups: [
+    { id: "ordinanza", x: 215, y: 86 },
+    { id: "esca", x: 2340, y: 78 },
+    { id: "impronta", x: 3078, y: 52 },
+  ],
+  checkpoints: [
+    { id: "zona-checkpoint-1", x: 640 },
+    { id: "zona-checkpoint-2", x: 1400 },
+    { id: "zona-checkpoint-3", x: 2200 },
+  ],
+  finishX: 3580,
+  gapKind: "water",
+  music: "redzone",
+  cameo: {
+    x: 1302,
+    y: 158,
+    kind: "eyes",
+    narrativeKey: "core.message.zona.narrative.cameo",
+  },
+  // Deep night, an hour after the photo: the darkest sky of the game, the
+  // reed beds of the ditches up close.
+  backdrop: {
+    sky: ["#060913", "#0b1428", "#142440"],
+    night: true,
+    far: "hills",
+    near: "reeds",
+  },
+  objectiveKey: "core.message.zona.objective",
+  controlsKey: "core.message.zona.controls",
+  statusKeys: [
+    "core.message.zona.status.0",
+    "core.message.zona.status.1",
+    "core.message.zona.status.2",
+    "core.message.zona.status.3",
+  ],
+  finishStatusKey: "core.message.zona.status.3",
+  narrativeStartKey: "core.message.zona.narrative.start",
+  narrativePickupKeys: {
+    ordinanza: "core.message.zona.narrative.pickup.ordinanza",
+    esca: "core.message.zona.narrative.pickup.esca",
+    impronta: "core.message.zona.narrative.pickup.impronta",
+  },
+  narrativeCheckpointKey: "core.message.zona.narrative.checkpoint",
+  narrativeRespawnKey: "core.message.zona.narrative.respawn",
+  narrativeFinishKey: "core.message.zona.narrative.finish",
+  narrativeSprintKey: "core.message.zona.narrative.sprint",
+});
+
+/**
  * The four role superpowers (ADR-031). One tuning, shared by every level that
  * grants them: a player who learned a power keeps exactly that power, and the
  * copy belongs to the role, not to a level (ADR-036).
@@ -674,6 +820,10 @@ const levelConfigs = {
   "core.level.dentro-il-castello": {
     configId: "core.level-config.castello-5",
     config: castelloLevelConfig,
+  },
+  "core.level.zona-interdetta": {
+    configId: "core.level-config.zona-6",
+    config: zonaLevelConfig,
   },
 } as const satisfies Readonly<
   Record<string, { configId: string; config: PlatformerViewConfig }>
