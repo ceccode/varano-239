@@ -96,7 +96,8 @@ describe("chapter chaining", () => {
     const endings = coreStoryGraph.nodes.filter(
       (node) => node.type === "ending",
     );
-    expect(endings).toHaveLength(5);
+    // Five families plus the six-seal coronation (ADR-045).
+    expect(endings).toHaveLength(6);
     for (const ending of endings) {
       expect(ending.chapterId).toBe("core.chapter.c99-finale");
     }

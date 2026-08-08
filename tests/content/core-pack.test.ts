@@ -11,7 +11,9 @@ import {
 import { corePack, coreStoryGraph } from "../../src/content/packs/core/pack";
 import { validateContent } from "../../src/content/validate-content";
 import type { StoryPack } from "../../src/content/story-pack";
+import type { GameAction } from "../../src/core/actions";
 import { registeredLevelDescriptors } from "../../src/levels/registry";
+import { coreInterludes } from "../helpers/interludes";
 
 const roles: readonly Role[] = ["hunter", "guardian", "mayor", "varano"];
 const approaches: readonly Approach[] = ["evidence", "rescue"];
@@ -33,38 +35,36 @@ function finishRun(
   state: GameState,
   standOptionId = "core.option.finale.document",
   confirmed?: boolean,
+  options?: { readonly stopAtConfrontation?: boolean },
 ): GameState {
-  const actions = [
+  const actions: readonly GameAction[] = [
     // Chapter 0: level 1, dialogue, first choice.
     { type: "MINIGAME_SKIPPED" },
     { type: "DIALOGUE_ADVANCED" },
     { type: "OPTION_CHOSEN", optionId: "core.option.prologue.document" },
-    // Chapter 1: level 2, dialogue, the interlude choice (ADR-043).
-    { type: "MINIGAME_SKIPPED" },
-    { type: "DIALOGUE_ADVANCED" },
-    { type: "OPTION_CHOSEN", optionId: "core.option.chat.call" },
-    // Chapter 2: level 3, dialogue, interlude choice.
-    { type: "MINIGAME_SKIPPED" },
-    { type: "DIALOGUE_ADVANCED" },
-    { type: "OPTION_CHOSEN", optionId: "core.option.superstar.hand-over" },
-    // Chapter 3: level 4, dialogue, interlude choice.
-    { type: "MINIGAME_SKIPPED" },
-    { type: "DIALOGUE_ADVANCED" },
-    { type: "OPTION_CHOSEN", optionId: "core.option.park.photograph" },
-    // Chapter 4: level 5, the reveal dialogue (ADR-039).
-    { type: "MINIGAME_SKIPPED" },
-    { type: "DIALOGUE_ADVANCED" },
-    // The confrontation on the tower picks the ending family (ADR-040).
-    ...(confirmed === undefined
-      ? [{ type: "OPTION_CHOSEN", optionId: standOptionId } as const]
-      : [
-          {
-            type: "OPTION_CHOSEN",
-            optionId: standOptionId,
-            confirmed,
-          } as const,
-        ]),
-  ] as const;
+    // Every chapter in between: skip the level, advance the dialogue, take
+    // the interlude when the chapter has one (single source: coreInterludes).
+    ...coreInterludes.flatMap((interlude): readonly GameAction[] => [
+      { type: "MINIGAME_SKIPPED" },
+      { type: "DIALOGUE_ADVANCED" },
+      ...(interlude === undefined
+        ? []
+        : [{ type: "OPTION_CHOSEN", optionId: interlude.optionId } as const]),
+    ]),
+    // The confrontation on the tower picks the ending family (ADR-040) —
+    // unless the test wants to stop right on the tower.
+    ...(options?.stopAtConfrontation === true
+      ? []
+      : confirmed === undefined
+        ? [{ type: "OPTION_CHOSEN", optionId: standOptionId } as const]
+        : [
+            {
+              type: "OPTION_CHOSEN",
+              optionId: standOptionId,
+              confirmed,
+            } as const,
+          ]),
+  ];
 
   return actions.reduce<GameState>(
     (current, action) => reduce(current, action, coreStoryGraph).state,
@@ -144,6 +144,54 @@ describe("M1 core content", () => {
         }
       }
     }
+  });
+
+  it("shows the coronation only to a run holding all six seals (ADR-045)", () => {
+    // Today no shipped chapter grants seals: the crown option must be
+    // unreachable, and the five families must be exactly what they were.
+    const withoutSeals = finishRun(
+      startRun("varano", "rescue", "complete"),
+      "core.option.finale.crown",
+    );
+    expect(withoutSeals.phase).toBe("playing");
+    expect(withoutSeals.run?.currentNodeId).toBe(
+      "core.node.finale.confrontation",
+    );
+
+    // With the six seals injected the way the Sei Colli interludes will grant
+    // them, the same stand crowns the Count for real.
+    const sealIds = [
+      "core.seal.rotondo",
+      "core.seal.generale",
+      "core.seal.san-giorgio",
+      "core.seal.san-zeno",
+      "core.seal.santa-margherita",
+      "core.seal.san-pancrazio",
+    ];
+    const atConfrontation = finishRun(
+      startRun("varano", "rescue", "complete"),
+      "core.option.finale.document",
+      undefined,
+      { stopAtConfrontation: true },
+    );
+    expect(atConfrontation.run?.currentNodeId).toBe(
+      "core.node.finale.confrontation",
+    );
+    if (atConfrontation.run === undefined) {
+      throw new Error("The walkthrough must reach the confrontation.");
+    }
+    const sealed: GameState = {
+      ...atConfrontation,
+      run: { ...atConfrontation.run, seals: sealIds },
+    };
+    const crowned = reduce(
+      sealed,
+      { type: "OPTION_CHOSEN", optionId: "core.option.finale.crown" },
+      coreStoryGraph,
+    ).state;
+    expect(crowned.phase).toBe("ending");
+    expect(crowned.run?.outcomeId).toBe("core.outcome.count-of-six-hills");
+    expect(crowned.run?.varanoFate).toBe("escaped");
   });
 
   it("gates the lethal choice to the hunter who documents, behind a confirmation", () => {

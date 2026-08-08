@@ -3,6 +3,10 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { appConfig } from "../../src/app/config";
 import { resolveItalianMessage } from "../../src/content/locales/it";
+import {
+  coreInterludes,
+  interludesBeforeSuperstar,
+} from "../helpers/interludes";
 
 const message = resolveItalianMessage;
 
@@ -317,27 +321,22 @@ test("guards the lethal choice behind an explicit confirmation", async ({
     .getByRole("button", { name: message("core.message.choice.document") })
     .click();
 
-  // Chapters 1-3: skip the level, advance the dialogue, take the interlude
-  // choice (ADR-043). Chapter 4's dialogue hands over to the tower directly.
-  for (const interlude of [
-    "core.message.choice2.call",
-    "core.message.choice3.hand-over",
-    "core.message.choice4.photograph",
-  ] as const) {
+  // Every middle chapter: skip the level, advance the dialogue, take the
+  // interlude when there is one — all derived from the shared list, so a new
+  // level never edits this test (ADR-045).
+  for (const interlude of coreInterludes) {
     await page
       .getByRole("button", { name: message("core.message.level.skip") })
       .click();
     await page
       .getByRole("button", { name: message("core.message.ui.continue") })
       .click();
-    await page.getByRole("button", { name: message(interlude) }).click();
+    if (interlude !== undefined) {
+      await page
+        .getByRole("button", { name: message(interlude.textKey) })
+        .click();
+    }
   }
-  await page
-    .getByRole("button", { name: message("core.message.level.skip") })
-    .click();
-  await page
-    .getByRole("button", { name: message("core.message.ui.continue") })
-    .click();
 
   // The confrontation shows the lethal option to this setup only, always
   // alongside the non-lethal stands (ADR-013).
@@ -510,19 +509,25 @@ for (const [roleKey, labelKey] of Object.entries(powerLabelKeys) as [
     await page
       .getByRole("button", { name: message("core.message.choice.protect") })
       .click();
-    await page
-      .getByRole("button", { name: message("core.message.level.play") })
-      .click();
-    await page
-      .getByRole("button", { name: message("core.message.level.skip") })
-      .click();
-    await page
-      .getByRole("button", { name: message("core.message.ui.continue") })
-      .click();
-    // Chapter 1's interlude choice (ADR-043) sits before level 3's briefing.
-    await page
-      .getByRole("button", { name: message("core.message.choice2.call") })
-      .click();
+    // Every chapter before «Varano superstar», derived from the shared list
+    // (ADR-045): skip the level from its briefing, advance, take the
+    // interlude when there is one.
+    for (const interlude of interludesBeforeSuperstar) {
+      await page
+        .getByRole("button", { name: message("core.message.level.play") })
+        .click();
+      await page
+        .getByRole("button", { name: message("core.message.level.skip") })
+        .click();
+      await page
+        .getByRole("button", { name: message("core.message.ui.continue") })
+        .click();
+      if (interlude !== undefined) {
+        await page
+          .getByRole("button", { name: message(interlude.textKey) })
+          .click();
+      }
+    }
 
     await page
       .getByRole("button", { name: message("core.message.level.play") })

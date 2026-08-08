@@ -49,9 +49,13 @@ export const uiMessages = {
   "core.message.level.briefing.recap": "Dove eravamo",
   "core.message.level.briefing.objective": "Che cosa devi fare",
   "core.message.level.briefing.power": "Il tuo superpotere",
-  // The run's reputation, finally visible (ADR-043).
+  // The run's reputation, finally visible (ADR-043); seals and the Varano's
+  // condition join it once they exist (ADR-045).
   "core.message.level.briefing.reputation":
     "Reputazione — Prove: {evidence} · Cura: {care} · Fiducia: {publicTrust}",
+  "core.message.level.briefing.seals": "· Sigilli dei Sei Colli: {seals}/6",
+  "core.message.level.briefing.condition.healthy": "· Il Varano sta bene.",
+  "core.message.level.briefing.condition.weak": "· Il Varano è affaticato.",
   // The legend star (ADR-044): the ★ button's own reward, score only.
   "core.message.level.bonus":
     "STELLA DELLA LEGGENDA! Solo un superpotere poteva prenderla: +500.",

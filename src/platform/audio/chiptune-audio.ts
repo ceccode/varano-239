@@ -9,8 +9,18 @@ export type GameSoundEffect =
   | "blocked"
   | "select";
 
-/** One looping tune per level (ADR-042): five levels, five songs. */
-export type MusicTrackId = "fields" | "chats" | "fanfare" | "sunset" | "keep";
+/** One looping tune per level (ADR-042/045): ten levels, ten songs. */
+export type MusicTrackId =
+  | "fields"
+  | "chats"
+  | "redzone"
+  | "lab"
+  | "hills"
+  | "versions"
+  | "dawn"
+  | "fanfare"
+  | "sunset"
+  | "keep";
 
 export interface GameAudio {
   readonly setMusicEnabled: (enabled: boolean) => void;
@@ -92,6 +102,79 @@ const musicTracks: Readonly<Record<MusicTrackId, MusicTrack>> = {
     bass: [
       40, 0, 40, 52, 36, 0, 36, 48, 38, 0, 38, 50, 35, 0, 47, 0, 40, 0, 40, 52,
       36, 0, 36, 48, 38, 0, 50, 0, 35, 47, 0, 0,
+    ],
+  },
+  // The sealed zone at 3 a.m.: G minor, a pulsing low end like a search
+  // drone sweeping the ditches.
+  redzone: {
+    beatsPerMinute: 100,
+    leadType: "square",
+    bassType: "square",
+    lead: [
+      67, 0, 0, 70, 74, 0, 70, 67, 65, 0, 67, 0, 62, 0, 0, 0, 67, 0, 0, 70, 74,
+      0, 75, 74, 70, 0, 67, 0, 65, 0, 62, 0,
+    ],
+    bass: [
+      31, 31, 0, 31, 31, 0, 31, 0, 29, 29, 0, 29, 34, 0, 34, 0, 31, 31, 0, 31,
+      31, 0, 31, 0, 27, 27, 0, 27, 34, 0, 34, 0,
+    ],
+  },
+  // The versions laboratory: a lopsided whole-tone riff — three species, two
+  // weights and no certainty anywhere.
+  lab: {
+    beatsPerMinute: 112,
+    leadType: "square",
+    bassType: "triangle",
+    lead: [
+      66, 0, 68, 0, 70, 0, 68, 66, 64, 0, 66, 0, 62, 0, 0, 0, 66, 0, 68, 0, 72,
+      0, 70, 68, 66, 0, 64, 0, 62, 0, 60, 0,
+    ],
+    bass: [
+      42, 0, 0, 42, 40, 0, 0, 40, 38, 0, 0, 38, 36, 0, 42, 0, 42, 0, 0, 42, 40,
+      0, 0, 40, 38, 0, 36, 0, 38, 0, 0, 0,
+    ],
+  },
+  // First light over the ditches and the reed beds: a slow night pentatonic.
+  hills: {
+    beatsPerMinute: 92,
+    leadType: "triangle",
+    bassType: "triangle",
+    lead: [
+      64, 0, 0, 67, 69, 0, 0, 72, 74, 0, 72, 69, 67, 0, 64, 0, 62, 0, 0, 64, 67,
+      0, 0, 69, 72, 0, 69, 67, 64, 0, 62, 0,
+    ],
+    bass: [
+      40, 0, 52, 0, 38, 0, 50, 0, 36, 0, 48, 0, 40, 0, 45, 0, 40, 0, 52, 0, 38,
+      0, 50, 0, 36, 0, 48, 0, 40, 45, 0, 0,
+    ],
+  },
+  // The village of versions: a little 3/4 waltz for Ada's clothesline —
+  // 24 steps, because the scheduler loops on the pattern's own length.
+  versions: {
+    beatsPerMinute: 116,
+    leadType: "square",
+    bassType: "triangle",
+    lead: [
+      69, 0, 72, 0, 76, 0, 74, 0, 72, 0, 69, 0, 71, 0, 74, 0, 77, 0, 76, 0, 74,
+      0, 71, 0,
+    ],
+    bass: [
+      45, 0, 57, 57, 0, 0, 41, 0, 53, 53, 0, 0, 43, 0, 55, 55, 0, 0, 43, 0, 55,
+      55, 0, 0,
+    ],
+  },
+  // The last climb to San Pancrazio: a slow chorale that opens with the dawn.
+  dawn: {
+    beatsPerMinute: 88,
+    leadType: "triangle",
+    bassType: "triangle",
+    lead: [
+      62, 0, 0, 0, 66, 0, 0, 0, 69, 0, 0, 66, 71, 0, 0, 0, 74, 0, 0, 71, 69, 0,
+      0, 66, 69, 0, 0, 0, 66, 0, 62, 0,
+    ],
+    bass: [
+      38, 0, 45, 0, 42, 0, 50, 0, 45, 0, 54, 0, 43, 0, 50, 0, 38, 0, 45, 0, 42,
+      0, 50, 0, 45, 0, 50, 0, 38, 0, 0, 0,
     ],
   },
   // Opening day outside the walls: a bright C-major fanfare for the circus.

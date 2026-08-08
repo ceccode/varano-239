@@ -56,6 +56,31 @@ const nodes: readonly StoryNode[] = [
         targetNodeId: "core.node.finale.escaped",
       },
       {
+        // The full coronation (ADR-045): only a run that gathered all six
+        // Sei Colli seals ever sees this stand. Purely additive — without
+        // the seals the confrontation is exactly the five families.
+        id: "core.option.finale.crown",
+        textKey: "core.message.finale.option.crown",
+        when: [
+          { type: "has-seal", sealId: "core.seal.rotondo" },
+          { type: "has-seal", sealId: "core.seal.generale" },
+          { type: "has-seal", sealId: "core.seal.san-giorgio" },
+          { type: "has-seal", sealId: "core.seal.san-zeno" },
+          { type: "has-seal", sealId: "core.seal.santa-margherita" },
+          { type: "has-seal", sealId: "core.seal.san-pancrazio" },
+        ],
+        effects: [
+          { type: "adjust-score", score: "publicTrust", delta: 1 },
+          {
+            type: "record-choice",
+            choiceId: "core.choice.finale.stand",
+            optionId: "core.option.finale.crown",
+          },
+          { type: "set-varano-fate", fate: "escaped" },
+        ],
+        targetNodeId: "core.node.finale.crowned",
+      },
+      {
         id: "core.option.finale.tower",
         textKey: "core.message.finale.option.tower",
         effects: [
@@ -145,6 +170,15 @@ const nodes: readonly StoryNode[] = [
     outcomeId: "core.outcome.varano-count",
     titleKey: "core.message.ending.count.title",
     bodyKey: "core.message.ending.count.body",
+  },
+  {
+    id: "core.node.finale.crowned",
+    chapterId: finaleChapterId,
+    type: "ending",
+    narrativeLayer: "legend",
+    outcomeId: "core.outcome.count-of-six-hills",
+    titleKey: "core.message.ending.crowned.title",
+    bodyKey: "core.message.ending.crowned.body",
   },
   {
     id: "core.node.finale.killed",
