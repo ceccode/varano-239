@@ -1,7 +1,7 @@
 export const castleParkMessages = {
   "core.message.chapter.park.title":
     "Atto V, parte prima — Il parco del Castello",
-  "core.message.level4.heading": "Livello 4 — Il parco del Castello",
+  "core.message.level4.heading": "Il parco del Castello",
   "core.message.level4.recap":
     "Il poster ha incoronato il Varano «Conte dei Sei Colli», i cancelli del Castello Bonoris sono aperti e il Conte è entrato nel parco da solo. Chi ha spedito la foto delle 2:41 è là in mezzo, da qualche parte fra i visitatori.",
   "core.message.level4.intro":

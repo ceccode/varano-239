@@ -131,6 +131,22 @@ describe("platformer canvas adapter", () => {
     expect(request.audio.stopMusic).toHaveBeenCalled();
   });
 
+  it("prefixes the status with the campaign position when given (ADR-045)", () => {
+    installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const handle = platformerMiniGame.mount(host, {
+      ...createRequest(),
+      position: { index: 3, total: 6 },
+    });
+    expect(getByRole(host, "status").textContent).toBe(
+      "core.message.level.status.position core.message.level.status.0 core.message.level.lives",
+    );
+    expect(host.dataset.levelIndex).toBe("3");
+    handle.destroy();
+    host.remove();
+  });
+
   it("ends the attempt with a KO card and restarts it in place (ADR-041)", () => {
     const harness = installFrameHarness();
     const host = document.createElement("div");

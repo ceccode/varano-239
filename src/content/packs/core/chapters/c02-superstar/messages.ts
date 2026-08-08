@@ -1,6 +1,6 @@
 export const superstarMessages = {
   "core.message.chapter.superstar.title": "Atto III — Varano superstar",
-  "core.message.level3.heading": "Livello 3 — Varano superstar",
+  "core.message.level3.heading": "Varano superstar",
   "core.message.level3.recap":
     "I tre indizi delle chat portano tutti alla stessa persona, che sapeva dov’era il Varano prima di chiunque altro. Oggi il Castello Bonoris apre al pubblico, e quella persona è là fuori in mezzo alle telecamere.",
   "core.message.level3.intro":

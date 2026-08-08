@@ -1,6 +1,6 @@
 export const villageChatsMessages = {
   "core.message.chapter.chat.title": "Atto I — Le chat di paese",
-  "core.message.level2.heading": "Livello 2 — Le chat di paese",
+  "core.message.level2.heading": "Le chat di paese",
   "core.message.level2.recap":
     "La foto delle 2:39 esiste, ma chi l’ha scattata non ha mai chiamato i giornali. Alle 2:41 qualcun altro l’ha spedita alle chat del paese: adesso mezza Montichiari è in cortile.",
   "core.message.level2.intro":

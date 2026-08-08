@@ -10,6 +10,7 @@ import type { GameAudio } from "../platform/audio/chiptune-audio";
 import type { BestScorePort } from "../platform/storage/best-score";
 import type { LevelOutcome, MiniGameHandle } from "../levels/contract";
 import { mountRegisteredLevel } from "../levels/registry";
+import { levelPosition } from "../content/level-position";
 
 export interface GameControllerDependencies {
   readonly document: Document;
@@ -151,11 +152,13 @@ export function createGameController(
     const levelHost =
       dependencies.mount.querySelector<HTMLElement>("[data-level-host]");
     if (currentNode?.type === "level" && levelHost !== null) {
+      const position = levelPosition(coreStoryGraph, currentNode.id);
       activeLevel = mountRegisteredLevel({
         host: levelHost,
         node: currentNode,
         // The role decides which superpower the level grants (ADR-031).
         role: state.setup.role ?? "varano",
+        ...(position === undefined ? {} : { position }),
         settings: state.settings,
         message: resolveItalianMessage,
         audio: dependencies.audio,

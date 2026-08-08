@@ -46,6 +46,10 @@ export const uiMessages = {
   "core.message.level.gameover.body":
     "Vite finite: il Conte si ritira a leccarsi la coda. Si ricomincia il livello da capo, con le vite piene; la storia resta salva.",
   "core.message.level.gameover.retry": "Riprova il livello",
+  // The level's position in the campaign, computed from the graph (ADR-045):
+  // inserting a chapter renumbers everything by itself.
+  "core.message.level.briefing.position": "Livello {index} di {total}",
+  "core.message.level.status.position": "Liv. {index}/{total} ·",
   "core.message.level.briefing.recap": "Dove eravamo",
   "core.message.level.briefing.objective": "Che cosa devi fare",
   "core.message.level.briefing.power": "Il tuo superpotere",

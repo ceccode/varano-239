@@ -1,7 +1,7 @@
 export const castleKeepMessages = {
   "core.message.chapter.keep.title":
     "Atto V, parte seconda — Dentro il Castello",
-  "core.message.level5.heading": "Livello 5 — Dentro il Castello",
+  "core.message.level5.heading": "Dentro il Castello",
   "core.message.level5.recap":
     "La porta della torre è socchiusa e il Conte è già oltre. Chi ha spedito la foto delle 2:41 è entrato prima di tutti, con le chiavi giuste, ed è ancora qui dentro: un numero, un timbro, una chiave — stanotte il filo finisce in cima.",
   "core.message.level5.intro":

@@ -870,6 +870,8 @@ export interface MountRegisteredLevelOptions {
   readonly host: HTMLElement;
   readonly node: LevelNode;
   readonly role: Role;
+  /** The level's place in the campaign, shown next to the lives (ADR-045). */
+  readonly position?: { readonly index: number; readonly total: number };
   readonly settings: AccessibilitySettings;
   readonly message: (
     key: MessageKey,
@@ -904,6 +906,7 @@ export function mountRegisteredLevel(
     configId: options.node.configId,
     config,
     role: options.role,
+    ...(options.position === undefined ? {} : { position: options.position }),
     settings: options.settings,
     message: options.message,
     audio: options.audio,
