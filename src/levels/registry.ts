@@ -294,6 +294,159 @@ export const zonaLevelConfig = defineLevel({
 });
 
 /**
+ * «Tre identità» (ADR-045), fourth in story order: the versions laboratory,
+ * the warehouse where the town manufactures its three species overnight. An
+ * interior (like the castle keep) whose doorway reopens on the night sky
+ * toward the hills. No quiz and no ★: the question lives in the interlude,
+ * the powers stay a level-5 debut in story order.
+ */
+export const labLevelConfig = defineLevel({
+  worldWidth: 3800,
+  sprint: {
+    holdSeconds: 0.9,
+    maxSpeed: 235,
+    acceleration: 620,
+  },
+  groundSegments: [
+    // The gaps are the loading pits of the warehouse floor.
+    { x: 0, width: 600 },
+    { x: 680, width: 760 },
+    { x: 1520, width: 900 },
+    { x: 2500, width: 1300 },
+  ],
+  platforms: [
+    // Set piece 1: the plaster-cast ledge under the first species sign, then
+    // the crates over the night technician.
+    { x: 315, y: 118, width: 70 },
+    { x: 400, y: 118, width: 70 },
+    // Steps into the projector cables, tripods above them.
+    { x: 760, y: 118, width: 64 },
+    { x: 900, y: 112, width: 60 },
+    { x: 1030, y: 112, width: 60 },
+    { x: 1150, y: 112, width: 60 },
+    { x: 1250, y: 112, width: 60 },
+    // Set piece 2: the shelving over the inventory drone, the crates over
+    // the second technician, and the scales' ledge.
+    { x: 1660, y: 110, width: 120 },
+    { x: 1880, y: 118, width: 70 },
+    { x: 2015, y: 110, width: 80 },
+    // Set piece 3: tripods over the second cable run.
+    { x: 2590, y: 112, width: 60 },
+    { x: 2700, y: 112, width: 60 },
+    // The CERTA sign's perch (ADR-044): the earned clue asks for a climb.
+    { x: 3020, y: 112, width: 70 },
+    { x: 3110, y: 84, width: 60 },
+  ],
+  obstacles: [
+    {
+      id: "tecnico-1",
+      kind: "onlooker",
+      x: 420,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "cavi-lab-1",
+      kind: "cables",
+      x: 1000,
+      y: 134,
+      width: 300,
+      height: 20,
+    },
+    {
+      id: "drone-inventario",
+      kind: "drone",
+      x: 1700,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+    {
+      id: "tecnico-2",
+      kind: "onlooker",
+      x: 1900,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "cavi-lab-2",
+      kind: "cables",
+      x: 2560,
+      y: 134,
+      width: 260,
+      height: 20,
+    },
+  ],
+  // The specimen conveyor shuttles across the second loading pit (ADR-044);
+  // the pit stays jumpable on its own.
+  movingPlatforms: [
+    {
+      id: "nastro",
+      x: 1440,
+      y: 158,
+      width: 40,
+      axis: "x",
+      range: 40,
+      speed: 26,
+    },
+  ],
+  pickups: [
+    { id: "calco", x: 350, y: 86 },
+    { id: "bilancia", x: 2050, y: 78 },
+    { id: "cartello", x: 3138, y: 52 },
+  ],
+  checkpoints: [
+    { id: "lab-checkpoint-1", x: 700 },
+    { id: "lab-checkpoint-2", x: 1550 },
+    { id: "lab-checkpoint-3", x: 2520 },
+  ],
+  finishX: 3680,
+  music: "lab",
+  groundKind: "stone",
+  platformKind: "stone",
+  cameo: {
+    x: 2300,
+    y: 100,
+    kind: "tail",
+    narrativeKey: "core.message.lab.narrative.cameo",
+  },
+  // The second interior of the game (ADR-039 mechanics): warehouse greys
+  // under the lamps, until the doorway at 3320 reopens on the night sky
+  // toward the hills.
+  backdrop: {
+    sky: ["#1d2422", "#2b3530", "#3c4a42"],
+    night: true,
+    indoor: {
+      skyFromX: 3320,
+      sky: ["#0b1531", "#16294e", "#213c63"],
+    },
+    far: "arches",
+    near: "torches",
+  },
+  objectiveKey: "core.message.lab.objective",
+  controlsKey: "core.message.lab.controls",
+  statusKeys: [
+    "core.message.lab.status.0",
+    "core.message.lab.status.1",
+    "core.message.lab.status.2",
+    "core.message.lab.status.3",
+  ],
+  finishStatusKey: "core.message.lab.status.3",
+  narrativeStartKey: "core.message.lab.narrative.start",
+  narrativePickupKeys: {
+    calco: "core.message.lab.narrative.pickup.calco",
+    bilancia: "core.message.lab.narrative.pickup.bilancia",
+    cartello: "core.message.lab.narrative.pickup.cartello",
+  },
+  narrativeCheckpointKey: "core.message.lab.narrative.checkpoint",
+  narrativeRespawnKey: "core.message.lab.narrative.respawn",
+  narrativeFinishKey: "core.message.lab.narrative.finish",
+  narrativeSprintKey: "core.message.lab.narrative.sprint",
+});
+
+/**
  * The four role superpowers (ADR-031). One tuning, shared by every level that
  * grants them: a player who learned a power keeps exactly that power, and the
  * copy belongs to the role, not to a level (ADR-036).
@@ -824,6 +977,10 @@ const levelConfigs = {
   "core.level.zona-interdetta": {
     configId: "core.level-config.zona-6",
     config: zonaLevelConfig,
+  },
+  "core.level.tre-identita": {
+    configId: "core.level-config.lab-7",
+    config: labLevelConfig,
   },
 } as const satisfies Readonly<
   Record<string, { configId: string; config: PlatformerViewConfig }>

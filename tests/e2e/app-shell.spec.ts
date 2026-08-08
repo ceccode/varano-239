@@ -197,6 +197,32 @@ test("completes the whole story with the keyboard and restarts", async ({
     .focus();
   await page.keyboard.press("Enter");
 
+  // Fourth in story order: the versions laboratory (ADR-045).
+  await expect(page.getByText(message("core.message.lab.recap"))).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.level.play") })
+    .click();
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+  await expect(
+    page.getByText(message("core.message.lab.narrative.start")),
+  ).toBeVisible();
+  const skipLab = page.getByRole("button", {
+    name: message("core.message.level.skip"),
+  });
+  await skipLab.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByText(message("core.message.dialogue-lab.twist")),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+  await page
+    .getByRole("button", { name: message("core.message.choice-lab.prudent") })
+    .focus();
+  await page.keyboard.press("Enter");
+
   // Chapter 2: the media circus, where the level grants a power per role.
   await expect(
     page.getByText(message("core.message.level3.recap")),
