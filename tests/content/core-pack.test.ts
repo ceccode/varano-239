@@ -165,13 +165,21 @@ describe("M1 core content", () => {
     }
   });
 
-  it("grants the first two Sei Colli seals from either side of the interlude", () => {
+  it("grants each hill's two seals from either side of its interlude", () => {
     // ADR-045: the hills give their seals to both options — the choice decides
     // how the night is spent, never whether the road was walked. A skipped
     // level still reaches the interlude, so it still earns its seals.
+    const shippedSeals = [
+      "core.seal.rotondo",
+      "core.seal.generale",
+      "core.seal.san-giorgio",
+      "core.seal.san-zeno",
+    ];
     for (const optionId of [
       "core.option.acqua.follow",
       "core.option.acqua.wait",
+      "core.option.borgo.order",
+      "core.option.borgo.names",
     ]) {
       const run = finishRun(
         startRun("varano", "rescue", "complete"),
@@ -179,16 +187,13 @@ describe("M1 core content", () => {
         undefined,
         { stopAtConfrontation: true, interludeOverride: optionId },
       );
-      expect(run.run?.seals, optionId).toEqual([
-        "core.seal.rotondo",
-        "core.seal.generale",
-      ]);
+      expect(run.run?.seals, optionId).toEqual(shippedSeals);
     }
   });
 
   it("shows the coronation only to a run holding all six seals (ADR-045)", () => {
-    // «Acqua e impronte» ships two of the six; until the other two hills land,
-    // the crown option stays unreachable and the six families are unchanged.
+    // The ditches and the village ship four of the six; until San Pancrazio
+    // lands, the crown stays unreachable and the six families are unchanged.
     const withoutSeals = finishRun(
       startRun("varano", "rescue", "complete"),
       "core.option.finale.crown",

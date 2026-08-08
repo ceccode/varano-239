@@ -335,6 +335,9 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
     let wasBlocked = false;
     let cameoTriggeredAt: number | undefined;
     const particles: Particle[] = [];
+    // One dust burst per barged onlooker per contact: the model reports the
+    // pass-through at simulation rate, the burst fires on the first step only.
+    const bargingIds = new Set<string>();
 
     const instructions = createElement(document, "p", "arcade-instructions");
     instructions.id = "arcade-instructions";
@@ -579,6 +582,17 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         request.audio.playEffect("blocked");
       }
       wasBlocked = events.blocked;
+      // A sprint barging through an onlooker (ADR-032) kicks up dust, or the
+      // pass-through reads as a collision bug instead of a design.
+      for (const bargedId of events.bargedObstacleIds) {
+        if (!bargingIds.has(bargedId)) {
+          spawnDust(6, palette.dust);
+        }
+      }
+      bargingIds.clear();
+      for (const bargedId of events.bargedObstacleIds) {
+        bargingIds.add(bargedId);
+      }
       if (events.finished) {
         request.audio.playEffect("finish");
         request.audio.stopMusic();
@@ -1985,6 +1999,7 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       accumulator = 0;
       previousTime = undefined;
       wasBlocked = false;
+      bargingIds.clear();
       input.left = false;
       input.right = false;
       input.jumpPressed = false;

@@ -35,6 +35,11 @@ export const coreInterludes: readonly (CoreInterlude | undefined)[] = [
     optionId: "core.option.acqua.follow",
     textKey: "core.message.choice-acqua.follow",
   },
+  // c08 — Il borgo delle versioni (San Giorgio + San Zeno).
+  {
+    optionId: "core.option.borgo.order",
+    textKey: "core.message.choice-borgo.order",
+  },
   // c02 — Varano superstar.
   {
     optionId: "core.option.superstar.hand-over",
