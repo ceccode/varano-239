@@ -469,13 +469,24 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         collected >= config.pickups.length
           ? config.finishStatusKey
           : config.statusKeys[collected];
+      // «Liv. 3/10 ·» — the campaign position, computed upstream (ADR-045).
+      const position =
+        request.position === undefined
+          ? ""
+          : `${request.message("core.message.level.status.position", {
+              index: request.position.index,
+              total: request.position.total,
+            })} `;
       const lives = Number.isFinite(state.livesRemaining)
         ? ` ${request.message("core.message.level.lives", { lives: state.livesRemaining })}`
         : "";
       if (statusKey !== undefined) {
-        status.textContent = `${request.message(statusKey)}${lives}`;
+        status.textContent = `${position}${request.message(statusKey)}${lives}`;
       }
       host.dataset.collected = String(collected);
+      if (request.position !== undefined) {
+        host.dataset.levelIndex = String(request.position.index);
+      }
       host.dataset.playerX = String(Math.round(state.x));
       host.dataset.playerY = String(Math.round(state.y));
       // The level clock, for tests that need to read a patrol's phase.

@@ -33,6 +33,8 @@ export interface MiniGameRequest<Config extends object> {
   readonly config: Readonly<Config>;
   /** Which superpower the level grants, when it gates them per role (ADR-031). */
   readonly role: Role;
+  /** The level's place in the campaign, shown next to the lives (ADR-045). */
+  readonly position?: { readonly index: number; readonly total: number };
   readonly settings: AccessibilitySettings;
   readonly message: (
     key: MessageKey,

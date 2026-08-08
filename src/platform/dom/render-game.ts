@@ -5,6 +5,7 @@ import { drawScoreCard } from "./score-card";
 import { shareScoreCard, type ShareOutcome } from "./share-card";
 import { levelPowerLabelKey } from "../../levels/registry";
 import { matchesConditions } from "../../core/conditions";
+import { levelPosition } from "../../content/level-position";
 import { completeSetup, type GameState } from "../../core/game-state";
 import type {
   Approach,
@@ -240,6 +241,21 @@ function renderLevelBriefing(
   card.classList.add("briefing");
   const cardContext: RenderContext = { ...context, screen: card };
   heading(cardContext, node.headingKey);
+
+  // «Livello 3 di 10», computed from the graph (ADR-045).
+  const position = levelPosition(context.content.story, node.id);
+  if (position !== undefined) {
+    const positionLine = element(
+      context.document,
+      "p",
+      context.content.message("core.message.level.briefing.position", {
+        index: position.index,
+        total: position.total,
+      }),
+    );
+    positionLine.className = "quiet-copy briefing__position";
+    card.append(positionLine);
+  }
 
   card.append(
     briefingSection(

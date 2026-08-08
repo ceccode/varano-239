@@ -1,6 +1,6 @@
 export const firstSightingMessages = {
   "core.message.chapter.prologue.title": "Atto 0 — Ore 2:39",
-  "core.message.level.heading": "Livello 1 — I campi di Montichiari",
+  "core.message.level.heading": "I campi di Montichiari",
   "core.message.level.recap":
     "Montichiari, ore 2:39 del 17 luglio. Qualcuno sta per scattare una fotografia che cambierà l’estate di mezza provincia.",
   "core.message.level.intro":

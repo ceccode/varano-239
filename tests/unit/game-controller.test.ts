@@ -239,9 +239,19 @@ describe("full-screen game controller", () => {
     expect(controller.getState().run?.currentNodeId).toBe(
       "core.node.chat.level",
     );
-    // From the second level on, a briefing recaps the story first (ADR-034).
+    // From the second level on, a briefing recaps the story first (ADR-034)
+    // and announces the level's place in the campaign (ADR-045).
     expect(mount.textContent).toContain(
       resolveItalianMessage("core.message.level2.recap"),
+    );
+    const totalLevels = coreStoryGraph.nodes.filter(
+      (node) => node.type === "level",
+    ).length;
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level.briefing.position", {
+        index: 2,
+        total: totalLevels,
+      }),
     );
     expect(mount.querySelector("canvas")).toBeNull();
     clickMessage("core.message.level.play");
