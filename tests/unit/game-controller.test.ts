@@ -14,6 +14,7 @@ import type { BestScorePort } from "../../src/platform/storage/best-score";
 import { renderGameApp } from "../../src/platform/dom/render-game";
 import { assetManifest } from "../../src/assets/manifest";
 import { stubCanvasContext } from "./helpers/canvas-stub";
+import { coreInterludes } from "../helpers/interludes";
 
 class MemorySave implements SavePort {
   readonly save = vi.fn((state: GameState) => {
@@ -358,6 +359,53 @@ describe("full-screen game controller", () => {
     );
   });
 
+  it("shows seals and the Varano's condition in the briefing reputation", () => {
+    // ADR-045: once the Sei Colli grant seals and San Pancrazio sets the
+    // condition, the briefing spells both out in plain language.
+    const { mount } = prepareDocument();
+    let state: GameState = { ...createInitialState() };
+    for (const action of [
+      { type: "RUN_STARTED" },
+      { type: "MINIGAME_SKIPPED" },
+      { type: "DIALOGUE_ADVANCED" },
+      { type: "OPTION_CHOSEN", optionId: "core.option.prologue.protect" },
+    ] as const) {
+      state = reduce(state, action, coreStoryGraph).state;
+    }
+    if (state.run === undefined) {
+      throw new Error("The walkthrough must produce a run.");
+    }
+    state = {
+      ...state,
+      run: {
+        ...state.run,
+        seals: ["core.seal.rotondo", "core.seal.generale"],
+        condition: "weak",
+      },
+    };
+
+    renderGameApp({
+      document,
+      mount,
+      state,
+      savedState: undefined,
+      content: {
+        story: coreStoryGraph,
+        assets: assetManifest,
+        message: resolveItalianMessage,
+      },
+      dispatch: vi.fn(),
+      showBriefing: true,
+    });
+
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level.briefing.seals", { seals: 2 }),
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.level.briefing.condition.weak"),
+    );
+  });
+
   it("guards the lethal choice behind a confirmation that opens on cancel", () => {
     const { mount } = prepareDocument();
     const controller = createGameController({
@@ -376,18 +424,13 @@ describe("full-screen game controller", () => {
     clickMessage("core.message.level.skip");
     clickMessage("core.message.ui.continue");
     clickMessage("core.message.choice.document");
-    for (const interlude of [
-      "core.message.choice2.call",
-      "core.message.choice3.hand-over",
-      "core.message.choice4.photograph",
-    ] as const) {
+    for (const interlude of coreInterludes) {
       clickMessage("core.message.level.skip");
       clickMessage("core.message.ui.continue");
-      clickMessage(interlude);
+      if (interlude !== undefined) {
+        clickMessage(interlude.textKey);
+      }
     }
-    // Chapter 4 has no interlude: its dialogue hands over to the tower.
-    clickMessage("core.message.level.skip");
-    clickMessage("core.message.ui.continue");
 
     // The confrontation shows the lethal option to this setup only.
     expect(document.body.textContent).toContain(
@@ -593,17 +636,18 @@ describe("full-screen game controller", () => {
       { type: "MINIGAME_SKIPPED" },
       { type: "DIALOGUE_ADVANCED" },
       { type: "OPTION_CHOSEN", optionId: "core.option.prologue.protect" },
-      { type: "MINIGAME_SKIPPED" },
-      { type: "DIALOGUE_ADVANCED" },
-      { type: "OPTION_CHOSEN", optionId: "core.option.chat.mute" },
-      { type: "MINIGAME_SKIPPED" },
-      { type: "DIALOGUE_ADVANCED" },
-      { type: "OPTION_CHOSEN", optionId: "core.option.superstar.delete" },
-      { type: "MINIGAME_SKIPPED" },
-      { type: "DIALOGUE_ADVANCED" },
-      { type: "OPTION_CHOSEN", optionId: "core.option.park.close" },
-      { type: "MINIGAME_SKIPPED" },
-      { type: "DIALOGUE_ADVANCED" },
+      ...coreInterludes.flatMap((interlude) => [
+        { type: "MINIGAME_SKIPPED" } as const,
+        { type: "DIALOGUE_ADVANCED" } as const,
+        ...(interlude === undefined
+          ? []
+          : [
+              {
+                type: "OPTION_CHOSEN",
+                optionId: interlude.optionId,
+              } as const,
+            ]),
+      ]),
       { type: "OPTION_CHOSEN", optionId: "core.option.finale.corridor" },
     ] as const) {
       state = reduce(state, action, coreStoryGraph).state;

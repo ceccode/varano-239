@@ -190,6 +190,70 @@ describe("platformer canvas adapter", () => {
     handle.destroy();
   });
 
+  it("draws the long-night variants before any level ships them (ADR-045)", () => {
+    // The ADR-033 lesson: a variant nobody exercises is a crash waiting for
+    // the level that uses it. Reed beds, the clothesline, nutrias and cages
+    // arrive with chapters c05-c09; their rendering is proven here first.
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const handle = platformerMiniGame.mount(
+      host,
+      createRequest({
+        backdrop: {
+          sky: ["#050810", "#0a1020", "#101828"],
+          night: true,
+          far: "hills",
+          near: "reeds",
+        },
+        obstacles: [
+          {
+            id: "nutria-1",
+            kind: "onlooker",
+            x: 300,
+            y: 128,
+            width: 22,
+            height: 26,
+          },
+          {
+            id: "gabbia-1",
+            kind: "drone",
+            x: 380,
+            y: 124,
+            width: 30,
+            height: 26,
+          },
+        ],
+        obstacleLooks: { "nutria-1": "nutria", "gabbia-1": "cage" },
+      }),
+    );
+    harness.run(4);
+    expect(host.querySelector("canvas")).toBeInstanceOf(HTMLCanvasElement);
+    handle.destroy();
+    host.remove();
+
+    const laundryHarness = installFrameHarness();
+    const laundryHost = document.createElement("div");
+    document.body.append(laundryHost);
+    const laundryHandle = platformerMiniGame.mount(
+      laundryHost,
+      createRequest({
+        backdrop: {
+          sky: ["#0d1430", "#152a4c", "#24405e"],
+          night: true,
+          far: "rooftops",
+          near: "laundry",
+        },
+      }),
+    );
+    laundryHarness.run(4);
+    expect(laundryHost.querySelector("canvas")).toBeInstanceOf(
+      HTMLCanvasElement,
+    );
+    laundryHandle.destroy();
+    laundryHost.remove();
+  });
+
   it("renders every registered level's backdrop without failing", () => {
     // Each level uses different parallax layers (ADR-033); a variant nobody
     // exercises is a crash waiting for the level that uses it.

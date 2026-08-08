@@ -14,6 +14,8 @@ export const finaleMessages = {
     "Tieni libero il passaggio verso il giardino e spegni le luci",
   "core.message.finale.option.tower":
     "Non toccare niente: la pietra al sole è sua",
+  "core.message.finale.option.crown":
+    "Il trono dei Sei Colli è pronto: incoronalo",
   "core.message.finale.option.document":
     "Cerca ancora la prova perfetta, un minuto soltanto",
   "core.message.finale.option.shoot": "Abbatti il Varano",
@@ -32,6 +34,9 @@ export const finaleMessages = {
   "core.message.ending.count.title": "Il Conte provvisorio",
   "core.message.ending.count.body":
     "Nessuno tocca niente. Il Conte resta sulla pietra al sole, chiude gli occhi, e per lui la questione è risolta. Ada verbalizza che non si tratta di una conquista legalmente valida; Cesare istituisce a Borgocoda una commissione per stabilire se il titolo di Conte richieda la residenza; Pina Protocollo, in via del tutto irrituale, protocolla un trono. Questa ricostruzione è Leggenda: specie, provenienza e destino reale del Varano restano tutti da scoprire.",
+  "core.message.ending.crowned.title": "Il Conte dei Sei Colli",
+  "core.message.ending.crowned.body":
+    "Sei sigilli, sei colli, una notte intera di strada: stavolta non è un titolo provvisorio. Il Conte sale sulla pietra al sole e il paese, di sotto, applaude senza sapere bene perché. Ada verbalizza contro voglia che «la prassi non prevede il caso»; Cesare dichiara i Sei Colli «gemellati con sé stessi»; Pina Protocollo protocolla la corona, numero uno, fascicolo unico. Il Conte chiude gli occhi: le istruzioni erano chiare fin dal poster. Questa ricostruzione è Leggenda: specie, provenienza e destino reale del Varano restano tutti da scoprire.",
   "core.message.ending.killed.title": "La prova che pesa",
   "core.message.ending.killed.body":
     "La visuale resta sulla torre. Un colpo interrompe il silenzio, fuori campo; gli uccelli lasciano il tetto. Toni ottiene la prova definitiva: troppo grande per essere messa in tasca, troppo pesante per essere chiamata vittoria. Marta interrompe ogni collaborazione. Cesare posa il discorso preparato e riconosce che «a ogni costo» non era soltanto una frase. Gli operatori verificano l’accaduto secondo le procedure. Questo finale è inventato: nella cronaca reale, alla data dell’ultima verifica, nessun abbattimento risultava documentato e il caso restava aperto.",
