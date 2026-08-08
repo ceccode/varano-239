@@ -20,6 +20,11 @@ export const coreInterludes: readonly (CoreInterlude | undefined)[] = [
     optionId: "core.option.chat.call",
     textKey: "core.message.choice2.call",
   },
+  // c05 — La zona interdetta.
+  {
+    optionId: "core.option.zona.photo",
+    textKey: "core.message.choice-zona.photo",
+  },
   // c02 — Varano superstar.
   {
     optionId: "core.option.superstar.hand-over",

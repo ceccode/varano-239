@@ -260,6 +260,23 @@ describe("full-screen game controller", () => {
     // one level and the next.
     clickMessage("core.message.choice2.mute");
 
+    // The long night begins (ADR-045): the sealed zone, third in story order.
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.zona.level",
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.zona.recap"),
+    );
+    clickMessage("core.message.level.skip");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-zona.varano"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-zona.twist"),
+    );
+    clickMessage("core.message.ui.continue");
+    clickMessage("core.message.choice-zona.bait");
+
     // Chapter 2: the media circus outside the castle walls (ADR-032).
     expect(controller.getState().run?.currentNodeId).toBe(
       "core.node.superstar.level",
