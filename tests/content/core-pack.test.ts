@@ -31,12 +31,22 @@ function startRun(
   return reduce(state, { type: "RUN_STARTED" }, coreStoryGraph).state;
 }
 
+/** `core.option.acqua.follow` → `core.option.acqua`: the choice it belongs to. */
+function optionFamily(optionId: string): string {
+  return optionId.slice(0, optionId.lastIndexOf("."));
+}
+
 function finishRun(
   state: GameState,
   standOptionId = "core.option.finale.document",
   confirmed?: boolean,
-  options?: { readonly stopAtConfrontation?: boolean },
+  options?: {
+    readonly stopAtConfrontation?: boolean;
+    /** Takes the other side of the interlude it belongs to. */
+    readonly interludeOverride?: string;
+  },
 ): GameState {
+  const override = options?.interludeOverride;
   const actions: readonly GameAction[] = [
     // Chapter 0: level 1, dialogue, first choice.
     { type: "MINIGAME_SKIPPED" },
@@ -49,7 +59,16 @@ function finishRun(
       { type: "DIALOGUE_ADVANCED" },
       ...(interlude === undefined
         ? []
-        : [{ type: "OPTION_CHOSEN", optionId: interlude.optionId } as const]),
+        : [
+            {
+              type: "OPTION_CHOSEN",
+              optionId:
+                override !== undefined &&
+                optionFamily(override) === optionFamily(interlude.optionId)
+                  ? override
+                  : interlude.optionId,
+            } as const,
+          ]),
     ]),
     // The confrontation on the tower picks the ending family (ADR-040) —
     // unless the test wants to stop right on the tower.
@@ -146,9 +165,30 @@ describe("M1 core content", () => {
     }
   });
 
+  it("grants the first two Sei Colli seals from either side of the interlude", () => {
+    // ADR-045: the hills give their seals to both options — the choice decides
+    // how the night is spent, never whether the road was walked. A skipped
+    // level still reaches the interlude, so it still earns its seals.
+    for (const optionId of [
+      "core.option.acqua.follow",
+      "core.option.acqua.wait",
+    ]) {
+      const run = finishRun(
+        startRun("varano", "rescue", "complete"),
+        "core.option.finale.document",
+        undefined,
+        { stopAtConfrontation: true, interludeOverride: optionId },
+      );
+      expect(run.run?.seals, optionId).toEqual([
+        "core.seal.rotondo",
+        "core.seal.generale",
+      ]);
+    }
+  });
+
   it("shows the coronation only to a run holding all six seals (ADR-045)", () => {
-    // Today no shipped chapter grants seals: the crown option must be
-    // unreachable, and the five families must be exactly what they were.
+    // «Acqua e impronte» ships two of the six; until the other two hills land,
+    // the crown option stays unreachable and the six families are unchanged.
     const withoutSeals = finishRun(
       startRun("varano", "rescue", "complete"),
       "core.option.finale.crown",
@@ -157,6 +197,7 @@ describe("M1 core content", () => {
     expect(withoutSeals.run?.currentNodeId).toBe(
       "core.node.finale.confrontation",
     );
+    expect(withoutSeals.run?.seals.length).toBeLessThan(6);
 
     // With the six seals injected the way the Sei Colli interludes will grant
     // them, the same stand crowns the Count for real.

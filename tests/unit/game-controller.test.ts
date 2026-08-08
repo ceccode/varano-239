@@ -304,6 +304,29 @@ describe("full-screen game controller", () => {
     clickMessage("core.message.ui.continue");
     clickMessage("core.message.choice-lab.prudent");
 
+    // Fifth in story order: the ditches and the six nutrias, first of the
+    // Six Hills — and the first chapter that hands out seals (ADR-045).
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.acqua.level",
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.acqua.recap"),
+    );
+    clickMessage("core.message.level.skip");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-acqua.varano"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-acqua.twist"),
+    );
+    clickMessage("core.message.ui.continue");
+    clickMessage("core.message.choice-acqua.wait");
+    // Waiting for the Brigade earns the same two seals as chasing the tail.
+    expect(controller.getState().run?.seals).toEqual([
+      "core.seal.rotondo",
+      "core.seal.generale",
+    ]);
+
     // Chapter 2: the media circus outside the castle walls (ADR-032).
     expect(controller.getState().run?.currentNodeId).toBe(
       "core.node.superstar.level",

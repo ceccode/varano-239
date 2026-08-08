@@ -447,6 +447,179 @@ export const labLevelConfig = defineLevel({
 });
 
 /**
+ * «Acqua e impronte» (ADR-045), fifth in story order and the first of the Six
+ * Hills: the ditches and the poplar rows on the way up, at the hour when the
+ * sky starts to thin. The drone keeps finding warm shapes and they keep being
+ * nutrias — six of them, and none is the Conte. Its interlude grants the first
+ * two seals, so the level itself stays what every level is: a walk with three
+ * clues on it. No ★: the powers are still a level-8 debut in story order.
+ */
+export const acquaLevelConfig = defineLevel({
+  worldWidth: 3900,
+  sprint: {
+    holdSeconds: 0.9,
+    maxSpeed: 235,
+    acceleration: 620,
+  },
+  groundSegments: [
+    // Three ditches, drawn as water (ADR-036), all inside a plain jump.
+    { x: 0, width: 580 },
+    { x: 668, width: 712 },
+    { x: 1470, width: 830 },
+    { x: 2385, width: 1515 },
+  ],
+  platforms: [
+    // Set piece 1: the near bank, where the thermal photo was taken. The
+    // climb ends 260px short of the first ditch, so even a sprinting walk-off
+    // lands on the bank.
+    { x: 150, y: 118, width: 70 },
+    { x: 250, y: 92, width: 66 },
+    // Set piece 2: the pole with the sack the wind keeps moving.
+    { x: 720, y: 118, width: 64 },
+    { x: 830, y: 110, width: 70 },
+    // Set piece 3: the walkway over the thermal drone.
+    { x: 1150, y: 110, width: 110 },
+    // Rhythm steps after the raft's ditch.
+    { x: 1560, y: 118, width: 64 },
+    { x: 1680, y: 108, width: 60 },
+    // Set piece 4: the boards over the nutria colony.
+    { x: 1790, y: 112, width: 100 },
+    { x: 1898, y: 104, width: 62 },
+    // Set piece 5: the earned clue (ADR-044) asks for the level's one real
+    // climb — three steps up the sluice, the highest perch of the long night.
+    { x: 2480, y: 118, width: 70 },
+    { x: 2570, y: 92, width: 64 },
+    { x: 2660, y: 66, width: 56 },
+  ],
+  obstacles: [
+    {
+      id: "nutria-1",
+      kind: "onlooker",
+      x: 170,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "nutria-2",
+      kind: "onlooker",
+      x: 265,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "nutria-3",
+      kind: "onlooker",
+      x: 840,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "drone-termico",
+      kind: "drone",
+      x: 1180,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+    {
+      id: "nutria-4",
+      kind: "onlooker",
+      x: 1810,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "nutria-5",
+      kind: "onlooker",
+      x: 1860,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "nutria-6",
+      kind: "onlooker",
+      x: 1910,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+  ],
+  // Six warm shapes, six nutrias (ADR-045). The seventh creature the drone
+  // keeps counting is Toni, and nobody has told him.
+  obstacleLooks: {
+    "nutria-1": "nutria",
+    "nutria-2": "nutria",
+    "nutria-3": "nutria",
+    "nutria-4": "nutria",
+    "nutria-5": "nutria",
+    "nutria-6": "nutria",
+  },
+  // The raft crosses the second ditch, which stays jumpable on its own.
+  movingPlatforms: [
+    {
+      id: "zattera",
+      x: 1385,
+      y: 158,
+      width: 42,
+      axis: "x",
+      range: 42,
+      speed: 24,
+    },
+  ],
+  pickups: [
+    { id: "foto", x: 283, y: 66 },
+    { id: "sacco", x: 865, y: 78 },
+    { id: "coda", x: 2688, y: 40 },
+  ],
+  checkpoints: [
+    { id: "acqua-checkpoint-1", x: 700 },
+    { id: "acqua-checkpoint-2", x: 1500 },
+    { id: "acqua-checkpoint-3", x: 2420 },
+  ],
+  finishX: 3780,
+  gapKind: "water",
+  music: "hills",
+  cameo: {
+    x: 2342,
+    y: 150,
+    kind: "tail",
+    narrativeKey: "core.message.acqua.narrative.cameo",
+  },
+  // Around four: still night, but the top of the sky has started to let go.
+  // Poplar rows instead of the reed beds of the sealed zone.
+  backdrop: {
+    sky: ["#0d1a2e", "#1b3050", "#33506b"],
+    night: true,
+    far: "hills",
+    near: "poplars",
+  },
+  objectiveKey: "core.message.acqua.objective",
+  controlsKey: "core.message.acqua.controls",
+  statusKeys: [
+    "core.message.acqua.status.0",
+    "core.message.acqua.status.1",
+    "core.message.acqua.status.2",
+    "core.message.acqua.status.3",
+  ],
+  finishStatusKey: "core.message.acqua.status.3",
+  narrativeStartKey: "core.message.acqua.narrative.start",
+  narrativePickupKeys: {
+    foto: "core.message.acqua.narrative.pickup.foto",
+    sacco: "core.message.acqua.narrative.pickup.sacco",
+    coda: "core.message.acqua.narrative.pickup.coda",
+  },
+  narrativeCheckpointKey: "core.message.acqua.narrative.checkpoint",
+  narrativeRespawnKey: "core.message.acqua.narrative.respawn",
+  narrativeFinishKey: "core.message.acqua.narrative.finish",
+  narrativeSprintKey: "core.message.acqua.narrative.sprint",
+});
+
+/**
  * The four role superpowers (ADR-031). One tuning, shared by every level that
  * grants them: a player who learned a power keeps exactly that power, and the
  * copy belongs to the role, not to a level (ADR-036).
@@ -981,6 +1154,10 @@ const levelConfigs = {
   "core.level.tre-identita": {
     configId: "core.level-config.lab-7",
     config: labLevelConfig,
+  },
+  "core.level.acqua-e-impronte": {
+    configId: "core.level-config.acqua-8",
+    config: acquaLevelConfig,
   },
 } as const satisfies Readonly<
   Record<string, { configId: string; config: PlatformerViewConfig }>

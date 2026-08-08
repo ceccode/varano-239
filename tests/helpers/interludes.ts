@@ -30,6 +30,11 @@ export const coreInterludes: readonly (CoreInterlude | undefined)[] = [
     optionId: "core.option.lab.doubt",
     textKey: "core.message.choice-lab.doubt",
   },
+  // c07 — Acqua e impronte (first two Sei Colli seals).
+  {
+    optionId: "core.option.acqua.follow",
+    textKey: "core.message.choice-acqua.follow",
+  },
   // c02 — Varano superstar.
   {
     optionId: "core.option.superstar.hand-over",
