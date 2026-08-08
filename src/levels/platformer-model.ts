@@ -262,6 +262,12 @@ export interface PlatformerEvents {
   readonly openedObstacleIds: readonly string[];
   /** Bumped into a solid obstacle: worth a sound, never a penalty. */
   readonly blocked: boolean;
+  /**
+   * Onlookers a sprint is passing straight through right now (ADR-032). The
+   * pass-through is design — a full sprint barges past a crowd — but without
+   * a visible reaction it reads as a collision bug, so it is an event.
+   */
+  readonly bargedObstacleIds: readonly string[];
   /** The respawn was a patrol car, so the narrator can tell that story. */
   readonly carHit: boolean;
 }
@@ -291,6 +297,7 @@ const noEvents: PlatformerEvents = {
   powerStarted: false,
   openedObstacleIds: [],
   blocked: false,
+  bargedObstacleIds: [],
   carHit: false,
 };
 
@@ -338,6 +345,7 @@ interface ObstacleContact {
   readonly x: number;
   readonly velocityX: number;
   readonly blocked: boolean;
+  readonly bargedIds: readonly string[];
 }
 
 /**
@@ -356,11 +364,11 @@ function resolveObstacleContacts(
   let x = proposedX;
   let nextVelocityX = velocityX;
   let blocked = false;
+  const bargedIds: string[] = [];
 
   for (const obstacle of obstacles) {
     if (
       obstacle.kind === "cables" ||
-      (obstacle.kind === "onlooker" && sprinting) ||
       !overlapsVertically(
         y,
         config.playerHeight,
@@ -369,6 +377,13 @@ function resolveObstacleContacts(
       ) ||
       !overlapsHorizontally(x, config.playerWidth, obstacle.x, obstacle.width)
     ) {
+      continue;
+    }
+
+    if (obstacle.kind === "onlooker" && sprinting) {
+      // The barge itself: no contact resolved, but the pass-through is
+      // reported so the presentation can react to it.
+      bargedIds.push(obstacle.id);
       continue;
     }
 
@@ -385,7 +400,7 @@ function resolveObstacleContacts(
     }
   }
 
-  return { x, velocityX: nextVelocityX, blocked };
+  return { x, velocityX: nextVelocityX, blocked, bargedIds };
 }
 
 export function createPlatformerState(
@@ -877,6 +892,7 @@ export function stepPlatformer(
       powerStarted: powerStarted && !respawned && !gameOver,
       openedObstacleIds: newlyOpenedIds,
       blocked: contact.blocked,
+      bargedObstacleIds: contact.bargedIds,
       carHit,
     },
   };

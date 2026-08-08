@@ -265,6 +265,15 @@ test("completes the whole story with the keyboard and restarts", async ({
     choiceKey: "core.message.choice-acqua.wait",
   });
 
+  // Sixth in story order: the upper village, roofs over the dressing gowns
+  // and the second pair of seals (ADR-045).
+  await walkChapter(page, {
+    recapKey: "core.message.borgo.recap",
+    startKey: "core.message.borgo.narrative.start",
+    twistKey: "core.message.dialogue-borgo.twist",
+    choiceKey: "core.message.choice-borgo.order",
+  });
+
   // Chapter 2: the media circus, where the level grants a power per role.
   await expect(
     page.getByText(message("core.message.level3.recap")),
