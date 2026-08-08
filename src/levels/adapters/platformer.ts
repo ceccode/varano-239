@@ -41,7 +41,14 @@ export interface BackdropConfig {
   };
   readonly far: "hills" | "rooftops" | "castle" | "arches" | "none";
   readonly near:
-    "corn" | "hedges" | "crowd" | "torches" | "reeds" | "laundry" | "none";
+    | "corn"
+    | "hedges"
+    | "crowd"
+    | "torches"
+    | "reeds"
+    | "poplars"
+    | "laundry"
+    | "none";
 }
 
 /**
@@ -166,6 +173,9 @@ const palette = {
   reed: "#3f9b57",
   reedDark: "#1f5a31",
   reedHead: "#7a5230",
+  poplar: "#1c4b2e",
+  poplarDark: "#0f2c1a",
+  poplarTrunk: "#33402f",
   bodyGreen: "#57b06b",
   bodyDark: "#2f7a42",
   belly: "#8ed49b",
@@ -915,6 +925,31 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
               5,
             );
           }
+        }
+        return;
+      }
+
+      if (backdrop.near === "poplars") {
+        // The poplar rows along the irrigation ditches (ADR-045): tall, narrow
+        // and far apart, so the water shows between one trunk and the next.
+        // Their flame-shaped crowns lean together in the pre-dawn wind.
+        context.fillStyle = palette.poplarDark;
+        context.fillRect(0, 128, width, bandHeight);
+        for (let index = -1; index < 12; index += 1) {
+          const seed = index + Math.floor(offset / 34);
+          const treeX = Math.floor(index * 34 - (offset % 34));
+          const treeHeight = 34 + Math.floor(pseudoRandom(seed) * 18);
+          const lean = Math.floor(Math.sin(time * 0.9 + index) * 2);
+          const top = 128 - treeHeight;
+          const crownHeight = Math.floor(treeHeight * 0.62);
+          context.fillStyle = palette.poplarTrunk;
+          context.fillRect(treeX + 3, top + 8, 2, treeHeight - 8);
+          context.fillStyle = palette.poplar;
+          context.fillRect(treeX + lean + 2, top, 4, 10);
+          context.fillRect(treeX + 1, top + 8, 6, crownHeight);
+          // A darker seam down the middle: two trees deep, not one flat bar.
+          context.fillStyle = palette.poplarDark;
+          context.fillRect(treeX + 2, top + 8, 2, crownHeight);
         }
         return;
       }

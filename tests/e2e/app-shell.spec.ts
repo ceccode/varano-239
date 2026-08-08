@@ -22,6 +22,39 @@ async function openMenu(page: Page): Promise<void> {
     .click();
 }
 
+/**
+ * One long-night chapter, driven entirely from the keyboard: briefing, canvas,
+ * skip, dialogue, interlude. Every chapter added from «Acqua e impronte» on
+ * uses this instead of another twenty-five hand-written lines (ADR-045).
+ */
+async function walkChapter(
+  page: Page,
+  keys: {
+    readonly recapKey: string;
+    readonly startKey: string;
+    readonly twistKey: string;
+    readonly choiceKey: string;
+  },
+): Promise<void> {
+  await expect(page.getByText(message(keys.recapKey))).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.level.play") })
+    .click();
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+  await expect(page.getByText(message(keys.startKey))).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.level.skip") })
+    .focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText(message(keys.twistKey))).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.ui.continue") })
+    .focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: message(keys.choiceKey) }).focus();
+  await page.keyboard.press("Enter");
+}
+
 async function pickRole(
   page: Page,
   titleKey:
@@ -222,6 +255,15 @@ test("completes the whole story with the keyboard and restarts", async ({
     .getByRole("button", { name: message("core.message.choice-lab.prudent") })
     .focus();
   await page.keyboard.press("Enter");
+
+  // Fifth in story order: the ditches, the six nutrias and the first two of
+  // the six seals (ADR-045).
+  await walkChapter(page, {
+    recapKey: "core.message.acqua.recap",
+    startKey: "core.message.acqua.narrative.start",
+    twistKey: "core.message.dialogue-acqua.twist",
+    choiceKey: "core.message.choice-acqua.wait",
+  });
 
   // Chapter 2: the media circus, where the level grants a power per role.
   await expect(
