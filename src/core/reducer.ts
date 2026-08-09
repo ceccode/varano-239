@@ -204,25 +204,9 @@ export function reduce(
   story: StoryGraph,
 ): TransitionResult {
   switch (action.type) {
-    case "SENSITIVITY_SELECTED":
-      return {
-        state: {
-          ...state,
-          setup: { ...state.setup, sensitivity: action.value },
-        },
-        effects: noEffects,
-      };
     case "ROLE_SELECTED":
       return {
         state: { ...state, setup: { ...state.setup, role: action.value } },
-        effects: noEffects,
-      };
-    case "APPROACH_SELECTED":
-      return {
-        state: {
-          ...state,
-          setup: { ...state.setup, approach: action.value },
-        },
         effects: noEffects,
       };
     case "STORY_SCOPE_SELECTED":

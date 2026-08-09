@@ -249,20 +249,16 @@ export function validateContent(
             `${option.id} needs a confirmation with the focus on cancel.`,
           );
         }
+        // The `sensitivity-is complete` clause of ADR-013 fell away with the
+        // axis itself (ADR-048): the edition IS complete, so the gate that
+        // still means something is the role.
         const conditions = option.when ?? [];
         const gatedToHunter = conditions.some(
           (condition) =>
             condition.type === "role-is" && condition.role === "hunter",
         );
-        const gatedToComplete = conditions.some(
-          (condition) =>
-            condition.type === "sensitivity-is" &&
-            condition.sensitivity === "complete",
-        );
-        if (!gatedToHunter || !gatedToComplete) {
-          errors.push(
-            `${option.id} must be gated to hunter and the complete edition.`,
-          );
+        if (!gatedToHunter) {
+          errors.push(`${option.id} must be gated to the hunter.`);
         }
         const target = nodeById.get(option.targetNodeId);
         if (

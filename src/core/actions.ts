@@ -1,12 +1,5 @@
 import type { GameState } from "./game-state";
-import type {
-  Approach,
-  HotspotId,
-  OptionId,
-  Role,
-  Sensitivity,
-  StoryScope,
-} from "./model";
+import type { HotspotId, OptionId, Role, StoryScope } from "./model";
 
 export interface SettingsUpdate {
   readonly playMode?: "standard" | "story" | "calm";
@@ -15,9 +8,7 @@ export interface SettingsUpdate {
 }
 
 export type GameAction =
-  | { readonly type: "SENSITIVITY_SELECTED"; readonly value: Sensitivity }
   | { readonly type: "ROLE_SELECTED"; readonly value: Role }
-  | { readonly type: "APPROACH_SELECTED"; readonly value: Approach }
   | { readonly type: "STORY_SCOPE_SELECTED"; readonly value: StoryScope }
   | {
       readonly type: "SETTINGS_UPDATED";

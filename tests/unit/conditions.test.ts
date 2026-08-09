@@ -6,8 +6,6 @@ import type { Condition } from "../../src/core/model";
 
 const setup: CompletedSetup = {
   role: "hunter",
-  approach: "evidence",
-  sensitivity: "complete",
   storyScope: "core",
 };
 
@@ -33,8 +31,6 @@ const run: RunState = {
 
 const matchingConditions: readonly Condition[] = [
   { type: "role-is", role: "hunter" },
-  { type: "approach-is", approach: "evidence" },
-  { type: "sensitivity-is", sensitivity: "complete" },
   { type: "story-scope-is", scope: "core" },
   { type: "flag-is", flagId: "core.flag.one", value: true },
   { type: "score-at-least", score: "evidence", value: 2 },

@@ -108,14 +108,32 @@ const nodes: readonly StoryNode[] = [
         targetNodeId: finaleNodeId,
       },
       {
+        // «La prova postuma» (ADR-047): visible only when the long night left
+        // the Varano weak (San Pancrazio's «segui la traccia»). It is NOT the
+        // lethal choice of ADR-013 — nobody pulls a trigger; the player meets
+        // the cost of a chase that ran too long. Grave scene: no gags.
+        id: "core.option.finale.wait",
+        textKey: "core.message.finale.option.wait",
+        when: [{ type: "condition-is", value: "weak" }],
+        effects: [
+          {
+            type: "record-choice",
+            choiceId: "core.choice.finale.stand",
+            optionId: "core.option.finale.wait",
+          },
+          { type: "set-varano-fate", fate: "foundDead" },
+        ],
+        targetNodeId: "core.node.finale.found-dead",
+      },
+      {
         id: "core.option.finale.shoot",
         textKey: "core.message.finale.option.shoot",
         sensitivityTags: ["impliedAnimalDeath"],
         // ADR-013 via ADR-040: «Cerca una prova» is the prologue's
-        // «Documenta la scena»; the edition is the single complete 12+ one.
+        // «Documenta la scena». The `sensitivity-is complete` clause fell
+        // away with the axis (ADR-048): the edition IS the complete one.
         when: [
           { type: "role-is", role: "hunter" },
-          { type: "sensitivity-is", sensitivity: "complete" },
           {
             type: "choice-is",
             choiceId: "core.choice.prologue.priority",
@@ -189,6 +207,16 @@ const nodes: readonly StoryNode[] = [
     outcomeId: "core.outcome.hunter-killed-varano",
     titleKey: "core.message.ending.killed.title",
     bodyKey: "core.message.ending.killed.body",
+  },
+  {
+    id: "core.node.finale.found-dead",
+    chapterId: finaleChapterId,
+    type: "ending",
+    narrativeLayer: "legend",
+    sensitivityTags: ["impliedAnimalDeath"],
+    outcomeId: "core.outcome.found-dead",
+    titleKey: "core.message.ending.found.title",
+    bodyKey: "core.message.ending.found.body",
   },
   {
     id: finaleNodeId,

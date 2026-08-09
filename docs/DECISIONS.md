@@ -542,3 +542,26 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Compatibilità: i salvataggi esistenti che portano ancora la chiave `reducedMotion` decodificano senza migrazioni (il validatore controlla i campi elencati, la chiave estranea è ignorata). Un giocatore Samsung «bloccato» torna all'arcade al primo caricamento della versione nuova, senza perdere nulla.
 - Modifica: supera il punto 2 di ADR-022 dove garantiva l'accessibilità anche tramite «percorso assistito attivato da `prefers-reduced-motion`», e le menzioni equivalenti in ADR-032/041/045. La verifica manuale n. 8 di QUALITY.md diventa «Modalità Calma senza popup animati; con `prefers-reduced-motion` l'arcade parte comunque».
 - Verifica: test end-to-end nuovo — con `reducedMotion: reduce` emulato il canvas monta, il giocatore si muove e «Salta il livello» è visibile; test unit sul percorso assistito via `playMode: story` (la card con «Continua la storia» esiste ancora, dietro la scelta giusta); riproduzione su profilo Galaxy S9+ prima e dopo la rimozione.
+
+## ADR-047 — «La prova postuma»: il settimo finale, e il tetto a sette
+
+- Stato: **Accettata**
+- Data: 9 agosto 2026
+- Contesto: il finale `foundDead` era nei tipi dal primo giorno (ADR-013 lo prevedeva come possibilità editoriale) e aspettava la meccanica `condition`, arrivata con l'interludio di San Pancrazio (ADR-045). Il proprietario ha deciso di costruirlo, chiedendo insieme di semplificare condizioni e percorsi (ADR-048).
+- Decisione: una settima opzione al confronto sulla torre, visibile solo con `condition: weak` — cioè solo per chi a San Pancrazio ha scelto «segui la traccia» invece di mettere in sicurezza la strada. Costruzione piatta, una condizione sola, identica per forma all'opzione della corona: nessun ramo nuovo, nessuna meccanica nuova.
+- **Non è la scelta letale di ADR-013**: nessuno preme un grilletto. Il giocatore incontra il costo di una notte di inseguimento durata troppo; l'opzione stessa non è marcata `impliedAnimalDeath` e non richiede né conferma né il gate del Cacciatore — il finale di destinazione sì, ed è escluso dalla scansione del linguaggio come l'epilogo dell'abbattimento. Dal trattamento: il ritrovamento è fuori scena, il corpo non si vede, «la scena serve a dare peso al tempo, mai a punire o scioccare». Nessuna gag.
+- Il finale chiude con la riga di realtà nello stesso formato dell'abbattimento: nella cronaca reale, alla data dell'ultima verifica, **nessun ritrovamento risultava documentato** — che dopo la chiusura delle ricerche (8 agosto 2026, fonte nel registro) resta esattamente vero.
+- **Tetto dichiarato: sette famiglie di finale, non una di più.** L'aggiunta è puramente additiva: senza `condition: weak` l'opzione non esiste e le sei famiglie restano identiche.
+- Verifica: il finale raggiunto camminando il grafo con la scelta della traccia; invisibile con `condition: healthy` o `unknown`; le altre famiglie invariate; la scelta letale di ADR-013 intatta.
+
+## ADR-048 — Setup a due assi: via `approach` e `sensitivity`, resta `storyScope`
+
+- Stato: **Accettata**
+- Data: 9 agosto 2026
+- Contesto: il proprietario teme che il gioco diventi immantenibile e difficile da testare. La misura dice altro: i percorsi condizionali reali sono tre (scelta letale, corona, prova postuma), ma il setup dichiarava quattro assi — e due erano morti. `approach` era fisso a `rescue` dal primo giorno e stampava la stessa riga a tutti i briefing; `sensitivity` era fissa a `complete` dall'edizione unica (ADR-022). Insieme gonfiavano la matrice nominale da 4 a 48 combinazioni che i test dovevano fingere di coprire.
+- Decisione del proprietario, su raccomandazione: **nessun personaggio si tocca** (quattro ruoli, quattro obiettivi, quattro poteri, quattro battute per capitolo — è il contenuto che i giocatori vedono). Si rimuove l'impalcatura morta:
+  1. **`approach` rimosso**: tipo, condizione `approach-is`, azione `APPROACH_SELECTED`, campo del setup, validatore del salvataggio e la riga sempre-uguale del briefing. L'obiettivo di ruolo — quello vero — resta.
+  2. **`sensitivity` rimossa dal setup**: tipo, condizione `sensitivity-is`, azione. ADR-013 resta in vigore con i denti che contano: il validatore dei contenuti continua a pretendere per ogni opzione letale la conferma con fuoco su «Annulla», il gate al Cacciatore e due alternative non letali sempre visibili; cade solo la clausola `sensitivity-is complete`, che dall'ADR-022 era sempre vera. I tag `sensitivityTags` sui contenuti restano: descrivono il contenuto, non il giocatore.
+  3. **`storyScope` resta**: è la cucitura per i livelli bonus e l'eventuale sequel (pack `origins`), e costa un campo.
+- Compatibilità: i salvataggi esistenti portano le chiavi rimosse come proprietà estranee e decodificano senza migrazioni (il validatore controlla i campi che elenca, come già in ADR-046).
+- Conseguenza: 48 combinazioni nominali → 4 reali; due tipi di condizione e due azioni in meno; il test «16 combinazioni» diventa «4 ruoli»; la matrice di test smette di crescere con i livelli. Emenda ADR-007 (i tre valori ortogonali si riducono al ruolo) e la formulazione di ADR-013/040 sul gate (`hunter` + scelta del prologo, senza clausola di edizione).

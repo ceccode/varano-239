@@ -58,10 +58,6 @@ function isSetupDraft(value: unknown): value is SetupDraft {
   return (
     (value.role === undefined ||
       isStringMember(value.role, ["hunter", "guardian", "mayor", "varano"])) &&
-    (value.approach === undefined ||
-      isStringMember(value.approach, ["evidence", "rescue"])) &&
-    (value.sensitivity === undefined ||
-      isStringMember(value.sensitivity, ["gentle", "complete"])) &&
     (value.storyScope === undefined ||
       isStringMember(value.storyScope, ["core", "origins", "all-registered"]))
   );

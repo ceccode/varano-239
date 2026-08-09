@@ -11,8 +11,6 @@ function setupState(): GameState {
     ...createInitialState(),
     setup: {
       role: "hunter",
-      approach: "evidence",
-      sensitivity: "complete",
       storyScope: "core",
     },
   };
@@ -84,8 +82,6 @@ describe("game reducer", () => {
     const initial = createInitialState();
     expect(initial.setup).toEqual({
       role: "varano",
-      approach: "rescue",
-      sensitivity: "complete",
       storyScope: "core",
     });
 
@@ -97,9 +93,7 @@ describe("game reducer", () => {
 
     let state = initial;
     for (const action of [
-      { type: "SENSITIVITY_SELECTED", value: "complete" },
       { type: "ROLE_SELECTED", value: "mayor" },
-      { type: "APPROACH_SELECTED", value: "evidence" },
       { type: "STORY_SCOPE_SELECTED", value: "all-registered" },
       {
         type: "SETTINGS_UPDATED",
@@ -116,8 +110,6 @@ describe("game reducer", () => {
     expect(started.state.phase).toBe("playing");
     expect(started.state.setup).toEqual({
       role: "mayor",
-      approach: "evidence",
-      sensitivity: "complete",
       storyScope: "all-registered",
     });
     expect(started.effects).toEqual([

@@ -55,8 +55,6 @@ function playableState(): GameState {
     phase: "playing",
     setup: {
       role: "varano",
-      approach: "rescue",
-      sensitivity: "gentle",
       storyScope: "core",
     },
     run: {
@@ -97,6 +95,27 @@ describe("versioned local save", () => {
     ).toEqual(encodeSave(state));
     save.clear();
     expect(save.load()).toBeUndefined();
+  });
+
+  it("accepts a save still carrying the removed setup axes (ADR-048)", () => {
+    // Saves written before the two-axis setup carry `approach` and
+    // `sensitivity`. The validator checks the fields it lists: the stray
+    // keys ride along and the run resumes untouched.
+    const state = playableState();
+    const legacy = {
+      version: saveVersion,
+      state: {
+        ...state,
+        setup: {
+          ...state.setup,
+          approach: "rescue",
+          sensitivity: "complete",
+        },
+      },
+    };
+    const decoded = decodeSave(legacy);
+    expect(decoded).toBeDefined();
+    expect(decoded?.run?.currentNodeId).toBe(state.run?.currentNodeId);
   });
 
   it("accepts a save still carrying the removed reducedMotion key (ADR-046)", () => {
