@@ -250,33 +250,6 @@ describe("M1 core content", () => {
     expect(count.run?.outcomeId).toBe("core.outcome.varano-count");
   });
 
-  it("reaches «La prova postuma» only through a weak Varano (ADR-047)", () => {
-    // Chasing the fresh track at San Pancrazio leaves him weak: the seventh
-    // stand appears, and it is a consequence, not a trigger — no confirmation
-    // and no role gate, because nobody pulls anything.
-    const chased = finishRun(
-      startRun("guardian"),
-      "core.option.finale.wait",
-      undefined,
-      { interludeOverride: "core.option.colle.track" },
-    );
-    expect(chased.phase).toBe("ending");
-    expect(chased.run?.outcomeId).toBe("core.outcome.found-dead");
-    expect(chased.run?.varanoFate).toBe("foundDead");
-
-    // Securing the road keeps him healthy: the option does not exist, and
-    // picking it leaves the run standing at the confrontation.
-    const secured = finishRun(
-      startRun("guardian"),
-      "core.option.finale.wait",
-      undefined,
-      { interludeOverride: "core.option.colle.road" },
-    );
-    expect(secured.phase).toBe("playing");
-    expect(secured.run?.currentNodeId).toBe("core.node.finale.confrontation");
-    expect(secured.run?.condition).toBe("healthy");
-  });
-
   it("gates the lethal choice to the hunter who documents, behind a confirmation", () => {
     // Without the explicit confirmation nothing happens (ADR-013): the state
     // stays on the confrontation.

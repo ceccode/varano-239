@@ -121,12 +121,13 @@ export const uiMessages = {
   "core.message.ui.card.time": "TEMPO",
   "core.message.ui.card.level": "LE NOTTI DI MONTICHIARI",
   "core.message.ui.card.record": "NUOVO RECORD!",
-  "core.message.ui.next-level.label": "PROSSIMO EPISODIO",
-  "core.message.ui.next-level.title": "Il Dossier Origini",
-  "core.message.ui.next-level.body":
-    "Il destino del Conte è deciso; da dove venisse, no. Tre piste aspettano nel Dossier Origini: una fuga, un abbandono e un complotto che nessuna fonte ha mai dimostrato. Arriva a breve.",
-  "core.message.ui.next-level.install":
-    "Aggiungi il gioco alla schermata Home: quando il Dossier esce, lo trovi già qui.",
+  // The completion meme card (ADR-049): the parting reward, built to travel.
+  "core.message.ui.legend-stamp": "LEGGENDA",
+  "core.message.ui.meme.card-alt":
+    "La card del tuo finale: il Varano in pixel art, vestito del titolo che si è guadagnato.",
+  "core.message.ui.meme.share": "Condividi la card del finale",
+  "core.message.ui.meme.share-text":
+    "Ho finito VARANO 2:39 — finale: «{title}». La leggenda di Montichiari, da giocare: {url}",
   "core.message.ui.menu.open": "Menù",
   "core.message.ui.menu.heading": "Menù",
   "core.message.ui.menu.close": "Torna al gioco",

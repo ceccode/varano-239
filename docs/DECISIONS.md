@@ -543,16 +543,15 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Modifica: supera il punto 2 di ADR-022 dove garantiva l'accessibilità anche tramite «percorso assistito attivato da `prefers-reduced-motion`», e le menzioni equivalenti in ADR-032/041/045. La verifica manuale n. 8 di QUALITY.md diventa «Modalità Calma senza popup animati; con `prefers-reduced-motion` l'arcade parte comunque».
 - Verifica: test end-to-end nuovo — con `reducedMotion: reduce` emulato il canvas monta, il giocatore si muove e «Salta il livello» è visibile; test unit sul percorso assistito via `playMode: story` (la card con «Continua la storia» esiste ancora, dietro la scelta giusta); riproduzione su profilo Galaxy S9+ prima e dopo la rimozione.
 
-## ADR-047 — «La prova postuma»: il settimo finale, e il tetto a sette
+## ADR-047 — Il gioco è concluso: sei famiglie di finale, e sei è il tetto
 
 - Stato: **Accettata**
 - Data: 9 agosto 2026
-- Contesto: il finale `foundDead` era nei tipi dal primo giorno (ADR-013 lo prevedeva come possibilità editoriale) e aspettava la meccanica `condition`, arrivata con l'interludio di San Pancrazio (ADR-045). Il proprietario ha deciso di costruirlo, chiedendo insieme di semplificare condizioni e percorsi (ADR-048).
-- Decisione: una settima opzione al confronto sulla torre, visibile solo con `condition: weak` — cioè solo per chi a San Pancrazio ha scelto «segui la traccia» invece di mettere in sicurezza la strada. Costruzione piatta, una condizione sola, identica per forma all'opzione della corona: nessun ramo nuovo, nessuna meccanica nuova.
-- **Non è la scelta letale di ADR-013**: nessuno preme un grilletto. Il giocatore incontra il costo di una notte di inseguimento durata troppo; l'opzione stessa non è marcata `impliedAnimalDeath` e non richiede né conferma né il gate del Cacciatore — il finale di destinazione sì, ed è escluso dalla scansione del linguaggio come l'epilogo dell'abbattimento. Dal trattamento: il ritrovamento è fuori scena, il corpo non si vede, «la scena serve a dare peso al tempo, mai a punire o scioccare». Nessuna gag.
-- Il finale chiude con la riga di realtà nello stesso formato dell'abbattimento: nella cronaca reale, alla data dell'ultima verifica, **nessun ritrovamento risultava documentato** — che dopo la chiusura delle ricerche (8 agosto 2026, fonte nel registro) resta esattamente vero.
-- **Tetto dichiarato: sette famiglie di finale, non una di più.** L'aggiunta è puramente additiva: senza `condition: weak` l'opzione non esiste e le sei famiglie restano identiche.
-- Verifica: il finale raggiunto camminando il grafo con la scelta della traccia; invisibile con `condition: healthy` o `unknown`; le altre famiglie invariate; la scelta letale di ADR-013 intatta.
+- Contesto: chiusa la campagna a dieci livelli, il finale `foundDead` («La prova postuma») era nei tipi dal primo giorno e la meccanica `condition` che l'avrebbe sbloccato è arrivata con San Pancrazio. Un prototipo del settimo finale è stato costruito e provato; alla prova, il proprietario ha giudicato i finali già abbastanza: «troppi finali sono dispersivi».
+- Decisione del proprietario: **il gioco è concluso**. Sei famiglie di finale — quattro prese di posizione sempre disponibili, più due premi condizionati (la corona dei sei sigilli e l'epilogo del Cacciatore dietro tripla barriera) — e sei è il tetto. «La prova postuma» non si costruisce: il destino `foundDead` esce dai tipi e dal validatore del salvataggio, come gli assi morti di ADR-048.
+- La meccanica `condition` resta com'è: colore narrativo nel briefing («Il Varano sta bene / è affaticato»), impostata dall'interludio di San Pancrazio, senza aprire o chiudere finali. La scelta «traccia fresca o strada sicura» pesa sulla storia raccontata, non sull'esito.
+- Nuovi capitoli non sono in programma: se mai arriveranno, saranno un **sequel**, con la propria ADR — non un'estensione silenziosa di questo gioco.
+- Verifica: il grafo conta esattamente sei nodi di finale; la corona e la scelta letale funzionano come prima; nessun contenuto pubblicato cambia.
 
 ## ADR-048 — Setup a due assi: via `approach` e `sensitivity`, resta `storyScope`
 
@@ -565,3 +564,20 @@ Una nuova ADR può introdurre Phaser soltanto se:
   3. **`storyScope` resta**: è la cucitura per i livelli bonus e l'eventuale sequel (pack `origins`), e costa un campo.
 - Compatibilità: i salvataggi esistenti portano le chiavi rimosse come proprietà estranee e decodificano senza migrazioni (il validatore controlla i campi che elenca, come già in ADR-046).
 - Conseguenza: 48 combinazioni nominali → 4 reali; due tipi di condizione e due azioni in meno; il test «16 combinazioni» diventa «4 ruoli»; la matrice di test smette di crescere con i livelli. Emenda ADR-007 (i tre valori ortogonali si riducono al ruolo) e la formulazione di ADR-013/040 sul gate (`hunter` + scelta del prologo, senza clausola di edizione).
+
+## ADR-049 — La card-meme del finale: il congedo del gioco, fatto per viaggiare
+
+- Stato: **Accettata**
+- Data: 9 agosto 2026
+- Contesto: la schermata di finale prometteva un «PROSSIMO EPISODIO — Il Dossier Origini … arriva a breve» (ADR-026), scritto quando il Dossier era in roadmap. Con ADR-047 il gioco è concluso e la promessa è diventata falsa; il proprietario vuole inoltre un premio di completamento che spinga la condivisione («mi serve per la viralità del gioco»).
+- Decisione del proprietario: al posto del teaser, una **card-meme del finale** — il Varano in pixel art vestito del titolo che si è guadagnato — condivisibile con la stessa macchina della cartolina del punteggio (Web Share → download → appunti, ADR-023/026):
+  - «Il trasportino aperto» → il papillon (in carrozza, come un sovrano);
+  - «Coda libera» → gli occhiali da sole;
+  - «Il Conte provvisorio» → il monocolo (il meme canonico del borgo);
+  - «Il Conte dei Sei Colli» → la corona;
+  - «Una muta, forse» → nessun varano: due occhi nel buio e un punto interrogativo.
+- **L'epilogo grave non ha meme**: sul finale dell'abbattimento la card non compare — la regola del tono (niente gag nelle scene gravi) vale più della viralità. Lì restano il testo e la cartolina del punteggio.
+- La card porta **il timbro LEGGENDA sull'immagine stessa**: condivisa fuori contesto per costruzione, deve dichiarare da sola di essere finzione.
+- A differenza della cartolina del punteggio (che richiede almeno un livello giocato), la card del finale compare **sempre**: anche una partita tutta «Salta il livello» si congeda con la sua card.
+- Il teaser di ADR-026 e le sue chiavi sono rimossi. Il gioco non promette episodi: l'eventuale seguito è un sequel (ADR-047).
+- Verifica: una card per ciascuna delle cinque famiglie non gravi, tutte visivamente distinte (test sul disegno); il timbro, il titolo in maiuscolo e il dominio presenti sull'immagine; il finale grave senza card; condivisione e fallback coperti dai test esistenti della cartolina.

@@ -397,13 +397,11 @@ test("completes the whole story with the keyboard and restarts", async ({
   await expect(page.locator("[data-app-root]")).not.toContainText(
     /morte|morto|uccid|abbatt|sparare/i,
   );
-  // The ending promises the next level so players know to come back.
+  // The game is concluded (ADR-049): no next-episode promise, and the
+  // completion meme card is there to be shared instead.
   await expect(
-    page.getByText(message("core.message.ui.next-level.label")),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", {
-      name: message("core.message.ui.next-level.title"),
+    page.getByRole("button", {
+      name: message("core.message.ui.meme.share"),
     }),
   ).toBeVisible();
 
