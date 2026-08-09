@@ -19,7 +19,6 @@ startApplication({
   save: new LocalSave(window.localStorage),
   audio: new ChiptuneAudio(window, true, true),
   bestScore: new LocalBestScore(window.localStorage),
-  reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
 });
 
 // The service worker is production-only: in dev it would cache Vite modules.

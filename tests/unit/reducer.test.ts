@@ -190,10 +190,7 @@ describe("game reducer", () => {
   });
 
   it("accepts completed and skipped level outcomes and clears local state", () => {
-    let state: GameState = {
-      ...setupState(),
-      settings: { ...setupState().settings, reducedMotion: true },
-    };
+    let state: GameState = setupState();
     state = reduce(state, { type: "RUN_STARTED" }, coreStoryGraph).state;
     const skipped = reduce(state, { type: "MINIGAME_SKIPPED" }, coreStoryGraph);
     const completed = reduce(
@@ -220,7 +217,9 @@ describe("game reducer", () => {
       coreStoryGraph,
     );
     expect(cleared.state.phase).toBe("title");
-    expect(cleared.state.settings.reducedMotion).toBe(true);
+    // Clearing local data resets every preference to the defaults (ADR-046):
+    // no system property survives, because none is stored any more.
+    expect(cleared.state.settings).toEqual(createInitialState().settings);
     expect(cleared.effects).toContainEqual({ type: "clear-save" });
   });
 });

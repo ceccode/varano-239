@@ -99,6 +99,24 @@ describe("versioned local save", () => {
     expect(save.load()).toBeUndefined();
   });
 
+  it("accepts a save still carrying the removed reducedMotion key (ADR-046)", () => {
+    // Every save written before the arcade-by-default decision has the key.
+    // The validator checks the fields it lists, so the stray key must ride
+    // along harmlessly: a Samsung player stuck on the assisted path gets the
+    // arcade back on first load, without losing the run.
+    const state = playableState();
+    const legacy = {
+      version: saveVersion,
+      state: {
+        ...state,
+        settings: { ...state.settings, reducedMotion: true },
+      },
+    };
+    const decoded = decodeSave(legacy);
+    expect(decoded).toBeDefined();
+    expect(decoded?.run?.currentNodeId).toBe(state.run?.currentNodeId);
+  });
+
   it("rejects malformed JSON, unknown versions and incomplete run states", () => {
     const save = new LocalSave(window.localStorage);
     window.localStorage.setItem(localSaveKey, "{");

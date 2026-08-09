@@ -674,45 +674,28 @@ test("restores a saved run automatically after reload", async ({ page }) => {
   await expect(page.locator(".arcade-canvas")).toHaveCount(0);
 });
 
-test("offers the equivalent path when reduced motion is preferred", async ({
+test("keeps the arcade even when the system asks for reduced motion (ADR-046)", async ({
   page,
 }) => {
+  // On many Android phones the battery saver raises this media query without
+  // the player choosing anything: it must not hide the game. The universal
+  // accessible route stays «Salta il livello», visible next to the canvas.
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("./");
   await pickRole(page);
 
-  await expect(page.locator("[data-level-host]")).toHaveCount(0);
-  await expect(page.locator("canvas")).toHaveCount(0);
+  await expect(page.locator("[data-level-host]")).toHaveCount(1);
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
   await expect(
-    page.getByText(message("core.message.level.assisted")),
-  ).toBeVisible();
-  // Each level announces itself with its own copy (ADR-030).
-  await expect(
-    page.getByRole("heading", { name: message("core.message.level.heading") }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: message("core.message.level.continue") })
-    .click();
-  await page
-    .getByRole("button", { name: message("core.message.ui.continue") })
-    .click();
-
-  await expect(
-    page.getByRole("heading", {
-      name: message("core.message.ui.choice.heading"),
-    }),
+    page.getByRole("button", { name: message("core.message.level.skip") }),
   ).toBeVisible();
 
-  await page
-    .getByRole("button", { name: message("core.message.choice.protect") })
-    .click();
-  // The assisted path used to reuse level 1's title here.
-  await expect(
-    page.getByRole("heading", { name: message("core.message.level2.heading") }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: message("core.message.level.heading") }),
-  ).toHaveCount(0);
+  // And the game is genuinely running, not just mounted.
+  await page.keyboard.down("ArrowRight");
+  const startingPosition = await playerX(page);
+  await page.waitForTimeout(300);
+  await page.keyboard.up("ArrowRight");
+  await expect.poll(() => playerX(page)).toBeGreaterThan(startingPosition);
 });
 
 test("moves with the touch controls and keeps an equivalent skip action", async ({
