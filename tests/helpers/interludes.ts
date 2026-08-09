@@ -40,6 +40,11 @@ export const coreInterludes: readonly (CoreInterlude | undefined)[] = [
     optionId: "core.option.borgo.order",
     textKey: "core.message.choice-borgo.order",
   },
+  // c09 — Il colle di San Pancrazio (the last two seals, and `condition`).
+  {
+    optionId: "core.option.colle.road",
+    textKey: "core.message.choice-colle.road",
+  },
   // c02 — Varano superstar.
   {
     optionId: "core.option.superstar.hand-over",

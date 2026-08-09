@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import { borgoLevelConfig, registeredLevels } from "../../src/levels/registry";
+import {
+  acquaLevelConfig,
+  borgoLevelConfig,
+  campiLevelConfig,
+  castelloLevelConfig,
+  chatLevelConfig,
+  colleLevelConfig,
+  labLevelConfig,
+  parcoLevelConfig,
+  superstarLevelConfig,
+  zonaLevelConfig,
+} from "../../src/levels/registry";
 import type { PlatformerViewConfig } from "../../src/levels/adapters/platformer";
 import { jumpReach } from "../../src/levels/define-level";
 import {
@@ -65,21 +76,32 @@ describe("Il borgo delle versioni level design", () => {
     expect(threads !== undefined && threads.y + threads.height).toBe(154);
   });
 
-  it("climbs higher than every other level in the game", () => {
-    // The anti-monotony brief made measurable: the pulley courtyard is the
-    // tallest climb shipped so far, and the meme sits on top of it.
+  it("opened the vertical axis: it climbs higher than every level before it", () => {
+    // The anti-monotony brief made measurable. The village is where the
+    // campaign starts using height; only the final hill goes higher still,
+    // which is the escalation working — so it is the one level excluded.
+    const before = [
+      campiLevelConfig,
+      chatLevelConfig,
+      zonaLevelConfig,
+      labLevelConfig,
+      acquaLevelConfig,
+      superstarLevelConfig,
+      parcoLevelConfig,
+      castelloLevelConfig,
+    ];
     const highestHere = Math.min(
       ...config.platforms.map((platform) => platform.y),
     );
-    for (const level of registeredLevels) {
-      if (level.config === viewConfig) {
-        continue;
-      }
-      const highestThere = Math.min(
-        ...level.config.platforms.map((platform) => platform.y),
+    for (const other of before) {
+      expect(highestHere).toBeLessThan(
+        Math.min(...other.platforms.map((platform) => platform.y)),
       );
-      expect(highestHere, level.levelId).toBeLessThan(highestThere);
     }
+    // …and the last hill tops even this one.
+    expect(
+      Math.min(...colleLevelConfig.platforms.map((platform) => platform.y)),
+    ).toBeLessThan(highestHere);
     const meme = config.pickups.find((pickup) => pickup.id === "meme");
     expect(meme?.y).toBeLessThan(highestHere);
   });

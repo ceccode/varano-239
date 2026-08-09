@@ -792,6 +792,124 @@ export const borgoLevelConfig = defineLevel({
 });
 
 /**
+ * «Il colle di San Pancrazio» (ADR-045), seventh in story order, last of the
+ * Six Hills and the tenth level of the campaign: the terraces at first light,
+ * with the castle finally on the skyline. The «breather» level — three
+ * obstacles in the whole world, the fewest of any level, and no mover.
+ *
+ * Its shape argues its own interlude. The ground runs unbroken past every
+ * climb: the safe road is always there. The three clues live on top of the
+ * terraces, so whoever wants the fresh track goes up for it. «Traccia fresca
+ * o strada sicura» is a choice the level lets you rehearse before the
+ * interlude asks it out loud.
+ */
+export const colleLevelConfig = defineLevel({
+  worldWidth: 3700,
+  sprint: {
+    holdSeconds: 0.9,
+    maxSpeed: 235,
+    acceleration: 620,
+  },
+  groundSegments: [
+    // Two washouts in the whole climb: this level is a breath, not a gauntlet.
+    { x: 0, width: 900 },
+    { x: 980, width: 1120 },
+    { x: 2180, width: 1520 },
+  ],
+  platforms: [
+    // Terrace 1: the fresh track, four dry-stone steps up.
+    { x: 200, y: 120, width: 90 },
+    { x: 320, y: 96, width: 90 },
+    { x: 440, y: 72, width: 90 },
+    { x: 560, y: 48, width: 90 },
+    // Terrace 2: the tape the Brigade strung across the upper road.
+    { x: 1150, y: 118, width: 90 },
+    { x: 1270, y: 94, width: 90 },
+    { x: 1390, y: 70, width: 90 },
+    // The one drone of the level, on the last ridge.
+    { x: 2570, y: 110, width: 110 },
+    // Terrace 3: the crest, and the highest perch of the whole campaign.
+    { x: 2850, y: 120, width: 90 },
+    { x: 2970, y: 96, width: 90 },
+    { x: 3090, y: 72, width: 90 },
+    { x: 3210, y: 48, width: 90 },
+  ],
+  obstacles: [
+    {
+      id: "volontario-1",
+      kind: "onlooker",
+      x: 1180,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+    {
+      id: "drone-crinale",
+      kind: "drone",
+      x: 2600,
+      y: 124,
+      width: 30,
+      height: 26,
+    },
+    {
+      id: "volontario-2",
+      kind: "onlooker",
+      x: 2880,
+      y: 128,
+      width: 22,
+      height: 26,
+    },
+  ],
+  pickups: [
+    { id: "traccia", x: 600, y: 24 },
+    { id: "nastro", x: 1430, y: 46 },
+    { id: "volantino", x: 3250, y: 24 },
+  ],
+  checkpoints: [
+    { id: "colle-checkpoint-1", x: 1000 },
+    { id: "colle-checkpoint-2", x: 2200 },
+    { id: "colle-checkpoint-3", x: 2900 },
+  ],
+  finishX: 3600,
+  music: "dawn",
+  finishKind: "walls",
+  cameo: {
+    x: 2760,
+    y: 108,
+    kind: "tail",
+    narrativeKey: "core.message.colle.narrative.cameo",
+  },
+  // First light, and the one level of the long night that is not night any
+  // more: cold blue overhead giving way to peach at the horizon, with the
+  // castle's outline finally on the skyline.
+  backdrop: {
+    sky: ["#2b3a63", "#7a6a8e", "#e8a37a"],
+    night: false,
+    far: "castle",
+    near: "terraces",
+  },
+  objectiveKey: "core.message.colle.objective",
+  controlsKey: "core.message.colle.controls",
+  statusKeys: [
+    "core.message.colle.status.0",
+    "core.message.colle.status.1",
+    "core.message.colle.status.2",
+    "core.message.colle.status.3",
+  ],
+  finishStatusKey: "core.message.colle.status.3",
+  narrativeStartKey: "core.message.colle.narrative.start",
+  narrativePickupKeys: {
+    traccia: "core.message.colle.narrative.pickup.traccia",
+    nastro: "core.message.colle.narrative.pickup.nastro",
+    volantino: "core.message.colle.narrative.pickup.volantino",
+  },
+  narrativeCheckpointKey: "core.message.colle.narrative.checkpoint",
+  narrativeRespawnKey: "core.message.colle.narrative.respawn",
+  narrativeFinishKey: "core.message.colle.narrative.finish",
+  narrativeSprintKey: "core.message.colle.narrative.sprint",
+});
+
+/**
  * The four role superpowers (ADR-031). One tuning, shared by every level that
  * grants them: a player who learned a power keeps exactly that power, and the
  * copy belongs to the role, not to a level (ADR-036).
@@ -1334,6 +1452,10 @@ const levelConfigs = {
   "core.level.borgo-delle-versioni": {
     configId: "core.level-config.borgo-9",
     config: borgoLevelConfig,
+  },
+  "core.level.colle-san-pancrazio": {
+    configId: "core.level-config.colle-10",
+    config: colleLevelConfig,
   },
 } as const satisfies Readonly<
   Record<string, { configId: string; config: PlatformerViewConfig }>

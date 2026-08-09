@@ -274,6 +274,15 @@ test("completes the whole story with the keyboard and restarts", async ({
     choiceKey: "core.message.choice-borgo.order",
   });
 
+  // Seventh in story order and tenth level: the terraces at dawn, the last
+  // two seals and the Varano's condition (ADR-045).
+  await walkChapter(page, {
+    recapKey: "core.message.colle.recap",
+    startKey: "core.message.colle.narrative.start",
+    twistKey: "core.message.dialogue-colle.twist",
+    choiceKey: "core.message.choice-colle.road",
+  });
+
   // Chapter 2: the media circus, where the level grants a power per role.
   await expect(
     page.getByText(message("core.message.level3.recap")),

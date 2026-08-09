@@ -358,6 +358,26 @@ describe("full-screen game controller", () => {
       "core.seal.san-zeno",
     ]);
 
+    // Seventh in story order and tenth level: the terraces at dawn, the last
+    // two seals and the only interlude that sets `condition` (ADR-045).
+    expect(controller.getState().run?.currentNodeId).toBe(
+      "core.node.colle.level",
+    );
+    expect(mount.textContent).toContain(
+      resolveItalianMessage("core.message.colle.recap"),
+    );
+    clickMessage("core.message.level.skip");
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-colle.varano"),
+    );
+    expect(document.body.textContent).toContain(
+      resolveItalianMessage("core.message.dialogue-colle.twist"),
+    );
+    clickMessage("core.message.ui.continue");
+    clickMessage("core.message.choice-colle.road");
+    expect(controller.getState().run?.seals).toHaveLength(6);
+    expect(controller.getState().run?.condition).toBe("healthy");
+
     // Chapter 2: the media circus outside the castle walls (ADR-032).
     expect(controller.getState().run?.currentNodeId).toBe(
       "core.node.superstar.level",

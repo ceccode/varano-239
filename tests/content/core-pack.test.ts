@@ -165,21 +165,26 @@ describe("M1 core content", () => {
     }
   });
 
+  const allSixSeals = [
+    "core.seal.rotondo",
+    "core.seal.generale",
+    "core.seal.san-giorgio",
+    "core.seal.san-zeno",
+    "core.seal.santa-margherita",
+    "core.seal.san-pancrazio",
+  ];
+
   it("grants each hill's two seals from either side of its interlude", () => {
     // ADR-045: the hills give their seals to both options — the choice decides
     // how the night is spent, never whether the road was walked. A skipped
     // level still reaches the interlude, so it still earns its seals.
-    const shippedSeals = [
-      "core.seal.rotondo",
-      "core.seal.generale",
-      "core.seal.san-giorgio",
-      "core.seal.san-zeno",
-    ];
     for (const optionId of [
       "core.option.acqua.follow",
       "core.option.acqua.wait",
       "core.option.borgo.order",
       "core.option.borgo.names",
+      "core.option.colle.track",
+      "core.option.colle.road",
     ]) {
       const run = finishRun(
         startRun("varano", "rescue", "complete"),
@@ -187,57 +192,80 @@ describe("M1 core content", () => {
         undefined,
         { stopAtConfrontation: true, interludeOverride: optionId },
       );
-      expect(run.run?.seals, optionId).toEqual(shippedSeals);
+      expect(run.run?.seals, optionId).toEqual(allSixSeals);
     }
   });
 
-  it("shows the coronation only to a run holding all six seals (ADR-045)", () => {
-    // The ditches and the village ship four of the six; until San Pancrazio
-    // lands, the crown stays unreachable and the six families are unchanged.
-    const withoutSeals = finishRun(
+  it("sets the Varano's condition from San Pancrazio, both ways (ADR-045)", () => {
+    // The one interlude that touches `condition`. Either way the run keeps
+    // all six seals: the choice changes what the night cost, never the road.
+    const chased = finishRun(
+      startRun("varano", "rescue", "complete"),
+      "core.option.finale.document",
+      undefined,
+      {
+        stopAtConfrontation: true,
+        interludeOverride: "core.option.colle.track",
+      },
+    );
+    expect(chased.run?.condition).toBe("weak");
+
+    const secured = finishRun(
+      startRun("varano", "rescue", "complete"),
+      "core.option.finale.document",
+      undefined,
+      {
+        stopAtConfrontation: true,
+        interludeOverride: "core.option.colle.road",
+      },
+    );
+    expect(secured.run?.condition).toBe("healthy");
+  });
+
+  it("opens the coronation to a run that walked all six hills (ADR-045)", () => {
+    // With San Pancrazio shipped, the throne is reachable by playing — no
+    // injected state. This is the campaign's tenth level paying off.
+    const crowned = finishRun(
       startRun("varano", "rescue", "complete"),
       "core.option.finale.crown",
     );
-    expect(withoutSeals.phase).toBe("playing");
-    expect(withoutSeals.run?.currentNodeId).toBe(
-      "core.node.finale.confrontation",
-    );
-    expect(withoutSeals.run?.seals.length).toBeLessThan(6);
+    expect(crowned.run?.seals).toEqual(allSixSeals);
+    expect(crowned.phase).toBe("ending");
+    expect(crowned.run?.outcomeId).toBe("core.outcome.count-of-six-hills");
+    expect(crowned.run?.varanoFate).toBe("escaped");
+  });
 
-    // With the six seals injected the way the Sei Colli interludes will grant
-    // them, the same stand crowns the Count for real.
-    const sealIds = [
-      "core.seal.rotondo",
-      "core.seal.generale",
-      "core.seal.san-giorgio",
-      "core.seal.san-zeno",
-      "core.seal.santa-margherita",
-      "core.seal.san-pancrazio",
-    ];
+  it("keeps the coronation hidden from a run missing a seal", () => {
+    // Purely additive (ADR-045): drop one seal and the option is gone again,
+    // with the other six families untouched.
     const atConfrontation = finishRun(
       startRun("varano", "rescue", "complete"),
       "core.option.finale.document",
       undefined,
       { stopAtConfrontation: true },
     );
-    expect(atConfrontation.run?.currentNodeId).toBe(
-      "core.node.finale.confrontation",
-    );
     if (atConfrontation.run === undefined) {
       throw new Error("The walkthrough must reach the confrontation.");
     }
-    const sealed: GameState = {
+    const incomplete: GameState = {
       ...atConfrontation,
-      run: { ...atConfrontation.run, seals: sealIds },
+      run: { ...atConfrontation.run, seals: allSixSeals.slice(0, 5) },
     };
-    const crowned = reduce(
-      sealed,
+    const refused = reduce(
+      incomplete,
       { type: "OPTION_CHOSEN", optionId: "core.option.finale.crown" },
       coreStoryGraph,
     ).state;
-    expect(crowned.phase).toBe("ending");
-    expect(crowned.run?.outcomeId).toBe("core.outcome.count-of-six-hills");
-    expect(crowned.run?.varanoFate).toBe("escaped");
+    expect(refused.phase).toBe("playing");
+    expect(refused.run?.currentNodeId).toBe("core.node.finale.confrontation");
+
+    // The unconditional stand still works for that same run.
+    const count = reduce(
+      incomplete,
+      { type: "OPTION_CHOSEN", optionId: "core.option.finale.tower" },
+      coreStoryGraph,
+    ).state;
+    expect(count.run?.outcomeId).toBe("core.outcome.varano-count");
   });
 
   it("gates the lethal choice to the hunter who documents, behind a confirmation", () => {
