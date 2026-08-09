@@ -20,7 +20,7 @@ export interface ScoreCardData {
   readonly message: (key: MessageKey) => string;
 }
 
-const palette = {
+export const palette = {
   skyTop: "#0a0f26",
   skyMid: "#10203f",
   horizon: "#1c3350",
@@ -41,6 +41,7 @@ const palette = {
   bodyDark: "#2f7a42",
   belly: "#8ed49b",
   eye: "#101820",
+  tongue: "#e0705a",
   frame: "#08120e",
 } as const;
 
@@ -48,12 +49,12 @@ const display = "ui-monospace, 'Cascadia Mono', monospace";
 const body =
   "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
-function pseudoRandom(seed: number): number {
+export function pseudoRandom(seed: number): number {
   const value = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
   return value - Math.floor(value);
 }
 
-function drawSky(context: CanvasRenderingContext2D, size: number): void {
+export function drawSky(context: CanvasRenderingContext2D, size: number): void {
   const gradient = context.createLinearGradient(0, 0, 0, size * 0.72);
   gradient.addColorStop(0, palette.skyTop);
   gradient.addColorStop(0.6, palette.skyMid);
@@ -62,7 +63,10 @@ function drawSky(context: CanvasRenderingContext2D, size: number): void {
   context.fillRect(0, 0, size, size);
 }
 
-function drawStars(context: CanvasRenderingContext2D, size: number): void {
+export function drawStars(
+  context: CanvasRenderingContext2D,
+  size: number,
+): void {
   context.fillStyle = palette.star;
   for (let index = 0; index < 90; index += 1) {
     const x = Math.floor(pseudoRandom(index) * size);
@@ -73,7 +77,10 @@ function drawStars(context: CanvasRenderingContext2D, size: number): void {
 }
 
 /** Sits in the clear sky on the right, clear of the centred title and stats. */
-function drawMoon(context: CanvasRenderingContext2D, size: number): void {
+export function drawMoon(
+  context: CanvasRenderingContext2D,
+  size: number,
+): void {
   const x = size * 0.85;
   const y = size * 0.33;
   const radius = size * 0.048;
@@ -205,7 +212,10 @@ function drawVarano(
   }
 }
 
-function drawFrame(context: CanvasRenderingContext2D, size: number): void {
+export function drawFrame(
+  context: CanvasRenderingContext2D,
+  size: number,
+): void {
   context.strokeStyle = palette.frame;
   context.lineWidth = 28;
   context.strokeRect(14, 14, size - 28, size - 28);

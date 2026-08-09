@@ -2,6 +2,7 @@ import type { AssetDefinition } from "../../assets/manifest";
 import type { GameAction } from "../../core/actions";
 import type { LevelOutcome } from "../../levels/contract";
 import { drawScoreCard } from "./score-card";
+import { drawMemeCard, type MemeAccessory } from "./meme-card";
 import { shareScoreCard, type ShareOutcome } from "./share-card";
 import { levelPowerLabelKey } from "../../levels/registry";
 import { matchesConditions } from "../../core/conditions";
@@ -743,38 +744,90 @@ function renderScorePanel(context: RenderContext): HTMLElement | undefined {
   return panel;
 }
 
-function renderNextLevelTeaser(context: RenderContext): HTMLElement {
-  const teaser = element(context.document, "aside");
-  teaser.className = "teaser";
+/**
+ * What the varano wears on the completion meme card (ADR-049), by ending.
+ * The lethal epilogue is deliberately absent: a grave scene gets no meme.
+ */
+const memeAccessoryByOutcome: Readonly<Record<string, MemeAccessory>> = {
+  "core.outcome.varano-chooses-rescue": "bowtie",
+  "core.outcome.escaped-alive": "sunglasses",
+  "core.outcome.varano-count": "monocle",
+  "core.outcome.count-of-six-hills": "crown",
+  "core.outcome.open-mystery": "mystery",
+};
 
-  const label = element(
-    context.document,
-    "p",
-    context.content.message("core.message.ui.next-level.label"),
+/**
+ * The completion meme card (ADR-049): the parting reward of a finished run,
+ * always shareable like the score card — including a run that skipped every
+ * level, which is why it does not depend on `lastOutcome`.
+ */
+function renderMemePanel(
+  context: RenderContext,
+  node: StoryNode & { type: "ending" },
+): HTMLElement | undefined {
+  const accessory = memeAccessoryByOutcome[node.outcomeId];
+  if (accessory === undefined) {
+    return undefined;
+  }
+
+  const panel = element(context.document, "div");
+  panel.className = "score-panel";
+
+  const canvas = element(context.document, "canvas");
+  canvas.className = "score-card";
+  canvas.setAttribute(
+    "aria-label",
+    context.content.message("core.message.ui.meme.card-alt"),
   );
-  label.className = "teaser__label";
+  canvas.setAttribute("role", "img");
+  const view = context.document.defaultView;
+  const siteLabel =
+    view === null ? "" : view.location.host.replace(/^www\./, "");
+  const caption = context.content.message(node.titleKey);
+  drawMemeCard(canvas, {
+    header: `${context.content.message("core.message.title")} · ${context.content.message("core.message.ui.legend-stamp")}`,
+    caption,
+    accessory,
+    siteLabel,
+  });
 
-  const title = element(
+  const share = element(
     context.document,
-    "h3",
-    context.content.message("core.message.ui.next-level.title"),
+    "button",
+    context.content.message("core.message.ui.meme.share"),
   );
+  share.type = "button";
+  const notice = element(context.document, "p");
+  notice.className = "quiet-copy";
+  notice.setAttribute("role", "status");
 
-  const body = element(
-    context.document,
-    "p",
-    context.content.message("core.message.ui.next-level.body"),
-  );
+  share.addEventListener("click", () => {
+    if (view === null) {
+      return;
+    }
+    const url = `${view.location.origin}${view.location.pathname}`;
+    const text = context.content.message("core.message.ui.meme.share-text", {
+      title: caption,
+      url,
+    });
+    share.disabled = true;
+    void shareScoreCard(view, {
+      canvas,
+      text,
+      fileName: "varano-239-finale.png",
+    })
+      .then((result) => {
+        const key = shareNoticeKeys[result];
+        notice.textContent =
+          key === undefined ? "" : context.content.message(key);
+      })
+      .finally(() => {
+        share.disabled = false;
+      });
+  });
 
-  const install = element(
-    context.document,
-    "p",
-    context.content.message("core.message.ui.next-level.install"),
-  );
-  install.className = "quiet-copy";
-
-  teaser.append(label, title, body, install);
-  return teaser;
+  panel.append(canvas, share, notice);
+  return panel;
 }
 
 function renderEnding(
@@ -787,12 +840,17 @@ function renderEnding(
   card.append(
     element(context.document, "p", context.content.message(node.bodyKey)),
   );
+  // The meme card first — the completion's own reward (ADR-049) — then the
+  // score numbers, when a played level produced any.
+  const memePanel = renderMemePanel(context, node);
+  if (memePanel !== undefined) {
+    card.append(memePanel);
+  }
   const scorePanel = renderScorePanel(context);
   if (scorePanel !== undefined) {
     card.append(scorePanel);
   }
   card.append(
-    renderNextLevelTeaser(context),
     button(cardContext, "core.message.ui.ending.restart", {
       type: "LOCAL_DATA_CLEARED",
     }),

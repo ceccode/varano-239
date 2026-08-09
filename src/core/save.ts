@@ -109,7 +109,6 @@ function isRunState(value: unknown): value is RunState {
       "unresolved",
       "rescued",
       "escaped",
-      "foundDead",
       "killedByHunter",
     ]) &&
     isStringRecord(value.selectedTheoryByMystery) &&

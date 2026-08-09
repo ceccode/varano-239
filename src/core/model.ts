@@ -26,7 +26,7 @@ export type StoryScope = "core" | "origins" | "all-registered";
 export type ScoreName = "evidence" | "care" | "publicTrust";
 export type VaranoCondition = "unknown" | "healthy" | "weak" | "critical";
 export type VaranoFate =
-  "unresolved" | "rescued" | "escaped" | "foundDead" | "killedByHunter";
+  "unresolved" | "rescued" | "escaped" | "killedByHunter";
 export type ContentSensitivityTag = "impliedAnimalDeath";
 
 export type Condition =

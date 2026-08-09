@@ -800,13 +800,18 @@ describe("full-screen game controller", () => {
       `${resolveItalianMessage("core.message.ui.score.best")}: 1800`,
     );
 
-    // The card is a real canvas with an accessible name.
-    const card = mount.querySelector<HTMLCanvasElement>("canvas.score-card");
+    // Two real canvases with accessible names: the score card and the
+    // completion meme card (ADR-049).
+    const card = mount.querySelector<HTMLCanvasElement>(
+      `canvas[aria-label="${resolveItalianMessage("core.message.ui.score.card-alt")}"]`,
+    );
     expect(card).toBeInstanceOf(HTMLCanvasElement);
     expect(card?.getAttribute("role")).toBe("img");
-    expect(card?.getAttribute("aria-label")).toBe(
-      resolveItalianMessage("core.message.ui.score.card-alt"),
-    );
+    expect(
+      mount.querySelector(
+        `canvas[aria-label="${resolveItalianMessage("core.message.ui.meme.card-alt")}"]`,
+      ),
+    ).toBeInstanceOf(HTMLCanvasElement);
     expect(canvasStub.texts).toContain("1730");
     expect(canvasStub.texts).toContain("3/3");
     expect(canvasStub.texts).toContain("47s");
@@ -817,16 +822,19 @@ describe("full-screen game controller", () => {
       resolveItalianMessage("core.message.ui.role-select.varano.title"),
     );
 
-    // The suspense block announces that level 2 is on the way.
-    expect(mount.textContent).toContain(
-      resolveItalianMessage("core.message.ui.next-level.label"),
-    );
-    expect(mount.textContent).toContain(
-      resolveItalianMessage("core.message.ui.next-level.title"),
-    );
-    expect(mount.textContent).toContain(
-      resolveItalianMessage("core.message.ui.next-level.install"),
-    );
+    // The game is concluded (ADR-049): no next-episode promise — instead
+    // the completion meme card, shareable like the score card.
+    expect(mount.textContent).not.toContain("PROSSIMO EPISODIO");
+    expect(
+      queryByRole(document.body, "button", {
+        name: resolveItalianMessage("core.message.ui.meme.share"),
+      }),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector(
+        `canvas[aria-label="${resolveItalianMessage("core.message.ui.meme.card-alt")}"]`,
+      ),
+    ).not.toBeNull();
   });
 
   it("shares the card as an image and reports the outcome", async () => {
@@ -860,9 +868,14 @@ describe("full-screen game controller", () => {
     expect(payload?.text).toContain("1730");
     expect(payload?.text).toContain("3/3");
     await vi.waitFor(() => {
-      expect(getByRole(document.body, "status").textContent).toBe(
-        resolveItalianMessage("core.message.ui.score.shared"),
-      );
+      const notices = document.body.querySelectorAll('[role="status"]');
+      expect(
+        [...notices].some(
+          (notice) =>
+            notice.textContent ===
+            resolveItalianMessage("core.message.ui.score.shared"),
+        ),
+      ).toBe(true);
     });
   });
 
@@ -896,9 +909,14 @@ describe("full-screen game controller", () => {
     });
     expect(writeText.mock.calls[0]?.[0]).toContain("1730");
     await vi.waitFor(() => {
-      expect(getByRole(document.body, "status").textContent).toBe(
-        resolveItalianMessage("core.message.ui.score.copied"),
-      );
+      const notices = document.body.querySelectorAll('[role="status"]');
+      expect(
+        [...notices].some(
+          (notice) =>
+            notice.textContent ===
+            resolveItalianMessage("core.message.ui.score.copied"),
+        ),
+      ).toBe(true);
     });
   });
 });
