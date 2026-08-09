@@ -1,5 +1,4 @@
 import type {
-  Approach,
   ChoiceId,
   ClueId,
   DossierCardId,
@@ -11,7 +10,6 @@ import type {
   OutcomeId,
   Role,
   SealId,
-  Sensitivity,
   StoryPackId,
   StoryScope,
   TheoryId,
@@ -23,15 +21,11 @@ export type AppPhase = "title" | "playing" | "ending";
 
 export interface SetupDraft {
   readonly role?: Role;
-  readonly approach?: Approach;
-  readonly sensitivity?: Sensitivity;
   readonly storyScope?: StoryScope;
 }
 
 export interface CompletedSetup {
   readonly role: Role;
-  readonly approach: Approach;
-  readonly sensitivity: Sensitivity;
   readonly storyScope: StoryScope;
 }
 
@@ -79,8 +73,6 @@ export function createInitialState(): GameState {
     phase: "title",
     setup: {
       role: "varano",
-      approach: "rescue",
-      sensitivity: "complete",
       storyScope: "core",
     },
     settings: {
@@ -95,19 +87,12 @@ export function createInitialState(): GameState {
 }
 
 export function completeSetup(setup: SetupDraft): CompletedSetup | undefined {
-  if (
-    setup.role === undefined ||
-    setup.approach === undefined ||
-    setup.sensitivity === undefined ||
-    setup.storyScope === undefined
-  ) {
+  if (setup.role === undefined || setup.storyScope === undefined) {
     return undefined;
   }
 
   return {
     role: setup.role,
-    approach: setup.approach,
-    sensitivity: setup.sensitivity,
     storyScope: setup.storyScope,
   };
 }

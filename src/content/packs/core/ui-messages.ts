@@ -24,10 +24,6 @@ export const uiMessages = {
     "Cesare valuta cosa riferire alla sola delegazione della fittizia Borgocoda.",
   "core.message.scene.objective.varano":
     "Il Varano cerca acqua, ombra e una strada lontana dal flash.",
-  "core.message.scene.approach.evidence":
-    "Priorità scelta: documentare con prudenza.",
-  "core.message.scene.approach.rescue":
-    "Priorità scelta: ridurre i rischi e lasciare spazio.",
 
   // Controls and level chrome: they describe the mechanism, not a level, so
   // they stay shared while headings and intros belong to the node (ADR-030).

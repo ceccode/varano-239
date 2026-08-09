@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { assetManifest } from "../../src/assets/manifest";
 import { createInitialState, type GameState } from "../../src/core/game-state";
-import type { Approach, Role, Sensitivity } from "../../src/core/model";
+import type { Role } from "../../src/core/model";
 import { reduce } from "../../src/core/reducer";
 import {
   italianMessages,
@@ -16,17 +16,11 @@ import { registeredLevelDescriptors } from "../../src/levels/registry";
 import { coreInterludes } from "../helpers/interludes";
 
 const roles: readonly Role[] = ["hunter", "guardian", "mayor", "varano"];
-const approaches: readonly Approach[] = ["evidence", "rescue"];
-const sensitivities: readonly Sensitivity[] = ["gentle", "complete"];
 
-function startRun(
-  role: Role,
-  approach: Approach,
-  sensitivity: Sensitivity,
-): GameState {
+function startRun(role: Role): GameState {
   const state: GameState = {
     ...createInitialState(),
-    setup: { role, approach, sensitivity, storyScope: "core" },
+    setup: { role, storyScope: "core" },
   };
   return reduce(state, { type: "RUN_STARTED" }, coreStoryGraph).state;
 }
@@ -141,27 +135,18 @@ describe("M1 core content", () => {
     expect(new Set(intros).size).toBe(levels.length);
   });
 
-  it("lets all 16 core setup combinations reach an ending", () => {
+  it("lets every role reach an ending (the setup is the role, ADR-048)", () => {
     for (const role of roles) {
-      for (const approach of approaches) {
-        for (const sensitivity of sensitivities) {
-          // Chasing the perfect proof keeps the mystery open for everyone.
-          const open = finishRun(startRun(role, approach, sensitivity));
-          expect(open.phase).toBe("ending");
-          expect(open.run?.outcomeId).toBe("core.outcome.open-mystery");
+      // Chasing the perfect proof keeps the mystery open for everyone.
+      const open = finishRun(startRun(role));
+      expect(open.phase).toBe("ending");
+      expect(open.run?.outcomeId).toBe("core.outcome.open-mystery");
 
-          // Opening the corridor rescues the Varano for everyone too.
-          const rescued = finishRun(
-            startRun(role, approach, sensitivity),
-            "core.option.finale.corridor",
-          );
-          expect(rescued.phase).toBe("ending");
-          expect(rescued.run?.outcomeId).toBe(
-            "core.outcome.varano-chooses-rescue",
-          );
-          expect(rescued.run?.varanoFate).toBe("rescued");
-        }
-      }
+      // Opening the corridor rescues the Varano for everyone too.
+      const rescued = finishRun(startRun(role), "core.option.finale.corridor");
+      expect(rescued.phase).toBe("ending");
+      expect(rescued.run?.outcomeId).toBe("core.outcome.varano-chooses-rescue");
+      expect(rescued.run?.varanoFate).toBe("rescued");
     }
   });
 
@@ -187,7 +172,7 @@ describe("M1 core content", () => {
       "core.option.colle.road",
     ]) {
       const run = finishRun(
-        startRun("varano", "rescue", "complete"),
+        startRun("varano"),
         "core.option.finale.document",
         undefined,
         { stopAtConfrontation: true, interludeOverride: optionId },
@@ -200,7 +185,7 @@ describe("M1 core content", () => {
     // The one interlude that touches `condition`. Either way the run keeps
     // all six seals: the choice changes what the night cost, never the road.
     const chased = finishRun(
-      startRun("varano", "rescue", "complete"),
+      startRun("varano"),
       "core.option.finale.document",
       undefined,
       {
@@ -211,7 +196,7 @@ describe("M1 core content", () => {
     expect(chased.run?.condition).toBe("weak");
 
     const secured = finishRun(
-      startRun("varano", "rescue", "complete"),
+      startRun("varano"),
       "core.option.finale.document",
       undefined,
       {
@@ -225,10 +210,7 @@ describe("M1 core content", () => {
   it("opens the coronation to a run that walked all six hills (ADR-045)", () => {
     // With San Pancrazio shipped, the throne is reachable by playing — no
     // injected state. This is the campaign's tenth level paying off.
-    const crowned = finishRun(
-      startRun("varano", "rescue", "complete"),
-      "core.option.finale.crown",
-    );
+    const crowned = finishRun(startRun("varano"), "core.option.finale.crown");
     expect(crowned.run?.seals).toEqual(allSixSeals);
     expect(crowned.phase).toBe("ending");
     expect(crowned.run?.outcomeId).toBe("core.outcome.count-of-six-hills");
@@ -239,7 +221,7 @@ describe("M1 core content", () => {
     // Purely additive (ADR-045): drop one seal and the option is gone again,
     // with the other six families untouched.
     const atConfrontation = finishRun(
-      startRun("varano", "rescue", "complete"),
+      startRun("varano"),
       "core.option.finale.document",
       undefined,
       { stopAtConfrontation: true },
@@ -268,11 +250,38 @@ describe("M1 core content", () => {
     expect(count.run?.outcomeId).toBe("core.outcome.varano-count");
   });
 
+  it("reaches «La prova postuma» only through a weak Varano (ADR-047)", () => {
+    // Chasing the fresh track at San Pancrazio leaves him weak: the seventh
+    // stand appears, and it is a consequence, not a trigger — no confirmation
+    // and no role gate, because nobody pulls anything.
+    const chased = finishRun(
+      startRun("guardian"),
+      "core.option.finale.wait",
+      undefined,
+      { interludeOverride: "core.option.colle.track" },
+    );
+    expect(chased.phase).toBe("ending");
+    expect(chased.run?.outcomeId).toBe("core.outcome.found-dead");
+    expect(chased.run?.varanoFate).toBe("foundDead");
+
+    // Securing the road keeps him healthy: the option does not exist, and
+    // picking it leaves the run standing at the confrontation.
+    const secured = finishRun(
+      startRun("guardian"),
+      "core.option.finale.wait",
+      undefined,
+      { interludeOverride: "core.option.colle.road" },
+    );
+    expect(secured.phase).toBe("playing");
+    expect(secured.run?.currentNodeId).toBe("core.node.finale.confrontation");
+    expect(secured.run?.condition).toBe("healthy");
+  });
+
   it("gates the lethal choice to the hunter who documents, behind a confirmation", () => {
     // Without the explicit confirmation nothing happens (ADR-013): the state
     // stays on the confrontation.
     const unconfirmed = finishRun(
-      startRun("hunter", "evidence", "complete"),
+      startRun("hunter"),
       "core.option.finale.shoot",
     );
     expect(unconfirmed.phase).toBe("playing");
@@ -282,7 +291,7 @@ describe("M1 core content", () => {
 
     // Confirmed, the hunter who chose «Documenta» reaches the lethal ending.
     const confirmed = finishRun(
-      startRun("hunter", "evidence", "complete"),
+      startRun("hunter"),
       "core.option.finale.shoot",
       true,
     );
@@ -293,7 +302,7 @@ describe("M1 core content", () => {
     // Every other role is refused even with the confirmation in hand.
     for (const role of ["guardian", "mayor", "varano"] as const) {
       const refused = finishRun(
-        startRun(role, "evidence", "complete"),
+        startRun(role),
         "core.option.finale.shoot",
         true,
       );
@@ -534,8 +543,8 @@ describe("M1 core content", () => {
                   id: "core.option.lethal.shoot",
                   textKey: "core.message.pack.title",
                   sensitivityTags: ["impliedAnimalDeath"],
-                  // No confirmation, no complete gate, untagged target.
-                  when: [{ type: "role-is", role: "hunter" }],
+                  // No confirmation, no hunter gate, untagged target.
+                  when: [{ type: "story-scope-is", scope: "core" }],
                   targetNodeId: "core.node.lethal.end",
                 },
                 {
@@ -570,7 +579,7 @@ describe("M1 core content", () => {
       "core.option.lethal.shoot needs a confirmation with the focus on cancel.",
     );
     expect(errors).toContain(
-      "core.option.lethal.shoot must be gated to hunter and the complete edition.",
+      "core.option.lethal.shoot must be gated to the hunter.",
     );
     expect(errors).toContain(
       "core.option.lethal.shoot must target an ending tagged impliedAnimalDeath.",

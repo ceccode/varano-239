@@ -8,7 +8,6 @@ import { matchesConditions } from "../../core/conditions";
 import { levelPosition } from "../../content/level-position";
 import { completeSetup, type GameState } from "../../core/game-state";
 import type {
-  Approach,
   ChoiceConfirmation,
   ChoiceOption,
   MessageKey,
@@ -58,11 +57,6 @@ const roleObjectiveKeys: Readonly<Record<Role, MessageKey>> = {
   guardian: "core.message.scene.objective.guardian",
   mayor: "core.message.scene.objective.mayor",
   varano: "core.message.scene.objective.varano",
-};
-
-const approachObjectiveKeys: Readonly<Record<Approach, MessageKey>> = {
-  evidence: "core.message.scene.approach.evidence",
-  rescue: "core.message.scene.approach.rescue",
 };
 
 function element<K extends keyof HTMLElementTagNameMap>(
@@ -396,16 +390,13 @@ function renderScene(
   heading(cardContext, "core.message.ui.scene.heading");
   const setup = completeSetup(context.state.setup);
   if (setup !== undefined) {
+    // Only the role objective: the approach line always printed «rescue» to
+    // everyone, because the axis had no UI and never changed (ADR-048).
     card.append(
       element(
         context.document,
         "p",
         context.content.message(roleObjectiveKeys[setup.role]),
-      ),
-      element(
-        context.document,
-        "p",
-        context.content.message(approachObjectiveKeys[setup.approach]),
       ),
     );
   }

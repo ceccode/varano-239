@@ -96,8 +96,9 @@ describe("chapter chaining", () => {
     const endings = coreStoryGraph.nodes.filter(
       (node) => node.type === "ending",
     );
-    // Five families plus the six-seal coronation (ADR-045).
-    expect(endings).toHaveLength(6);
+    // Five families, the six-seal coronation (ADR-045) and «La prova
+    // postuma» (ADR-047): seven, the declared ceiling.
+    expect(endings).toHaveLength(7);
     for (const ending of endings) {
       expect(ending.chapterId).toBe("core.chapter.c99-finale");
     }

@@ -96,8 +96,6 @@ function savedChoiceState(): GameState {
     ...createInitialState(),
     setup: {
       role: "guardian",
-      approach: "rescue",
-      sensitivity: "complete",
       storyScope: "core",
     },
   };

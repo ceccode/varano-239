@@ -13,10 +13,6 @@ export function matchesCondition(
   switch (condition.type) {
     case "role-is":
       return context.setup.role === condition.role;
-    case "approach-is":
-      return context.setup.approach === condition.approach;
-    case "sensitivity-is":
-      return context.setup.sensitivity === condition.sensitivity;
     case "story-scope-is":
       return context.setup.storyScope === condition.scope;
     case "flag-is":

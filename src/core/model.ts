@@ -22,8 +22,6 @@ export type SurpriseId = string;
 export type FlagId = string;
 
 export type Role = "hunter" | "guardian" | "mayor" | "varano";
-export type Approach = "evidence" | "rescue";
-export type Sensitivity = "gentle" | "complete";
 export type StoryScope = "core" | "origins" | "all-registered";
 export type ScoreName = "evidence" | "care" | "publicTrust";
 export type VaranoCondition = "unknown" | "healthy" | "weak" | "critical";
@@ -33,11 +31,6 @@ export type ContentSensitivityTag = "impliedAnimalDeath";
 
 export type Condition =
   | { readonly type: "role-is"; readonly role: Role }
-  | { readonly type: "approach-is"; readonly approach: Approach }
-  | {
-      readonly type: "sensitivity-is";
-      readonly sensitivity: Sensitivity;
-    }
   | { readonly type: "story-scope-is"; readonly scope: StoryScope }
   | {
       readonly type: "flag-is";

@@ -18,6 +18,8 @@ export const finaleMessages = {
     "Il trono dei Sei Colli è pronto: incoronalo",
   "core.message.finale.option.document":
     "Cerca ancora la prova perfetta, un minuto soltanto",
+  "core.message.finale.option.wait":
+    "Non avvicinarti e chiama gli operatori: stanotte ha corso troppo",
   "core.message.finale.option.shoot": "Abbatti il Varano",
   "core.message.finale.confirm.title": "Sei sicuro?",
   "core.message.finale.confirm.body":
@@ -40,6 +42,9 @@ export const finaleMessages = {
   "core.message.ending.killed.title": "La prova che pesa",
   "core.message.ending.killed.body":
     "La visuale resta sulla torre. Un colpo interrompe il silenzio, fuori campo; gli uccelli lasciano il tetto. Toni ottiene la prova definitiva: troppo grande per essere messa in tasca, troppo pesante per essere chiamata vittoria. Marta interrompe ogni collaborazione. Cesare posa il discorso preparato e riconosce che «a ogni costo» non era soltanto una frase. Gli operatori verificano l’accaduto secondo le procedure. Questo finale è inventato: nella cronaca reale, alla data dell’ultima verifica, nessun abbattimento risultava documentato e il caso restava aperto.",
+  "core.message.ending.found.title": "La prova postuma",
+  "core.message.ending.found.body":
+    "Il corridoio resta aperto, ma il Conte non lo attraversa. Si sposta piano, più piano di quanto dovrebbe, e sparisce oltre il tetto prima che gli operatori arrivino. Lo ritrovano giorni dopo, lontano dalle mura, fuori scena: nessuna fotografia. Toni abbassa la macchina senza scattare. Cesare annulla la conferenza. Marta ricompone in silenzio il corridoio che non è servito, e Ada scrive per esteso quello che tutti hanno capito: la lunga notte era costata più di quanto sembrasse. Questo finale è inventato: nella cronaca reale, alla data dell’ultima verifica, nessun ritrovamento risultava documentato e il caso restava aperto.",
   "core.message.ending.title": "Una muta, forse",
   "core.message.ending.body":
     "Un minuto per la prova perfetta, e il tetto è già vuoto. Sulla pietra al sole resta qualcosa: una muta, un telo, un’ombra — dipende a chi lo chiedi. La città continua a raccontare la storia, che è la cosa che le riesce meglio. Il caso rimase aperto. Questa ricostruzione è Leggenda: specie, provenienza e destino reale del Varano restano tutti da scoprire.",

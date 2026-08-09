@@ -2,10 +2,10 @@
 
 ## Stato della ricerca
 
-- Ultima verifica: **1 agosto 2026**, fuso Europe/Rome.
+- Ultima verifica: **8 agosto 2026**, fuso Europe/Rome.
 - Ambito: fonti istituzionali, cronaca locale e nazionale, analisi specialistica, diffusione internazionale e contesto storico di Montichiari.
 - Metodo: gli articoli che ripubblicano lo stesso lancio d'agenzia sono raggruppati; non vengono contati come conferme indipendenti.
-- Esito alla data di verifica: nelle fonti consultate non è stato trovato un aggiornamento autorevole che confermi cattura, ritrovamento o morte dell'animale. È un'assenza di conferma, non la prova che fosse ancora vivo o presente.
+- Esito alla data di verifica: **le ricerche ufficiali sono terminate senza esito**. Il Giornale di Brescia riporta che dopo quindici giorni complessivi di ricerche l'ordinanza è scaduta alla mezzanotte del 7 agosto 2026 e la zona di transito pedonale e ciclabile è stata riaperta; l'animale non è stato trovato. Il sindaco reale è citato: in quindici giorni «non è stato trovato». Resta un'assenza di ritrovamento, non la prova di dove sia o di come stia: cattura, morte e allontanamento restano tutti non documentati.
 - Origine: nessuna fonte istituzionale consultata identifica proprietario, allevamento o modalità di arrivo. Fuga e abbandono sono ipotesi riportate; un complotto non ha base documentaria.
 
 Questo file è una base editoriale, non autorizza a copiare testi o fotografie. Ogni implementazione deve registrare le fonti in dati strutturati e mostrare la data di verifica.
@@ -39,17 +39,18 @@ Guardrail:
 
 ## Cronologia verificata
 
-| Data               | Evento utilizzabile                                                                                                    | Stato nel gioco                                                 | Fonti principali                      |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------- |
-| Inizio/metà luglio | Prime segnalazioni da parte di agricoltori; data e numero non uniformi fra gli articoli                                | TESTIMONIANZA                                                   | Giornale di Brescia, L'Adige, ANSA    |
-| 17 luglio, 2:39    | Data e orario della fotografia attribuiti al sindaco e ripresi dalla stampa; non compaiono nell'ordinanza              | TESTIMONIANZA                                                   | Open, Kodami, Swissinfo/EFE           |
-| 24 luglio          | Sopralluogo con Polizia Provinciale, Carabinieri Forestali e Polizia Locale                                            | FATTO                                                           | Ordinanza n. 132/2026                 |
-| 25–27 luglio       | Ricerche con droni dotati di termocamera; notizie di trappole/gabbie                                                   | FATTO per i mezzi impiegati                                     | Ordinanza, Rai, Sky, ANSA             |
-| 28 luglio          | Ordinanza n. 132: divieto temporaneo pedonale, ciclabile e di stazionamento per dieci giorni salvo proroga; due gabbie | FATTO                                                           | Comune e testo dell'ordinanza         |
-| 25–28 luglio       | Pubblicazioni nazionali e su canali internazionali identificati                                                        | FATTO sulle singole pubblicazioni, non sulla notorietà mondiale | Open, EFE, PAP, ANSA                  |
-| 25–28 luglio       | Presenza di meme e fotomontaggi segnalata dalla stampa                                                                 | FATTO sull'esistenza del fenomeno                               | Open; asset di gioco sempre originali |
-| 25–28 luglio       | Iperbole «famoso in tutto il mondo»                                                                                    | LEGGENDA                                                        | Nessun dato di notorietà mondiale     |
-| 1 agosto           | Nessun esito autorevole successivo trovato nella ricerca effettuata                                                    | NOTA DI ARCHIVIO                                                | Verifica aggregata delle fonti sotto  |
+| Data               | Evento utilizzabile                                                                                                                          | Stato nel gioco                                                 | Fonti principali                      |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------- |
+| Inizio/metà luglio | Prime segnalazioni da parte di agricoltori; data e numero non uniformi fra gli articoli                                                      | TESTIMONIANZA                                                   | Giornale di Brescia, L'Adige, ANSA    |
+| 17 luglio, 2:39    | Data e orario della fotografia attribuiti al sindaco e ripresi dalla stampa; non compaiono nell'ordinanza                                    | TESTIMONIANZA                                                   | Open, Kodami, Swissinfo/EFE           |
+| 24 luglio          | Sopralluogo con Polizia Provinciale, Carabinieri Forestali e Polizia Locale                                                                  | FATTO                                                           | Ordinanza n. 132/2026                 |
+| 25–27 luglio       | Ricerche con droni dotati di termocamera; notizie di trappole/gabbie                                                                         | FATTO per i mezzi impiegati                                     | Ordinanza, Rai, Sky, ANSA             |
+| 28 luglio          | Ordinanza n. 132: divieto temporaneo pedonale, ciclabile e di stazionamento per dieci giorni salvo proroga; due gabbie                       | FATTO                                                           | Comune e testo dell'ordinanza         |
+| 25–28 luglio       | Pubblicazioni nazionali e su canali internazionali identificati                                                                              | FATTO sulle singole pubblicazioni, non sulla notorietà mondiale | Open, EFE, PAP, ANSA                  |
+| 25–28 luglio       | Presenza di meme e fotomontaggi segnalata dalla stampa                                                                                       | FATTO sull'esistenza del fenomeno                               | Open; asset di gioco sempre originali |
+| 25–28 luglio       | Iperbole «famoso in tutto il mondo»                                                                                                          | LEGGENDA                                                        | Nessun dato di notorietà mondiale     |
+| 1 agosto           | Nessun esito autorevole successivo trovato nella ricerca effettuata                                                                          | NOTA DI ARCHIVIO                                                | Verifica aggregata delle fonti sotto  |
+| 7–8 agosto         | Ordinanza scaduta a mezzanotte del 7 agosto; zona di transito riaperta; ricerche ufficiali terminate dopo quindici giorni senza ritrovamento | FATTO                                                           | Giornale di Brescia (fine ricerche)   |
 
 ## Registro delle fonti sul caso
 
@@ -88,6 +89,14 @@ Guardrail:
 - Data: 25 luglio 2026
 - Uso: racconto dell'incontro, badilata riferita, rumori e galline scomparse.
 - Etichetta: TESTIMONIANZA. Le galline non diventano mai un fatto del gioco; la badilata non diventa una meccanica e non viene ricostruita visivamente.
+
+#### `core.source.gdb.2026-08-08`
+
+- Testata: Giornale di Brescia
+- Titolo: [Montichiari, la caccia al varano è finita: riaperta la zona di transito](https://www.giornaledibrescia.it/cronaca/montichiari-caccia-varano-finita-riaperta-zona-transito-azz3wp09)
+- Data: 8 agosto 2026
+- Uso: fine delle ricerche ufficiali dopo quindici giorni, scadenza dell'ordinanza a mezzanotte del 7 agosto, riapertura della zona pedonale e ciclabile, dichiarazione del sindaco reale che in quindici giorni l'animale «non è stato trovato».
+- Etichetta: FATTO per la chiusura delle ricerche e la riapertura; la proposta di adottare il varano come mascotte resta cronaca e non entra nel gioco.
 
 #### `core.source.kodami.2026-07-25`
 
