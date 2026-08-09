@@ -1177,7 +1177,14 @@ function renderMenu(context: RenderContext): HTMLElement {
   return menu;
 }
 
-function renderHud(context: RenderContext, menu: HTMLElement): HTMLElement {
+interface HudHandle {
+  readonly hud: HTMLElement;
+  /** Closes the menu from outside the HUD — today, the Escape key. */
+  readonly closeMenu: () => void;
+  readonly isMenuOpen: () => boolean;
+}
+
+function renderHud(context: RenderContext, menu: HTMLElement): HudHandle {
   const hud = element(context.document, "header");
   hud.className = "hud";
 
@@ -1222,6 +1229,16 @@ function renderHud(context: RenderContext, menu: HTMLElement): HTMLElement {
   const setMenuOpen = (open: boolean): void => {
     menu.hidden = !open;
     menuButton.setAttribute("aria-expanded", open ? "true" : "false");
+    // The overlay is opaque and full-screen, but Tab and a screen reader
+    // used to walk straight into the game underneath it (ADR-050).
+    // `inert` must be cleared before focus returns to the menu button.
+    for (const covered of [hud, context.screen]) {
+      if (open) {
+        covered.setAttribute("inert", "");
+      } else {
+        covered.removeAttribute("inert");
+      }
+    }
     context.onMenuToggled?.(open);
     if (open) {
       menu.querySelector<HTMLElement>("#menu-heading")?.focus();
@@ -1240,7 +1257,13 @@ function renderHud(context: RenderContext, menu: HTMLElement): HTMLElement {
 
   actions.append(menuButton);
   hud.append(siteTitle, legend, actions);
-  return hud;
+  return {
+    hud,
+    closeMenu: () => {
+      setMenuOpen(false);
+    },
+    isMenuOpen: () => !menu.hidden,
+  };
 }
 
 export function renderGameApp(options: RenderGameAppOptions): void {
@@ -1252,8 +1275,17 @@ export function renderGameApp(options: RenderGameAppOptions): void {
   const context: RenderContext = { ...options, screen: stage };
 
   const menu = renderMenu(context);
-  const hud = renderHud(context, menu);
+  const { hud, closeMenu, isMenuOpen } = renderHud(context, menu);
   renderStage(context);
+
+  // Escape closes the menu (ADR-050). The listener lives on the shell, which
+  // is thrown away and rebuilt on every render, so it can never accumulate.
+  shell.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && isMenuOpen()) {
+      event.preventDefault();
+      closeMenu();
+    }
+  });
 
   shell.append(hud, stage, menu);
   options.mount.replaceChildren(shell);

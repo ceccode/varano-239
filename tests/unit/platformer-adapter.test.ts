@@ -523,14 +523,72 @@ describe("platformer canvas adapter", () => {
     harness.run(2);
     handle.pause();
     const paused = Number(host.dataset.playerX);
+    // While paused the level ignores the keyboard entirely (ADR-050): the
+    // menu on top of it needs Space and the arrows for itself.
     fireEvent.keyDown(window, { key: "ArrowRight" });
     harness.run(10);
     expect(Number(host.dataset.playerX)).toBe(paused);
 
+    // …and the press made during the pause is not buffered: resuming leaves
+    // the player exactly where the pause found them, no phantom run.
     handle.resume();
+    harness.run(30);
+    expect(Number(host.dataset.playerX)).toBe(paused);
+
+    // A fresh press after the resume moves again.
+    fireEvent.keyDown(window, { key: "ArrowRight" });
     harness.run(30);
     expect(Number(host.dataset.playerX)).toBeGreaterThan(paused);
     fireEvent.keyUp(window, { key: "ArrowRight" });
+    handle.destroy();
+  });
+
+  it("stops rewriting the live region on every frame (ADR-050)", () => {
+    // `.arcade-status` is `role="status" aria-live="polite"`. Assigning
+    // textContent replaces the node even when the string is identical, so a
+    // screen reader was handed the same sentence sixty times a second.
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const request = createRequest();
+    const handle = platformerMiniGame.mount(host, request);
+
+    const status = host.querySelector(".arcade-status");
+    expect(status).not.toBeNull();
+    let mutations = 0;
+    const observer = new MutationObserver((records) => {
+      mutations += records.length;
+    });
+    observer.observe(status as Node, { childList: true, characterData: true });
+
+    // Run right for a while: the clue count and the lives never change, so
+    // the sentence never changes either.
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(120);
+    fireEvent.keyUp(window, { key: "ArrowRight" });
+    observer.disconnect();
+
+    expect(mutations).toBeLessThan(3);
+    // The position, on the other hand, must still be live for the drivers.
+    expect(Number(host.dataset.playerX)).toBeGreaterThan(14);
+    handle.destroy();
+  });
+
+  it("hands Space and the arrows to the menu while paused (ADR-050)", () => {
+    // The regression that made the in-game menu unusable from a keyboard:
+    // the level swallowed the keys and called preventDefault on them, so a
+    // `<summary>` could not be toggled with Space.
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const request = createRequest();
+    const handle = platformerMiniGame.mount(host, request);
+
+    harness.run(2);
+    handle.pause();
+    const swallowed = fireEvent.keyDown(window, { key: " " });
+    // fireEvent returns false when a listener called preventDefault.
+    expect(swallowed).toBe(true);
     handle.destroy();
   });
 

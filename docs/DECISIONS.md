@@ -581,3 +581,19 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - A differenza della cartolina del punteggio (che richiede almeno un livello giocato), la card del finale compare **sempre**: anche una partita tutta «Salta il livello» si congeda con la sua card.
 - Il teaser di ADR-026 e le sue chiavi sono rimossi. Il gioco non promette episodi: l'eventuale seguito è un sequel (ADR-047).
 - Verifica: una card per ciascuna delle cinque famiglie non gravi, tutte visivamente distinte (test sul disegno); il timbro, il titolo in maiuscolo e il dominio presenti sull'immagine; il finale grave senza card; condivisione e fallback coperti dai test esistenti della cartolina.
+
+## ADR-050 — Il menù e il livello smettono di combattersi
+
+- Stato: **Accettata**
+- Data: 9 agosto 2026
+- Contesto: tre difetti distinti, stessa radice — il menù in sovrimpressione e il livello montato non si riconoscevano a vicenda. Tutti e tre colpivano il proprietario a ogni playtest.
+  1. **Il menù faceva ricominciare il livello.** Ogni `dispatch` chiama `render()`, e `render()` apre con `activeLevel?.destroy()`: togliere la musica dal menù a metà livello ricostruiva l'albero e rimontava il livello dall'inizio, **in silenzio**, con la partita ancora in corso.
+  2. **Il livello mangiava i tasti del menù.** L'handler della tastiera era attivo anche a livello in pausa e chiamava `preventDefault` su Spazio e frecce: i `<summary>` delle sezioni non si aprivano da tastiera e il menù non si scorreva. In più la pressione fatta durante la pausa restava in coda e alla ripresa partiva come un salto fantasma.
+  3. **Il gioco sotto l'overlay restava raggiungibile.** `.menu-overlay` è opaco e a tutto schermo, ma Tab e i lettori di schermo entravano nei controlli coperti — il contrario di quanto QUALITY.md già richiedeva.
+- Decisione, in quattro parti:
+  1. **Un'eccezione stretta al «ogni dispatch ricostruisce il DOM»**: se l'azione è `SETTINGS_UPDATED` e tocca **solo** `musicEnabled`/`effectsEnabled` mentre un livello è montato, il controller applica stato ed effetti (incluso il salvataggio), spinge i flag alla porta audio e **salta `render()`**. La casella si è già aggiornata da sé e nulla di disegnato dipende da quei flag. Il cambio di **ruolo** continua a rimontare, perché cambia il superpotere concesso: l'eccezione resta larga quanto la sua ragione.
+  2. **A livello in pausa la tastiera non è del livello**: `onKeyDown` esce subito se non sta girando, e `pause()` azzera gli input tenuti. `isInteractiveTarget` riconosce anche `summary` e `[role="dialog"]`.
+  3. **`inert` su HUD e stage** finché il menù è aperto, rimosso prima che il fuoco torni al pulsante. **Escape chiude il menù**: il listener vive sullo `shell`, che viene ricostruito a ogni render, quindi non può accumularsi.
+  4. **La riga di stato smette di riscriversi a ogni frame.** `.arcade-status` è `role="status" aria-live="polite"` e `updateStatus()` gira a 60 fps: assegnare `textContent` sostituisce il nodo anche a stringa identica, quindi un lettore di schermo riceveva la stessa frase sessanta volte al secondo. Ora la frase (e ogni `dataset`) si scrive solo quando cambia davvero.
+- Verifica: test unit sul nodo `[data-level-host]` che resta **lo stesso oggetto** dopo il toggle audio e cambia dopo il cambio ruolo; `MutationObserver` sulla live region che conta meno di tre mutazioni in 120 frame; `inert` presente e rimosso con Escape; e un test end-to-end sui tre viewport che corre nel livello, apre il menù, apre la sezione impostazioni **con la barra spaziatrice** (la regressione), toglie la musica, chiude con Escape e verifica che la posizione sia identica.
+- Conseguenza: `data-elapsed` sparisce dal `dataset` (nessun test lo leggeva) e le scritture per frame passano da 5-8 a zero a regime. È la prima eccezione documentata alla regola di ADR-018 sul render; qualunque altra deve passare da qui.

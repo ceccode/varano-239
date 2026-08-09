@@ -656,6 +656,87 @@ describe("full-screen game controller", () => {
     ).toBe(true);
   });
 
+  it("keeps the level running when audio is toggled from the menu (ADR-050)", () => {
+    // The bug the owner hit on every playtest: every dispatch re-rendered,
+    // `render()` destroys the mounted level, so muting the music restarted
+    // the level from the beginning without saying so.
+    const { mount } = prepareDocument();
+    stubCanvasContext();
+    const audio = createAudio();
+    createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio,
+      bestScore: createBestScore(),
+    });
+    pickRole();
+
+    const host = mount.querySelector<HTMLElement>("[data-level-host]");
+    expect(host).not.toBeNull();
+    host?.setAttribute("data-player-x", "742");
+
+    clickMessage("core.message.ui.menu.open");
+    const music = getByRole(document.body, "checkbox", {
+      name: resolveItalianMessage("core.message.ui.options.music"),
+    });
+    fireEvent.click(music);
+
+    // The very same node, still carrying the run's position.
+    expect(mount.querySelector("[data-level-host]")).toBe(host);
+    expect(host?.getAttribute("data-player-x")).toBe("742");
+    // …and the port heard about it.
+    expect(audio.setMusicEnabled).toHaveBeenLastCalledWith(false);
+  });
+
+  it("rebuilds the level when the role changes, because the power changes", () => {
+    // The counterpart: a role swap genuinely needs a remount (ADR-050), so
+    // the exception stays as narrow as the reason for it.
+    const { mount } = prepareDocument();
+    stubCanvasContext();
+    createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+    });
+    pickRole();
+    const host = mount.querySelector<HTMLElement>("[data-level-host]");
+
+    clickMessage("core.message.ui.menu.open");
+    fireEvent.click(radio("role", "hunter"));
+    expect(mount.querySelector("[data-level-host]")).not.toBe(host);
+  });
+
+  it("makes the game inert and closes on Escape while the menu is open", () => {
+    const { mount } = prepareDocument();
+    stubCanvasContext();
+    createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+    });
+    pickRole();
+
+    clickMessage("core.message.ui.menu.open");
+    // Tab and screen readers must not reach the game under the overlay.
+    expect(mount.querySelector(".stage")?.hasAttribute("inert")).toBe(true);
+    expect(mount.querySelector(".hud")?.hasAttribute("inert")).toBe(true);
+
+    fireEvent.keyDown(document.activeElement ?? document.body, {
+      key: "Escape",
+      bubbles: true,
+    });
+    expect(mount.querySelector<HTMLElement>("[data-menu]")?.hidden).toBe(true);
+    expect(mount.querySelector(".stage")?.hasAttribute("inert")).toBe(false);
+  });
+
   it("resumes a saved run automatically and skips the role selection", () => {
     const savedState = savedChoiceState();
     const { mount } = prepareDocument();
