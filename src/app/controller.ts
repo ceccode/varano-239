@@ -221,6 +221,20 @@ export function createGameController(
     }
   };
 
+  /**
+   * The one action that must not rebuild the DOM (ADR-050). Every dispatch
+   * re-renders, and `render()` destroys the mounted level — so toggling music
+   * or effects from the in-game menu used to restart the level from scratch,
+   * silently. Audio flags change nothing the renderer draws: the checkbox has
+   * already updated itself, and the audio port takes the new value directly.
+   */
+  const isAudioOnlySettingsChange = (action: GameAction): boolean =>
+    action.type === "SETTINGS_UPDATED" &&
+    activeLevel !== undefined &&
+    Object.keys(action.settings).every(
+      (key) => key === "musicEnabled" || key === "effectsEnabled",
+    );
+
   function dispatch(action: GameAction): void {
     if (action.type === "RUN_STARTED") {
       // A brand new run starts from zero points.
@@ -228,6 +242,7 @@ export function createGameController(
       isRecord = false;
     }
 
+    const keepLevelMounted = isAudioOnlySettingsChange(action);
     const transition = reduce(state, action, coreStoryGraph);
     state = transition.state;
 
@@ -235,6 +250,17 @@ export function createGameController(
       if (effect.type !== "focus") {
         handleEffect(effect);
       }
+    }
+
+    if (keepLevelMounted) {
+      // What `render()` would have done for audio, without the teardown.
+      try {
+        dependencies.audio.setMusicEnabled(state.settings.musicEnabled);
+        dependencies.audio.setEffectsEnabled(state.settings.effectsEnabled);
+      } catch {
+        // Audio is optional and never blocks the story.
+      }
+      return;
     }
 
     render();

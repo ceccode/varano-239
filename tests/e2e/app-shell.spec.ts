@@ -705,6 +705,43 @@ test("keeps the arcade even when the system asks for reduced motion (ADR-046)", 
   await expect.poll(() => playerX(page)).toBeGreaterThan(startingPosition);
 });
 
+test("keeps the level running when audio is toggled mid-run (ADR-050)", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await pickRole(page);
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+
+  // Get properly into the level, so a restart would be unmistakable.
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(500);
+  await page.keyboard.up("ArrowRight");
+  // Let the deceleration finish, so the reading is a standstill and any
+  // later movement can only mean the level restarted or resumed running.
+  await page.waitForTimeout(400);
+  const reached = await playerX(page);
+  expect(reached).toBeGreaterThan(60);
+
+  await openMenu(page);
+  // The game underneath is inert while the overlay is up.
+  await expect(page.locator(".stage")).toHaveAttribute("inert", "");
+  // Settings live in a collapsed section; opening it with the keyboard is
+  // itself the regression check — the level used to swallow Space here.
+  await page
+    .getByText(message("core.message.ui.menu.settings"), { exact: true })
+    .focus();
+  await page.keyboard.press(" ");
+  await page
+    .getByRole("checkbox", { name: message("core.message.ui.options.music") })
+    .click();
+
+  // Escape closes the menu, and the run is exactly where it was left.
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-menu]")).toBeHidden();
+  await expect(page.locator(".stage")).not.toHaveAttribute("inert", "");
+  expect(await playerX(page)).toBe(reached);
+});
+
 test("moves with the touch controls and keeps an equivalent skip action", async ({
   page,
 }) => {

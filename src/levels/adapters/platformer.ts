@@ -252,7 +252,11 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
 function isInteractiveTarget(target: EventTarget | null): boolean {
   return (
     target instanceof Element &&
-    target.closest("button, a, input, select, textarea") !== null
+    // `summary` opens the menu's sections with Space; a dialog owns its own
+    // keys entirely (ADR-050).
+    target.closest(
+      "button, a, input, select, textarea, summary, [role='dialog']",
+    ) !== null
   );
 }
 
@@ -338,6 +342,7 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
     let camera = 0;
     let runPhase = 0;
     let wasBlocked = false;
+    let lastStatusLine: string | undefined;
     let cameoTriggeredAt: number | undefined;
     const particles: Particle[] = [];
     // One dust burst per barged onlooker per contact: the model reports the
@@ -498,22 +503,36 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       const lives = Number.isFinite(state.livesRemaining)
         ? ` ${request.message("core.message.level.lives", { lives: state.livesRemaining })}`
         : "";
+      // The status line is an `aria-live` region and this runs every frame.
+      // Assigning `textContent` replaces the text node even when the string
+      // is identical, so a screen reader was being handed the same sentence
+      // sixty times a second (ADR-050). It changes on a clue, a life or the
+      // level position — a handful of times per level.
       if (statusKey !== undefined) {
-        status.textContent = `${position}${request.message(statusKey)}${lives}`;
+        const line = `${position}${request.message(statusKey)}${lives}`;
+        if (line !== lastStatusLine) {
+          lastStatusLine = line;
+          status.textContent = line;
+        }
       }
-      host.dataset.collected = String(collected);
+      // Same for the dataset: every write is a DOM attribute mutation, and
+      // only the position genuinely changes while the player moves.
+      const setData = (key: string, value: string): void => {
+        if (host.dataset[key] !== value) {
+          host.dataset[key] = value;
+        }
+      };
+      setData("collected", String(collected));
       if (request.position !== undefined) {
-        host.dataset.levelIndex = String(request.position.index);
+        setData("levelIndex", String(request.position.index));
       }
-      host.dataset.playerX = String(Math.round(state.x));
-      host.dataset.playerY = String(Math.round(state.y));
-      // The level clock, for tests that need to read a patrol's phase.
-      host.dataset.elapsed = state.elapsedSeconds.toFixed(2);
+      setData("playerX", String(Math.round(state.x)));
+      setData("playerY", String(Math.round(state.y)));
       if (Number.isFinite(state.livesRemaining)) {
-        host.dataset.lives = String(state.livesRemaining);
+        setData("lives", String(state.livesRemaining));
       }
       if (grantedPower !== undefined) {
-        host.dataset.powerActive = String(state.powerActive);
+        setData("powerActive", String(state.powerActive));
       }
     };
 
@@ -2132,7 +2151,15 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
 
     const onKeyDown = (event: KeyboardEvent): void => {
       const action = keyDirection(event.key);
-      if (action === undefined || isInteractiveTarget(event.target)) {
+      // While the level is paused the keys belong to whatever is on top of
+      // it (ADR-050). The level used to swallow Space and the arrows with
+      // the menu open, so `<summary>` could not be toggled and the menu
+      // could not be scrolled — and the buffered jump fired on resume.
+      if (
+        !running ||
+        action === undefined ||
+        isInteractiveTarget(event.target)
+      ) {
         return;
       }
       ensureMusic();
@@ -2176,6 +2203,13 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       pause(): void {
         running = false;
         previousTime = undefined;
+        // Drop whatever was held: a direction still pressed when the menu
+        // opened would otherwise keep running on resume (ADR-050).
+        input.left = false;
+        input.right = false;
+        input.jumpPressed = false;
+        input.jumpHeld = false;
+        input.powerHeld = false;
         if (animationFrame !== undefined) {
           view.cancelAnimationFrame(animationFrame);
         }
