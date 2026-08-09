@@ -47,6 +47,7 @@ export interface BackdropConfig {
     | "torches"
     | "reeds"
     | "poplars"
+    | "terraces"
     | "laundry"
     | "none";
 }
@@ -176,6 +177,10 @@ const palette = {
   poplar: "#1c4b2e",
   poplarDark: "#0f2c1a",
   poplarTrunk: "#33402f",
+  terraceWall: "#8a7a63",
+  terraceWallShade: "#5f523f",
+  terraceGrass: "#4a6b3a",
+  terraceVine: "#2f4a26",
   bodyGreen: "#57b06b",
   bodyDark: "#2f7a42",
   belly: "#8ed49b",
@@ -964,6 +969,35 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
           // A darker seam down the middle: two trees deep, not one flat bar.
           context.fillStyle = palette.poplarDark;
           context.fillRect(treeX + 2, top + 8, 2, crownHeight);
+        }
+        return;
+      }
+
+      if (backdrop.near === "terraces") {
+        // The dry-stone terraces of the last hill (ADR-045): stepped walls
+        // climbing to the right, with vine stakes on every level. The band
+        // rises with the slope instead of running flat like every other one.
+        for (let index = -1; index < 10; index += 1) {
+          const seed = index + Math.floor(offset / 40);
+          const stepX = Math.floor(index * 40 - (offset % 40));
+          // Four steps repeating, so the hill keeps climbing without ever
+          // walking off the top of the viewport.
+          const tier = ((index % 4) + 4) % 4;
+          const top = 128 - tier * 9;
+          context.fillStyle = palette.terraceGrass;
+          context.fillRect(stepX, top, 40, bandHeight);
+          context.fillStyle = palette.terraceWall;
+          context.fillRect(stepX, top, 40, 5);
+          context.fillStyle = palette.terraceWallShade;
+          context.fillRect(stepX, top + 5, 40, 2);
+          // Vine stakes along the terrace, leaning into the dawn wind.
+          context.fillStyle = palette.terraceVine;
+          for (let stake = 0; stake < 3; stake += 1) {
+            const stakeX = stepX + 6 + stake * 13;
+            const height = 7 + Math.floor(pseudoRandom(seed * 3 + stake) * 5);
+            const lean = Math.floor(Math.sin(time * 0.8 + stake + index) * 1);
+            context.fillRect(stakeX + lean, top - height, 2, height);
+          }
         }
         return;
       }

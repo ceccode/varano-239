@@ -8,6 +8,7 @@ import { redZoneChapter } from "./chapters/c05-red-zone/chapter.ts";
 import { threeIdentitiesChapter } from "./chapters/c06-three-identities/chapter.ts";
 import { waterTracksChapter } from "./chapters/c07-water-tracks/chapter.ts";
 import { villageVersionsChapter } from "./chapters/c08-village-versions/chapter.ts";
+import { sanPancrazioChapter } from "./chapters/c09-san-pancrazio/chapter.ts";
 import { castleParkChapter } from "./chapters/c03-castle-park/chapter.ts";
 import { castleKeepChapter } from "./chapters/c04-castle-keep/chapter.ts";
 import { finaleChapter } from "./chapters/c99-finale/chapter.ts";
@@ -27,6 +28,7 @@ const chapters = chainChapters([
   threeIdentitiesChapter,
   waterTracksChapter,
   villageVersionsChapter,
+  sanPancrazioChapter,
   superstarChapter,
   castleParkChapter,
   castleKeepChapter,
@@ -35,11 +37,11 @@ const chapters = chainChapters([
 
 export const corePack = {
   id: "core",
-  version: 9,
+  version: 10,
   kind: "core",
   titleKey: "core.message.pack.title",
   descriptionKey: "core.message.pack.description",
-  estimatedMinutes: 20,
+  estimatedMinutes: 22,
   requires: [],
   chapters,
   mysteries: [],
