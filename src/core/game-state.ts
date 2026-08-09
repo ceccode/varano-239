@@ -39,7 +39,6 @@ export interface AccessibilitySettings {
   readonly playMode: "standard" | "story" | "calm";
   readonly textScale: "small" | "medium" | "large";
   readonly highContrast: boolean;
-  readonly reducedMotion: boolean;
   readonly musicEnabled: boolean;
   readonly effectsEnabled: boolean;
   readonly dialectEnabled: boolean;
@@ -75,7 +74,7 @@ export interface GameState {
   readonly settings: AccessibilitySettings;
 }
 
-export function createInitialState(reducedMotion = false): GameState {
+export function createInitialState(): GameState {
   return {
     phase: "title",
     setup: {
@@ -88,7 +87,6 @@ export function createInitialState(reducedMotion = false): GameState {
       playMode: "standard",
       textScale: "medium",
       highContrast: false,
-      reducedMotion,
       musicEnabled: true,
       effectsEnabled: true,
       dialectEnabled: false,

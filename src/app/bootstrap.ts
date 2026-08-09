@@ -12,7 +12,6 @@ export interface BootstrapDependencies {
   readonly save: SavePort;
   readonly audio: GameAudio;
   readonly bestScore: BestScorePort;
-  readonly reducedMotion: boolean;
 }
 
 export function bootstrapApp({
@@ -21,7 +20,6 @@ export function bootstrapApp({
   save,
   audio,
   bestScore,
-  reducedMotion,
 }: BootstrapDependencies): GameController {
   const mount = document.querySelector<HTMLElement>("[data-app-root]");
 
@@ -45,7 +43,6 @@ export function bootstrapApp({
     save,
     audio,
     bestScore,
-    reducedMotion,
   });
 }
 

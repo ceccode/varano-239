@@ -19,7 +19,6 @@ export interface GameControllerDependencies {
   readonly save: SavePort;
   readonly audio: GameAudio;
   readonly bestScore: BestScorePort;
-  readonly reducedMotion: boolean;
 }
 
 export interface GameController {
@@ -44,7 +43,7 @@ function focusTarget(document: Document, target: FocusTarget): void {
 export function createGameController(
   dependencies: GameControllerDependencies,
 ): GameController {
-  let state = createInitialState(dependencies.reducedMotion);
+  let state = createInitialState();
   let savedState = safeLoad(dependencies.save);
   let activeLevel: MiniGameHandle | undefined;
   let lastOutcome: LevelOutcome | undefined;

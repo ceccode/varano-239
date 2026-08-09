@@ -70,7 +70,7 @@ npm run check
 - Mantenere focus visibile e prevedibile dopo dialoghi e popup.
 - Offrire un elenco testuale equivalente agli hotspot pixel-art.
 - Non affidare informazioni soltanto a colore, suono, posizione o movimento.
-- Rispettare `prefers-reduced-motion` e la modalità senza sorprese.
+- Rispettare `prefers-reduced-motion` nelle animazioni decorative e la modalità senza sorprese; la parte arcade resta il default per tutti (ADR-046).
 - Ogni mini-gioco deve poter essere saltato con un esito narrativo equivalente.
 
 ## Storia e fonti

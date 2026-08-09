@@ -76,7 +76,6 @@ function isSettings(value: unknown): value is AccessibilitySettings {
     isStringMember(value.playMode, ["standard", "story", "calm"]) &&
     isStringMember(value.textScale, ["small", "medium", "large"]) &&
     typeof value.highContrast === "boolean" &&
-    typeof value.reducedMotion === "boolean" &&
     typeof value.musicEnabled === "boolean" &&
     typeof value.effectsEnabled === "boolean" &&
     typeof value.dialectEnabled === "boolean"

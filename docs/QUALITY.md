@@ -115,7 +115,7 @@ Flussi minimi:
 5. pacchetto opzionale completato, saltato e rimosso da un salvataggio compatibile;
 6. salvataggio, ricarica, ripresa e cancellazione dati;
 7. Modalità Storia con salto di ogni sfida;
-8. Modalità Calma e `prefers-reduced-motion` senza popup animati;
+8. Modalità Calma senza popup animati; con `prefers-reduced-motion` la parte arcade parte comunque (ADR-046);
 9. percorso completo con sola tastiera;
 10. analytics configurati e non configurati come descritto in `PRIVACY.md`;
 11. apertura di una fonte esterna dal menù.

@@ -199,11 +199,15 @@ function overlayCard(context: RenderContext): HTMLElement {
   return card;
 }
 
+/**
+ * The arcade is the default for everyone (ADR-046): the system's
+ * reduced-motion signal no longer reroutes to the assisted card — on Samsung
+ * phones the battery saver raises it silently, and players never saw the
+ * game. The assisted path stays behind the dormant story/calm play modes;
+ * «Salta il livello» remains the universal accessible route.
+ */
 function isAssisted(context: RenderContext): boolean {
-  return (
-    context.state.settings.playMode !== "standard" ||
-    context.state.settings.reducedMotion
-  );
+  return context.state.settings.playMode !== "standard";
 }
 
 /** A labelled block of the briefing: «Dove eravamo», «Che cosa devi fare»… */

@@ -135,7 +135,6 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio: createAudio(),
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
 
     pickRole();
@@ -150,19 +149,28 @@ describe("full-screen game controller", () => {
     );
   });
 
-  it("shows the assisted card instead of a briefing with reduced motion", () => {
+  it("keeps the assisted card behind the story/calm play modes (ADR-046)", () => {
+    // The system's reduced-motion signal no longer reroutes here: the
+    // assisted path answers only to an explicit non-standard play mode.
+    const initial = createInitialState();
+    const storyMode: GameState = {
+      ...initial,
+      settings: { ...initial.settings, playMode: "story" },
+    };
+    const atLevel = reduce(
+      storyMode,
+      { type: "RUN_STARTED" },
+      coreStoryGraph,
+    ).state;
     const { mount } = prepareDocument();
     createGameController({
       document,
       mount,
       analytics: { track: vi.fn() },
-      save: new MemorySave(),
+      save: new MemorySave(atLevel),
       audio: createAudio(),
       bestScore: createBestScore(),
-      reducedMotion: true,
     });
-
-    pickRole();
     // The same card, with «Continua la storia» in place of «Gioca».
     expect(mount.textContent).toContain(
       resolveItalianMessage("core.message.level.recap"),
@@ -195,7 +203,6 @@ describe("full-screen game controller", () => {
       save,
       audio,
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
 
     // First boot: role selection instead of an immediate run.
@@ -506,7 +513,6 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio: createAudio(),
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
     void mount;
 
@@ -569,7 +575,6 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio,
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
 
     const menu = mount.querySelector<HTMLElement>("[data-menu]");
@@ -644,7 +649,6 @@ describe("full-screen game controller", () => {
       save: new MemorySave(savedState),
       audio: createAudio(),
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
 
     expect(controller.getState()).toBe(savedState);
@@ -685,7 +689,6 @@ describe("full-screen game controller", () => {
       save: failingSave,
       audio: createAudio(),
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
 
     controller.dispatch({

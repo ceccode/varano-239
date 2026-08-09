@@ -40,7 +40,7 @@ Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che 
 - Nessun contenuto classificato `fact` senza almeno una fonte registrata.
 - Nessun account, classifica, pubblicità, testo libero inviato a server o identificatore persistente.
 - Analytics consentiti: visite aggregate e `game_start`, senza proprietà aggiuntive. Il provider è disabilitato se manca una configurazione esplicita.
-- Il gioco deve essere completabile senza suono, mouse, riflessi rapidi o mini-giochi obbligatori. Le vite e il game over di livello (ADR-041) valgono per chi gioca la sfida arcade: «Salta il livello» e il percorso assistito restano sempre disponibili con lo stesso esito narrativo, un game over non cancella mai i progressi della storia e non viene mai rappresentato come morte grafica.
+- Il gioco deve essere completabile senza suono, mouse, riflessi rapidi o mini-giochi obbligatori. Le vite e il game over di livello (ADR-041) valgono per chi gioca la sfida arcade: «Salta il livello» resta sempre disponibile con lo stesso esito narrativo, un game over non cancella mai i progressi della storia e non viene mai rappresentato come morte grafica. La parte arcade è il default per tutti (ADR-046): nessun segnale di sistema la nasconde; il percorso assistito resta nel dominio dietro le modalità `story`/`calm`.
 - Nuovi misteri e capitoli sono Story Pack dichiarativi a build time. Un nuovo livello usa un `LevelNode` e, se introduce una meccanica, un adapter isolato nel registro compilato; niente script remoto, callback arbitrarie o modifica dei nodi core.
 
 ## Principi di implementazione
@@ -84,7 +84,7 @@ Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che 
 - I pulsanti devono essere elementi `button`, non `div` cliccabili.
 - Il focus deve essere visibile e ripristinato dopo dialoghi o popup.
 - Le scene pixel-art sono presentazione; le azioni restano disponibili nel DOM.
-- Animazioni e popup rispettano `prefers-reduced-motion` e la modalità calma interna.
+- Le animazioni decorative rispettano `prefers-reduced-motion`; i popup a sorpresa rispettano la modalità calma interna. Il segnale di sistema non instrada mai fuori dall'arcade (ADR-046).
 
 ## Politica sul game framework
 

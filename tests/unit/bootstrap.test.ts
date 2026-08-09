@@ -55,7 +55,6 @@ describe("application bootstrap", () => {
       save: createSave(),
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
 
     expect(controller.getState().phase).toBe("title");
@@ -85,7 +84,6 @@ describe("application bootstrap", () => {
       save: createSave(),
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
 
     expect(
@@ -115,7 +113,6 @@ describe("application bootstrap", () => {
       save: createSave(),
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
-      reducedMotion: false,
     });
 
     const alert = getByRole(document.body, "alert", {

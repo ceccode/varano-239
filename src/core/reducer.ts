@@ -144,10 +144,7 @@ function enterNode(
     };
   }
 
-  if (
-    node.type === "surprise" &&
-    (state.settings.playMode === "calm" || state.settings.reducedMotion)
-  ) {
+  if (node.type === "surprise" && state.settings.playMode === "calm") {
     return enterNode({ ...state, run }, node.next, story, run);
   }
 
@@ -341,7 +338,7 @@ export function reduce(
     case "LOCAL_DATA_CLEARED":
       return {
         state: {
-          ...createInitialState(state.settings.reducedMotion),
+          ...createInitialState(),
           settings: state.settings,
         },
         effects: [
