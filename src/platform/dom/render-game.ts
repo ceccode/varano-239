@@ -1029,6 +1029,46 @@ function renderSettings(context: RenderContext): HTMLElement {
     ),
   );
 
+  // Text scale and contrast (ADR-053): finally real, not just persisted.
+  wrapper.append(
+    radioGroup<"small" | "medium" | "large">(
+      context,
+      "text-scale",
+      "core.message.ui.options.text.legend",
+      [
+        { value: "small", labelKey: "core.message.ui.options.text.small" },
+        { value: "medium", labelKey: "core.message.ui.options.text.medium" },
+        { value: "large", labelKey: "core.message.ui.options.text.large" },
+      ],
+      context.state.settings.textScale,
+      (textScale) => ({ type: "SETTINGS_UPDATED", settings: { textScale } }),
+    ),
+  );
+
+  const viewFieldset = element(context.document, "fieldset");
+  viewFieldset.append(
+    element(
+      context.document,
+      "legend",
+      context.content.message("core.message.ui.options.view.legend"),
+    ),
+  );
+  const viewToggles = element(context.document, "div");
+  viewToggles.className = "toggle-options";
+  viewToggles.append(
+    checkbox(
+      context,
+      "core.message.ui.options.contrast",
+      context.state.settings.highContrast,
+      (highContrast) => ({
+        type: "SETTINGS_UPDATED",
+        settings: { highContrast },
+      }),
+    ),
+  );
+  viewFieldset.append(viewToggles);
+  wrapper.append(viewFieldset);
+
   const audioFieldset = element(context.document, "fieldset");
   audioFieldset.append(
     element(

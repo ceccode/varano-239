@@ -639,12 +639,11 @@ describe("full-screen game controller", () => {
       mount.querySelector<HTMLElement>("[data-menu]")?.hasAttribute("hidden"),
     ).toBe(false);
 
-    const music = document.querySelector<HTMLInputElement>(
-      'input[type="checkbox"]',
-    );
-    if (music === null) {
-      throw new Error("Music toggle unavailable.");
-    }
+    // By name, not by position: the contrast toggle (ADR-053) now comes
+    // first in the settings panel.
+    const music = getByRole<HTMLInputElement>(document.body, "checkbox", {
+      name: resolveItalianMessage("core.message.ui.options.music"),
+    });
     music.checked = false;
     fireEvent.change(music);
     expect(controller.getState().settings.musicEnabled).toBe(false);
@@ -688,6 +687,43 @@ describe("full-screen game controller", () => {
     expect(host?.getAttribute("data-player-x")).toBe("742");
     // …and the port heard about it.
     expect(audio.setMusicEnabled).toHaveBeenLastCalledWith(false);
+  });
+
+  it("applies text scale and contrast on the root without remounting (ADR-053)", () => {
+    const { mount } = prepareDocument();
+    stubCanvasContext();
+    createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+    });
+    pickRole();
+    const host = mount.querySelector<HTMLElement>("[data-level-host]");
+    host?.setAttribute("data-player-x", "500");
+    expect(document.documentElement.dataset.textScale).toBe("medium");
+
+    clickMessage("core.message.ui.menu.open");
+    const large = document.querySelector<HTMLInputElement>(
+      'input[type="radio"][name="text-scale"][value="large"]',
+    );
+    if (large === null) {
+      throw new Error("Text scale radio unavailable.");
+    }
+    fireEvent.click(large);
+    const contrast = getByRole<HTMLInputElement>(document.body, "checkbox", {
+      name: resolveItalianMessage("core.message.ui.options.contrast"),
+    });
+    contrast.checked = true;
+    fireEvent.change(contrast);
+
+    // The root carries both, and the level never noticed.
+    expect(document.documentElement.dataset.textScale).toBe("large");
+    expect(document.documentElement.dataset.contrast).toBe("high");
+    expect(mount.querySelector("[data-level-host]")).toBe(host);
+    expect(host?.getAttribute("data-player-x")).toBe("500");
   });
 
   it("rebuilds the level when the role changes, because the power changes", () => {

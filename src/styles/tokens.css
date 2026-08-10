@@ -20,3 +20,31 @@
   --radius: 0.75rem;
   --content-width: 64rem;
 }
+
+/*
+ * Text scale (ADR-053): the whole interface is sized in rem, so scaling the
+ * root scales everything — except the pixel-art canvas, which is sized by
+ * the layout and stays put. «medium» is the browser default, untouched.
+ */
+:root[data-text-scale="small"] {
+  font-size: 87.5%;
+}
+
+:root[data-text-scale="large"] {
+  font-size: 118%;
+}
+
+/*
+ * High contrast (ADR-053): stronger ink on darker ground, brighter accents,
+ * visible borders. Same layout, different tokens.
+ */
+:root[data-contrast="high"] {
+  --color-background: #000;
+  --color-surface: #0a1410;
+  --color-surface-strong: #10201a;
+  --color-text: #fff;
+  --color-muted: #e6ece7;
+  --color-accent: #ffd970;
+  --color-accent-ink: #000;
+  --color-border: #9fb8aa;
+}

@@ -96,6 +96,21 @@ export function createGameController(
     dependencies.mount.querySelector<HTMLElement>("[data-menu]")?.hidden ===
     false;
 
+  /**
+   * Text scale and contrast live on the document root (ADR-053), so CSS can
+   * scale every rem and swap the tokens without a re-render. Applied by
+   * render() and by the skip path alike.
+   */
+  const applyRootSettings = (): void => {
+    const root = dependencies.document.documentElement;
+    root.dataset.textScale = state.settings.textScale;
+    if (state.settings.highContrast) {
+      root.dataset.contrast = "high";
+    } else {
+      delete root.dataset.contrast;
+    }
+  };
+
   const render = (): void => {
     activeLevel?.destroy();
     activeLevel = undefined;
@@ -106,6 +121,7 @@ export function createGameController(
             (candidate) => candidate.id === state.run?.currentNodeId,
           );
     const briefing = node?.type === "level" && showBriefing(node.id);
+    applyRootSettings();
     try {
       dependencies.audio.setMusicEnabled(state.settings.musicEnabled);
       dependencies.audio.setEffectsEnabled(state.settings.effectsEnabled);
@@ -237,11 +253,19 @@ export function createGameController(
    * silently. Audio flags change nothing the renderer draws: the checkbox has
    * already updated itself, and the audio port takes the new value directly.
    */
-  const isAudioOnlySettingsChange = (action: GameAction): boolean =>
+  const presentationOnlySettings = new Set([
+    "musicEnabled",
+    "effectsEnabled",
+    // Scale and contrast live on the document root (ADR-053): CSS applies
+    // them without any DOM rebuild, so the level survives these too.
+    "textScale",
+    "highContrast",
+  ]);
+  const isPresentationOnlySettingsChange = (action: GameAction): boolean =>
     action.type === "SETTINGS_UPDATED" &&
     activeLevel !== undefined &&
-    Object.keys(action.settings).every(
-      (key) => key === "musicEnabled" || key === "effectsEnabled",
+    Object.keys(action.settings).every((key) =>
+      presentationOnlySettings.has(key),
     );
 
   function dispatch(action: GameAction): void {
@@ -251,7 +275,7 @@ export function createGameController(
       isRecord = false;
     }
 
-    const keepLevelMounted = isAudioOnlySettingsChange(action);
+    const keepLevelMounted = isPresentationOnlySettingsChange(action);
     const transition = reduce(state, action, coreStoryGraph);
     state = transition.state;
 
@@ -262,7 +286,8 @@ export function createGameController(
     }
 
     if (keepLevelMounted) {
-      // What `render()` would have done for audio, without the teardown.
+      // What `render()` would have done for presentation, minus the teardown.
+      applyRootSettings();
       try {
         dependencies.audio.setMusicEnabled(state.settings.musicEnabled);
         dependencies.audio.setEffectsEnabled(state.settings.effectsEnabled);
