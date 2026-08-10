@@ -517,7 +517,7 @@ La posizione istantanea del personaggio e gli input appartengono alla sessione d
 
 ## Budget
 
-- JavaScript iniziale: obiettivo massimo 150 KB gzip, asset esclusi.
+- JavaScript iniziale: obiettivo tetto verificato di 60 KB gzip (`npm run size`, ADR-052), asset esclusi.
 - Nessun asset remoto necessario al gioco.
 - Caricamento per capitolo soltanto quando gli asset lo giustificano.
 - Nessun framework nel chunk iniziale.

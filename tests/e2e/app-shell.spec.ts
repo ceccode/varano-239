@@ -16,6 +16,16 @@ function playerX(page: Page): Promise<number> {
     .evaluate((node) => Number((node as HTMLElement).dataset.playerX));
 }
 
+/**
+ * One axe scan, anywhere (ADR-052): until now the only scan covered the
+ * first screen, so dialogs, the menu, the briefing and the endings shipped
+ * unaudited. Every surface a test reaches now gets scanned in passing.
+ */
+async function expectNoViolations(page: Page): Promise<void> {
+  const scan = await new AxeBuilder({ page }).analyze();
+  expect(scan.violations).toEqual([]);
+}
+
 async function openMenu(page: Page): Promise<void> {
   await page
     .getByRole("button", { name: message("core.message.ui.menu.open") })
@@ -173,6 +183,7 @@ test("completes the whole story with the keyboard and restarts", async ({
   await expect(
     page.getByText(message("core.message.level2.recap")),
   ).toBeVisible();
+  await expectNoViolations(page);
   await page
     .getByRole("button", { name: message("core.message.level.play") })
     .click();
@@ -405,6 +416,8 @@ test("completes the whole story with the keyboard and restarts", async ({
     }),
   ).toBeVisible();
 
+  await expectNoViolations(page);
+
   await page
     .getByRole("button", {
       name: message("core.message.ui.ending.restart"),
@@ -476,6 +489,7 @@ test("guards the lethal choice behind an explicit confirmation", async ({
     name: message("core.message.finale.confirm.cancel"),
   });
   await expect(cancel).toBeFocused();
+  await expectNoViolations(page);
 
   // Cancelling from the keyboard returns to the confrontation, unrecorded.
   await page.keyboard.press("Enter");
@@ -517,6 +531,8 @@ test("offers settings, credits, privacy and terms from the in-game menu", async 
   ] as const) {
     await expect(page.getByText(message(key), { exact: true })).toBeVisible();
   }
+
+  await expectNoViolations(page);
 
   await page
     .getByText(message("core.message.ui.menu.credits"), { exact: true })
