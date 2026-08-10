@@ -165,7 +165,7 @@ Il gioco degrada senza Web Audio, analytics o persistenza. Richiede JavaScript p
 
 ## Performance
 
-- JavaScript iniziale: massimo 150 KB gzip, asset esclusi.
+- JavaScript iniziale: tetto verificato da `npm run size` in `npm run check` — 60 KB gzip per il JS e 10 KB per il CSS (ADR-052), ben dentro il vecchio budget dichiarato di 150 KB.
 - Primo caricamento giocabile: massimo 2 MB su rete, font compresi.
 - Nessun font remoto; preferire font di sistema o bitmap originale incluso.
 - Asset per capitolo caricati quando necessario.

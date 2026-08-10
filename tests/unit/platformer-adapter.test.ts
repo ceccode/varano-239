@@ -16,45 +16,7 @@ import type {
 } from "../../src/levels/contract";
 import { campiLevelConfig, registeredLevels } from "../../src/levels/registry";
 import { stubCanvasContext } from "./helpers/canvas-stub";
-
-type FrameCallback = (time: number) => void;
-
-interface FrameHarness {
-  run(frames: number, frameMs?: number): void;
-}
-
-function installFrameHarness(): FrameHarness {
-  let queue: FrameCallback[] = [];
-  let now = 0;
-  Object.defineProperty(window, "requestAnimationFrame", {
-    configurable: true,
-    value: vi.fn((callback: FrameCallback) => {
-      queue.push(callback);
-      return queue.length;
-    }),
-  });
-  Object.defineProperty(window, "cancelAnimationFrame", {
-    configurable: true,
-    value: vi.fn(() => {
-      queue = [];
-    }),
-  });
-  return {
-    run(frames: number, frameMs = 16): void {
-      for (let index = 0; index < frames; index += 1) {
-        const callbacks = queue;
-        queue = [];
-        now += frameMs;
-        for (const callback of callbacks) {
-          callback(now);
-        }
-        if (queue.length === 0) {
-          return;
-        }
-      }
-    },
-  };
-}
+import { installFrameHarness } from "./helpers/frame-harness";
 
 function createAudio(): LevelAudioPort {
   return {

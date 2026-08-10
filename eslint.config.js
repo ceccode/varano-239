@@ -37,6 +37,7 @@ export default defineConfig([
         Buffer: "readonly",
         URL: "readonly",
         console: "readonly",
+        process: "readonly",
       },
     },
   },

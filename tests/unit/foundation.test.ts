@@ -9,7 +9,7 @@ describe("M0 foundation", () => {
 
   it("keeps the documented quality command order", () => {
     expect(packageJson.scripts.check).toBe(
-      "npm run format:check && npm run lint && npm run typecheck && npm run validate && npm run test -- --coverage && npm run build && npm run test:e2e",
+      "npm run format:check && npm run lint && npm run typecheck && npm run validate && npm run test -- --coverage && npm run build && npm run size && npm run test:e2e",
     );
   });
 });
