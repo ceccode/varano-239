@@ -610,7 +610,6 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Verifica: riavvio dal menù con conteggio della distanza percorsa (un loop solo, mai due); pausa da scheda nascosta con posizione congelata e `stopMusic` chiamato; ritorno che non riprende una pausa del menù; scheduler che dopo dieci secondi di clock senza tick programma al massimo una finestra di lookahead; end-to-end sui tre viewport con «In pausa» visibile e il tentativo riportato allo spawn.
 - Conseguenza: `MiniGameHandle` cresce di un metodo (additivo); il menù mostra «Riprova il livello» solo con un livello montato e mai nel percorso assistito.
 
-
 ## ADR-052 — Le porte della qualità: budget verificati, non promessi
 
 - Stato: **Accettata**
@@ -621,4 +620,4 @@ Una nuova ADR può introdurre Phaser soltanto se:
   2. **Il budget di disegno**: `tests/unit/render-budget.test.ts` monta ognuno dei dieci livelli sull'harness dei frame condiviso (estratto in `tests/unit/helpers/frame-harness.ts`), corre un secondo in movimento e conta le chiamate al contesto canvas per frame. Misurato alla posa: 222–442 per nove livelli, 643 per «Il borgo delle versioni» (lo stendibiancheria si paga). Tetto unico a 800: chi lo sfonda sta disegnando fuori schermo o allocando scenografia per frame, e il fallimento fa il nome del livello.
   3. **Axe su ogni superficie che un test attraversa**: l'helper `expectNoViolations` scandisce anche il menù aperto, la scheda di briefing, il dialogo di conferma della scelta letale e la schermata di finale con la card-meme — su tutti e tre i viewport. Nessuna violazione preesistente è emersa alla posa.
 - Conseguenza: i numeri di QUALITY.md e ARCHITECTURE.md diventano «verificati da `npm run check`» invece che dichiarati; le PR di performance future (culling dei fondali) si misurano contro il cricchetto del punto 2 abbassandolo, non a occhio.
-- 
+-
