@@ -534,6 +534,16 @@ test("offers settings, credits, privacy and terms from the in-game menu", async 
 
   await expectNoViolations(page);
 
+  // Version and updates (ADR-054): the build id from the page meta, and the
+  // manual check answering «already latest» against the live worker.
+  await expect(page.getByText(/^Versione: \w/)).toBeVisible();
+  await page
+    .getByRole("button", { name: message("core.message.ui.update.check") })
+    .click();
+  await expect(
+    page.getByText(message("core.message.ui.update.none")),
+  ).toBeVisible();
+
   await page
     .getByText(message("core.message.ui.menu.credits"), { exact: true })
     .click();

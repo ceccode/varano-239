@@ -1,4 +1,8 @@
 import { startApplication } from "./app/bootstrap";
+import {
+  reloadOnControllerChange,
+  watchForWaitingWorker,
+} from "./platform/pwa/sw-update";
 import { GoatCounterAnalytics } from "./platform/analytics/goatcounter-analytics";
 import { NoopAnalytics } from "./platform/analytics/noop-analytics";
 import { ChiptuneAudio } from "./platform/audio/chiptune-audio";
@@ -22,10 +26,23 @@ startApplication({
 });
 
 // The service worker is production-only: in dev it would cache Vite modules.
+// A new version installs and WAITS (ADR-054): the page announces it with the
+// banner, and the reload happens once, when the player accepts.
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  const container = navigator.serviceWorker;
+  reloadOnControllerChange(container, () => {
+    window.location.reload();
+  });
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch((error: unknown) => {
-      console.warn("Service worker unavailable; continuing online.", error);
-    });
+    container
+      .register("sw.js")
+      .then((registration) => {
+        watchForWaitingWorker(container, registration, () => {
+          window.dispatchEvent(new CustomEvent("varano-update-ready"));
+        });
+      })
+      .catch((error: unknown) => {
+        console.warn("Service worker unavailable; continuing online.", error);
+      });
   });
 }

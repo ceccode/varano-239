@@ -4,6 +4,7 @@ import type { LevelOutcome } from "../../levels/contract";
 import { drawScoreCard } from "./score-card";
 import { drawMemeCard, type MemeAccessory } from "./meme-card";
 import { shareScoreCard, type ShareOutcome } from "./share-card";
+import { checkForUpdates, type ContainerLike } from "../pwa/sw-update";
 import { levelPowerLabelKey } from "../../levels/registry";
 import { matchesConditions } from "../../core/conditions";
 import { levelPosition } from "../../content/level-position";
@@ -1211,6 +1212,51 @@ function renderMenu(context: RenderContext): HTMLElement {
     externalLink("core.message.ui.terms.link", termsPageUrl),
   );
 
+  // Version and updates (ADR-054): the build id lands in the page's meta at
+  // build time; «Controlla aggiornamenti» asks the worker to re-fetch now.
+  const buildId =
+    context.document
+      .querySelector('meta[name="varano-build"]')
+      ?.getAttribute("content") ?? "dev";
+  const version = element(
+    context.document,
+    "p",
+    context.content.message("core.message.ui.version", { build: buildId }),
+  );
+  version.className = "quiet-copy";
+  const updateCheck = element(
+    context.document,
+    "button",
+    context.content.message("core.message.ui.update.check"),
+  );
+  updateCheck.type = "button";
+  updateCheck.className = "menu-clear";
+  const updateNotice = element(context.document, "p");
+  updateNotice.className = "quiet-copy";
+  updateNotice.setAttribute("role", "status");
+  updateCheck.addEventListener("click", () => {
+    const container = context.document.defaultView?.navigator.serviceWorker as
+      ContainerLike | undefined;
+    if (container === undefined) {
+      updateNotice.textContent = context.content.message(
+        "core.message.ui.update.none",
+      );
+      return;
+    }
+    updateCheck.disabled = true;
+    void checkForUpdates(container)
+      .then((outcome) => {
+        updateNotice.textContent = context.content.message(
+          outcome === "pending"
+            ? "core.message.ui.update.pending"
+            : "core.message.ui.update.none",
+        );
+      })
+      .finally(() => {
+        updateCheck.disabled = false;
+      });
+  });
+
   const clear = button(context, "core.message.ui.clear-save", {
     type: "LOCAL_DATA_CLEARED",
   });
@@ -1238,7 +1284,17 @@ function renderMenu(context: RenderContext): HTMLElement {
   );
   disclaimer.className = "quiet-copy";
 
-  menu.append(settings, credits, privacy, terms, clear, disclaimer);
+  menu.append(
+    settings,
+    credits,
+    privacy,
+    terms,
+    clear,
+    version,
+    updateCheck,
+    updateNotice,
+    disclaimer,
+  );
   return menu;
 }
 
