@@ -314,6 +314,17 @@ export class ChiptuneAudio implements GameAudio {
 
     const track = this.track;
     const stepSeconds = 60 / track.beatsPerMinute / 2;
+    // A throttled interval (hidden tab, busy main thread) can leave
+    // `nextStepTime` seconds behind the clock. Scheduling that backlog
+    // would start every overdue note at once — a burst of crammed notes on
+    // return (ADR-051). Skip the missed steps and resume in phase instead.
+    if (this.nextStepTime < context.currentTime) {
+      const missedSteps = Math.ceil(
+        (context.currentTime - this.nextStepTime) / stepSeconds,
+      );
+      this.stepIndex += missedSteps;
+      this.nextStepTime += missedSteps * stepSeconds;
+    }
     while (this.nextStepTime < context.currentTime + lookAheadSeconds) {
       const step = this.stepIndex % track.lead.length;
       const lead = track.lead[step];
