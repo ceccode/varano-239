@@ -13,6 +13,8 @@ interface FakeContextLog {
   oscillatorsStarted: number;
   gainsCreated: number;
   resumed: number;
+  /** The live context, so a test can move its clock (ADR-051). */
+  context?: { currentTime: number };
 }
 
 function installFakeAudioContext(
@@ -35,6 +37,7 @@ function installFakeAudioContext(
       if (options.failConstruction === true) {
         throw new Error("Web Audio unavailable");
       }
+      log.context = this;
     }
 
     resume(): Promise<void> {
@@ -77,6 +80,31 @@ describe("chiptune audio adapter", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it("skips the backlog after a throttled interval instead of bursting (ADR-051)", () => {
+    // In a hidden tab the 80ms interval fires rarely while the audio clock
+    // keeps running. Scheduling the missed steps would start every overdue
+    // note at once on return; the scheduler must skip them and stay in
+    // phase.
+    installFakeAudioContext(log);
+    const audio = new ChiptuneAudio(window, true, true);
+
+    audio.startMusic();
+    const primed = log.oscillatorsStarted;
+    expect(primed).toBeGreaterThan(0);
+
+    // Ten seconds pass on the audio clock with no interval ticks at all.
+    if (log.context === undefined) {
+      throw new Error("The fake context must exist.");
+    }
+    log.context.currentTime = 10;
+    vi.advanceTimersByTime(80);
+
+    // One lookahead window of notes at most — not a ten-second backlog,
+    // which would be dozens of oscillators started in the past.
+    expect(log.oscillatorsStarted - primed).toBeLessThanOrEqual(4);
+    audio.stopMusic();
   });
 
   it("schedules looping music only while enabled", () => {

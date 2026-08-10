@@ -737,6 +737,36 @@ describe("full-screen game controller", () => {
     expect(mount.querySelector(".stage")?.hasAttribute("inert")).toBe(false);
   });
 
+  it("pauses by name and restarts the attempt from the menu (ADR-051)", () => {
+    const { mount } = prepareDocument();
+    stubCanvasContext();
+    createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+    });
+    pickRole();
+    const host = mount.querySelector<HTMLElement>("[data-level-host]");
+    host?.setAttribute("data-player-x", "300");
+
+    clickMessage("core.message.ui.menu.open");
+    // With a level alive behind it, the menu is the pause and says so.
+    expect(
+      getByRole(document.body, "heading", {
+        name: resolveItalianMessage("core.message.ui.menu.paused"),
+      }),
+    ).not.toBeNull();
+
+    clickMessage("core.message.ui.menu.restart-level");
+    // Menu closed, same host, attempt reset to the spawn.
+    expect(mount.querySelector<HTMLElement>("[data-menu]")?.hidden).toBe(true);
+    expect(mount.querySelector("[data-level-host]")).toBe(host);
+    expect(host?.getAttribute("data-player-x")).toBe("14");
+  });
+
   it("resumes a saved run automatically and skips the role selection", () => {
     const savedState = savedChoiceState();
     const { mount } = prepareDocument();

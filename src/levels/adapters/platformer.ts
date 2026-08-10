@@ -2047,11 +2047,19 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
      * only — like a resume (ADR-018), nothing of the story is touched.
      */
     const restartAttempt = (): void => {
+      // From the KO card the loop already stopped; from the menu it is
+      // alive or paused. Cancel whatever is queued first, or two callbacks
+      // per frame would each simulate the full delta and the game would
+      // run at double speed (ADR-051).
+      if (animationFrame !== undefined) {
+        view.cancelAnimationFrame(animationFrame);
+      }
       state = createPlatformerState(config);
       particles.length = 0;
       accumulator = 0;
       previousTime = undefined;
       wasBlocked = false;
+      lastStatusLine = undefined;
       bargingIds.clear();
       input.left = false;
       input.right = false;
@@ -2194,32 +2202,64 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
     view.addEventListener("keydown", onKeyDown);
     view.addEventListener("keyup", onKeyUp);
 
+    const pause = (): void => {
+      running = false;
+      previousTime = undefined;
+      // Drop whatever was held: a direction still pressed when the menu
+      // opened would otherwise keep running on resume (ADR-050).
+      input.left = false;
+      input.right = false;
+      input.jumpPressed = false;
+      input.jumpHeld = false;
+      input.powerHeld = false;
+      if (animationFrame !== undefined) {
+        view.cancelAnimationFrame(animationFrame);
+      }
+    };
+    const resume = (): void => {
+      if (!running && !destroyed && !state.completed && !state.gameOver) {
+        running = true;
+        previousTime = undefined;
+        animationFrame = view.requestAnimationFrame(frame);
+      }
+    };
+
+    // A hidden tab stalls the frame loop but nothing else knew (ADR-051):
+    // the audio scheduler kept running and the music played to an empty
+    // room. Pause on hidden and resume on return — but only when it was
+    // this handler that paused, so a menu-paused level stays paused.
+    let pausedByVisibility = false;
+    const onVisibilityChange = (): void => {
+      if (document.hidden) {
+        if (running) {
+          pausedByVisibility = true;
+          pause();
+          request.audio.stopMusic();
+          // The next gesture (or the resume below) restarts the track.
+          musicStarted = false;
+        }
+        return;
+      }
+      if (pausedByVisibility) {
+        pausedByVisibility = false;
+        resume();
+        ensureMusic();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     camera = cameraX(state, config);
     draw();
     updateStatus();
     animationFrame = view.requestAnimationFrame(frame);
 
     return {
-      pause(): void {
-        running = false;
-        previousTime = undefined;
-        // Drop whatever was held: a direction still pressed when the menu
-        // opened would otherwise keep running on resume (ADR-050).
-        input.left = false;
-        input.right = false;
-        input.jumpPressed = false;
-        input.jumpHeld = false;
-        input.powerHeld = false;
-        if (animationFrame !== undefined) {
-          view.cancelAnimationFrame(animationFrame);
-        }
-      },
-      resume(): void {
-        if (!running && !destroyed && !state.completed && !state.gameOver) {
-          running = true;
-          previousTime = undefined;
-          animationFrame = view.requestAnimationFrame(frame);
-        }
+      pause,
+      resume,
+      restart(): void {
+        // A restart while the menu is up would race its own resume: the
+        // caller closes the menu first, then restarts (ADR-051).
+        restartAttempt();
       },
       destroy(): void {
         destroyed = true;
@@ -2232,6 +2272,7 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         }
         view.removeEventListener("keydown", onKeyDown);
         view.removeEventListener("keyup", onKeyUp);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
         request.audio.stopMusic();
       },
     };

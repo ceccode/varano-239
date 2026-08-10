@@ -130,6 +130,9 @@ export const uiMessages = {
     "Ho finito VARANO 2:39 — finale: «{title}». La leggenda di Montichiari, da giocare: {url}",
   "core.message.ui.menu.open": "Menù",
   "core.message.ui.menu.heading": "Menù",
+  // With a level alive behind the overlay, the menu is the pause (ADR-051).
+  "core.message.ui.menu.paused": "In pausa",
+  "core.message.ui.menu.restart-level": "Riprova il livello",
   "core.message.ui.menu.close": "Torna al gioco",
   "core.message.ui.menu.settings": "Impostazioni",
   "core.message.ui.menu.credits": "Credits",
