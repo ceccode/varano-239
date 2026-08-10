@@ -35,7 +35,6 @@ export interface AccessibilitySettings {
   readonly highContrast: boolean;
   readonly musicEnabled: boolean;
   readonly effectsEnabled: boolean;
-  readonly dialectEnabled: boolean;
 }
 
 export interface RunState {
@@ -81,7 +80,6 @@ export function createInitialState(): GameState {
       highContrast: false,
       musicEnabled: true,
       effectsEnabled: true,
-      dialectEnabled: false,
     },
   };
 }

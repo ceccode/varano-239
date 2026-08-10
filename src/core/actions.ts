@@ -3,6 +3,8 @@ import type { HotspotId, OptionId, Role, StoryScope } from "./model";
 
 export interface SettingsUpdate {
   readonly playMode?: "standard" | "story" | "calm";
+  readonly textScale?: "small" | "medium" | "large";
+  readonly highContrast?: boolean;
   readonly musicEnabled?: boolean;
   readonly effectsEnabled?: boolean;
 }

@@ -118,6 +118,21 @@ describe("versioned local save", () => {
     expect(decoded?.run?.currentNodeId).toBe(state.run?.currentNodeId);
   });
 
+  it("fills missing settings with defaults instead of wiping the run (ADR-053)", () => {
+    // The landmine that motivated the tolerant decode: adding a settings
+    // field used to invalidate every existing save the moment it shipped.
+    const state = playableState();
+    const { textScale, ...withoutTextScale } = state.settings;
+    void textScale;
+    const decoded = decodeSave({
+      version: saveVersion,
+      state: { ...state, settings: withoutTextScale },
+    });
+    expect(decoded?.settings.textScale).toBe("medium");
+    expect(decoded?.settings.musicEnabled).toBe(state.settings.musicEnabled);
+    expect(decoded?.run?.currentNodeId).toBe(state.run?.currentNodeId);
+  });
+
   it("accepts a save still carrying the removed reducedMotion key (ADR-046)", () => {
     // Every save written before the arcade-by-default decision has the key.
     // The validator checks the fields it lists, so the stray key must ride
@@ -160,12 +175,14 @@ describe("versioned local save", () => {
         state: { ...state, setup: { ...state.setup, role: "real-person" } },
       }),
     ).toBeUndefined();
-    expect(
-      decodeSave({
-        version: saveVersion,
-        state: { ...state, settings: { ...state.settings, playMode: "fast" } },
-      }),
-    ).toBeUndefined();
+    // An invalid settings member no longer vetoes the state (ADR-053): the
+    // field falls back to its default and the run survives.
+    const oddSettings = decodeSave({
+      version: saveVersion,
+      state: { ...state, settings: { ...state.settings, playMode: "fast" } },
+    });
+    expect(oddSettings?.settings.playMode).toBe("standard");
+    expect(oddSettings?.run?.currentNodeId).toBe(state.run?.currentNodeId);
     expect(
       decodeSave({
         version: saveVersion,

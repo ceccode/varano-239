@@ -751,6 +751,26 @@ test("keeps the level running when audio is toggled mid-run (ADR-050)", async ({
     .getByRole("checkbox", { name: message("core.message.ui.options.music") })
     .click();
 
+  // Text scale and contrast apply live from the same panel (ADR-053), and
+  // the level survives those too.
+  await page
+    .getByRole("radio", {
+      name: message("core.message.ui.options.text.large"),
+    })
+    .click();
+  await page
+    .getByRole("checkbox", {
+      name: message("core.message.ui.options.contrast"),
+    })
+    .click();
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-text-scale",
+    "large",
+  );
+  await expect(page.locator("html")).toHaveAttribute("data-contrast", "high");
+  // The high-contrast theme is itself scanned: tokens must keep AA.
+  await expectNoViolations(page);
+
   // Escape closes the menu, and the run is exactly where it was left.
   await page.keyboard.press("Escape");
   await expect(page.locator("[data-menu]")).toBeHidden();

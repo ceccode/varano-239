@@ -128,6 +128,14 @@ export const uiMessages = {
   "core.message.ui.meme.share": "Condividi la card del finale",
   "core.message.ui.meme.share-text":
     "Ho finito VARANO 2:39 — finale: «{title}». La leggenda di Montichiari, da giocare: {url}",
+  // Text scale and contrast (ADR-053).
+  "core.message.ui.options.text.legend": "Dimensione del testo",
+  "core.message.ui.options.text.small": "Piccolo",
+  "core.message.ui.options.text.medium": "Normale",
+  "core.message.ui.options.text.large": "Grande",
+  "core.message.ui.options.view.legend": "Visualizzazione",
+  "core.message.ui.options.contrast": "Contrasto elevato",
+
   "core.message.ui.menu.open": "Menù",
   "core.message.ui.menu.heading": "Menù",
   // With a level alive behind the overlay, the menu is the pause (ADR-051).

@@ -1,8 +1,9 @@
-import type {
-  AccessibilitySettings,
-  GameState,
-  RunState,
-  SetupDraft,
+import {
+  createInitialState,
+  type AccessibilitySettings,
+  type GameState,
+  type RunState,
+  type SetupDraft,
 } from "./game-state";
 
 export const saveVersion = 2;
@@ -63,19 +64,38 @@ function isSetupDraft(value: unknown): value is SetupDraft {
   );
 }
 
-function isSettings(value: unknown): value is AccessibilitySettings {
+/**
+ * Settings decode tolerantly (ADR-053): each field is validated on its own
+ * and falls back to its default, so adding or removing a preference never
+ * wipes a run again — the old all-or-nothing validator turned any settings
+ * change into a silent save discard. Runs stay strict: a corrupt run is
+ * where discarding is right.
+ */
+function tolerantSettings(value: unknown): AccessibilitySettings {
+  const defaults = createInitialState().settings;
   if (!isRecord(value)) {
-    return false;
+    return defaults;
   }
-
-  return (
-    isStringMember(value.playMode, ["standard", "story", "calm"]) &&
-    isStringMember(value.textScale, ["small", "medium", "large"]) &&
-    typeof value.highContrast === "boolean" &&
-    typeof value.musicEnabled === "boolean" &&
-    typeof value.effectsEnabled === "boolean" &&
-    typeof value.dialectEnabled === "boolean"
-  );
+  return {
+    playMode: isStringMember(value.playMode, ["standard", "story", "calm"])
+      ? value.playMode
+      : defaults.playMode,
+    textScale: isStringMember(value.textScale, ["small", "medium", "large"])
+      ? value.textScale
+      : defaults.textScale,
+    highContrast:
+      typeof value.highContrast === "boolean"
+        ? value.highContrast
+        : defaults.highContrast,
+    musicEnabled:
+      typeof value.musicEnabled === "boolean"
+        ? value.musicEnabled
+        : defaults.musicEnabled,
+    effectsEnabled:
+      typeof value.effectsEnabled === "boolean"
+        ? value.effectsEnabled
+        : defaults.effectsEnabled,
+  };
 }
 
 function isRunState(value: unknown): value is RunState {
@@ -123,10 +143,11 @@ function isGameState(value: unknown): value is GameState {
     return false;
   }
 
+  // Settings are absent here on purpose: they decode tolerantly in
+  // decodeSave, never vetoing the whole state (ADR-053).
   return (
     isStringMember(value.phase, ["title", "playing", "ending"]) &&
     isSetupDraft(value.setup) &&
-    isSettings(value.settings) &&
     (value.run === undefined || isRunState(value.run)) &&
     (value.phase === "playing" || value.phase === "ending"
       ? value.run !== undefined
@@ -171,7 +192,11 @@ export function decodeSave(value: unknown): GameState | undefined {
     return undefined;
   }
 
-  const state = value.state;
+  const raw = value.state as GameState & { settings?: unknown };
+  const state: GameState = {
+    ...raw,
+    settings: tolerantSettings(raw.settings),
+  };
   return state.run === undefined
     ? state
     : { ...state, run: migrateRun(state.run) };

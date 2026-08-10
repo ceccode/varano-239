@@ -141,7 +141,7 @@ Obiettivo: WCAG 2.2 livello AA per i flussi essenziali.
 - Tutto è usabile con tastiera e touch.
 - Target touch di almeno 44×44 CSS pixel quando possibile.
 - Focus sempre visibile.
-- Testo ridimensionabile al 200% senza perdita di contenuto o azioni.
+- Testo ridimensionabile al 200% (la scala in-app di ADR-053 copre il primo tratto; lo zoom del browser resta pienamente supportato) senza perdita di contenuto o azioni.
 - Nessuna informazione affidata soltanto a colore, suono, movimento o posizione nella scena.
 - Sottotitoli/testo per ogni cue audio informativo.
 - Nessun timer obbligatorio.
