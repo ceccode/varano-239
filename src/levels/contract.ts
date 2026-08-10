@@ -48,6 +48,12 @@ export interface MiniGameRequest<Config extends object> {
 export interface MiniGameHandle {
   pause(): void;
   resume(): void;
+  /**
+   * Restarts the attempt from the level's start, story untouched (ADR-051).
+   * Reachable from the KO card since ADR-041; the in-game menu exposes it
+   * for a level still alive.
+   */
+  restart(): void;
   destroy(): void;
 }
 

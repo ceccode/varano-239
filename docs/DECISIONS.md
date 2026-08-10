@@ -598,6 +598,19 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Verifica: test unit sul nodo `[data-level-host]` che resta **lo stesso oggetto** dopo il toggle audio e cambia dopo il cambio ruolo; `MutationObserver` sulla live region che conta meno di tre mutazioni in 120 frame; `inert` presente e rimosso con Escape; e un test end-to-end sui tre viewport che corre nel livello, apre il menù, apre la sezione impostazioni **con la barra spaziatrice** (la regressione), toglie la musica, chiude con Escape e verifica che la posizione sia identica.
 - Conseguenza: `data-elapsed` sparisce dal `dataset` (nessun test lo leggeva) e le scritture per frame passano da 5-8 a zero a regime. È la prima eccezione documentata alla regola di ADR-018 sul render; qualunque altra deve passare da qui.
 
+## ADR-051 — La pausa ha un nome, il tentativo un secondo inizio, la scheda nascosta il silenzio
+
+- Stato: **Accettata**
+- Data: 10 agosto 2026
+- Contesto: tre attriti dello stesso ciclo di vita. La pausa esisteva (il menù la attivava) ma niente la dichiarava; ricominciare un tentativo era possibile solo perdendo tutte e tre le vite, perché «Riprova» viveva soltanto sulla card di KO (ADR-041); e una scheda nascosta fermava il rAF ma non lo scheduler audio da 80 ms — la musica continuava a stanza vuota e, al ritorno, le note arretrate partivano tutte insieme in uno scoppio.
+- Decisione, in tre parti:
+  1. **La pausa si dichiara**: con un livello vivo dietro l'overlay, l'intestazione del menù diventa «In pausa». Nessuna schermata nuova: il menù _è_ la schermata di pausa.
+  2. **«Riprova il livello» entra nel menù**: `restart()` si aggiunge al contratto `MiniGameHandle` ed espone il riavvio del tentativo già usato dalla card di KO — solo arcade, la storia non si tocca, coerente con ADR-041. Disinnescata nello stesso passaggio la trappola latente del doppio loop: `restartAttempt` chiedeva un nuovo `requestAnimationFrame` senza cancellare quello in coda; dalla card di KO era innocuo (il loop era già fermo), da un livello vivo avrebbe raddoppiato la velocità di gioco. Ora cancella prima di chiedere, e il menù chiude prima di riavviare, così la ripresa del menù e quella del riavvio non si sommano mai.
+  3. **La scheda nascosta mette in pausa**: `visibilitychange` nell'adapter — a scheda nascosta il livello si ferma e la musica si spegne; al ritorno riprende **solo se è stata la visibilità a fermarlo**, mai un livello messo in pausa dal menù. E lo scoppio è corretto alla sorgente: lo scheduler chiptune, se il clock l'ha superato, salta i passi persi e riparte in fase invece di programmare note nel passato.
+- Verifica: riavvio dal menù con conteggio della distanza percorsa (un loop solo, mai due); pausa da scheda nascosta con posizione congelata e `stopMusic` chiamato; ritorno che non riprende una pausa del menù; scheduler che dopo dieci secondi di clock senza tick programma al massimo una finestra di lookahead; end-to-end sui tre viewport con «In pausa» visibile e il tentativo riportato allo spawn.
+- Conseguenza: `MiniGameHandle` cresce di un metodo (additivo); il menù mostra «Riprova il livello» solo con un livello montato e mai nel percorso assistito.
+
+
 ## ADR-052 — Le porte della qualità: budget verificati, non promessi
 
 - Stato: **Accettata**
@@ -608,3 +621,4 @@ Una nuova ADR può introdurre Phaser soltanto se:
   2. **Il budget di disegno**: `tests/unit/render-budget.test.ts` monta ognuno dei dieci livelli sull'harness dei frame condiviso (estratto in `tests/unit/helpers/frame-harness.ts`), corre un secondo in movimento e conta le chiamate al contesto canvas per frame. Misurato alla posa: 222–442 per nove livelli, 643 per «Il borgo delle versioni» (lo stendibiancheria si paga). Tetto unico a 800: chi lo sfonda sta disegnando fuori schermo o allocando scenografia per frame, e il fallimento fa il nome del livello.
   3. **Axe su ogni superficie che un test attraversa**: l'helper `expectNoViolations` scandisce anche il menù aperto, la scheda di briefing, il dialogo di conferma della scelta letale e la schermata di finale con la card-meme — su tutti e tre i viewport. Nessuna violazione preesistente è emersa alla posa.
 - Conseguenza: i numeri di QUALITY.md e ARCHITECTURE.md diventano «verificati da `npm run check`» invece che dichiarati; le PR di performance future (culling dei fondali) si misurano contro il cricchetto del punto 2 abbassandolo, non a occhio.
+- 

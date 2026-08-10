@@ -505,6 +505,92 @@ describe("platformer canvas adapter", () => {
     handle.destroy();
   });
 
+  it("restarts the attempt from the handle without doubling the loop (ADR-051)", () => {
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const request = createRequest();
+    const handle = platformerMiniGame.mount(host, request);
+
+    // Move, then restart from the menu path: paused first, like real life.
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(60);
+    fireEvent.keyUp(window, { key: "ArrowRight" });
+    const singleLoopTravel = Number(host.dataset.playerX) - 14;
+    expect(singleLoopTravel).toBeGreaterThan(0);
+
+    handle.pause();
+    handle.resume();
+    handle.restart();
+    expect(Number(host.dataset.playerX)).toBe(14);
+    expect(host.dataset.lives).toBe("3");
+
+    // The double-speed trap: if the restart queued a second callback, the
+    // player would advance twice per frame — the same run would travel
+    // about twice the distance just measured.
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(60);
+    fireEvent.keyUp(window, { key: "ArrowRight" });
+    const travelled = Number(host.dataset.playerX) - 14;
+    expect(travelled).toBeGreaterThan(singleLoopTravel * 0.5);
+    expect(travelled).toBeLessThan(singleLoopTravel * 1.5);
+    handle.destroy();
+  });
+
+  it("pauses in a hidden tab and stops the music, resuming on return (ADR-051)", () => {
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const request = createRequest();
+    const handle = platformerMiniGame.mount(host, request);
+    harness.run(2);
+
+    const hidden = vi.spyOn(document, "hidden", "get");
+    hidden.mockReturnValue(true);
+    fireEvent(document, new Event("visibilitychange"));
+    const frozen = Number(host.dataset.playerX);
+    expect(request.audio.stopMusic).toHaveBeenCalled();
+
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(30);
+    expect(Number(host.dataset.playerX)).toBe(frozen);
+
+    hidden.mockReturnValue(false);
+    fireEvent(document, new Event("visibilitychange"));
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(30);
+    expect(Number(host.dataset.playerX)).toBeGreaterThan(frozen);
+    fireEvent.keyUp(window, { key: "ArrowRight" });
+    hidden.mockRestore();
+    handle.destroy();
+  });
+
+  it("stays paused on tab return when the pause was the menu's (ADR-051)", () => {
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const request = createRequest();
+    const handle = platformerMiniGame.mount(host, request);
+    harness.run(2);
+
+    // Menu pause first, then the tab hides and returns: the visibility
+    // handler must not resume a level it did not pause.
+    handle.pause();
+    const paused = Number(host.dataset.playerX);
+    const hidden = vi.spyOn(document, "hidden", "get");
+    hidden.mockReturnValue(true);
+    fireEvent(document, new Event("visibilitychange"));
+    hidden.mockReturnValue(false);
+    fireEvent(document, new Event("visibilitychange"));
+
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(30);
+    expect(Number(host.dataset.playerX)).toBe(paused);
+    fireEvent.keyUp(window, { key: "ArrowRight" });
+    hidden.mockRestore();
+    handle.destroy();
+  });
+
   it("stops rewriting the live region on every frame (ADR-050)", () => {
     // `.arcade-status` is `role="status" aria-live="polite"`. Assigning
     // textContent replaces the node even when the string is identical, so a

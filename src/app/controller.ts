@@ -145,6 +145,15 @@ export function createGameController(
           activeLevel?.resume();
         }
       },
+      // «Riprova il livello» in the menu (ADR-051): arcade only — like the
+      // KO card's retry, it never touches the story. The renderer closes
+      // the menu first, so the restart is not raced by the menu's resume.
+      onRestartLevel:
+        node?.type === "level" && !briefing
+          ? (): void => {
+              activeLevel?.restart();
+            }
+          : undefined,
     });
 
     const currentNode = node;

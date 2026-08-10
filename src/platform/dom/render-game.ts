@@ -38,6 +38,8 @@ export interface RenderGameAppOptions {
   readonly content: GameContent;
   readonly dispatch: (action: GameAction) => void;
   readonly onMenuToggled?: (open: boolean) => void;
+  /** Restarts the mounted level's attempt (ADR-051); menu-only, arcade-only. */
+  readonly onRestartLevel?: (() => void) | undefined;
   /** Whether the level should open with its briefing card (ADR-034). */
   readonly showBriefing?: boolean | undefined;
   readonly onBriefingCleared?: (() => void) | undefined;
@@ -1080,10 +1082,18 @@ function renderMenu(context: RenderContext): HTMLElement {
 
   const bar = element(context.document, "div");
   bar.className = "menu-bar";
+  // With a level alive behind the overlay the menu IS the pause screen, and
+  // it says so (ADR-051).
+  const pausesLevel =
+    context.onRestartLevel !== undefined && !isAssisted(context);
   const title = element(
     context.document,
     "h2",
-    context.content.message("core.message.ui.menu.heading"),
+    context.content.message(
+      pausesLevel
+        ? "core.message.ui.menu.paused"
+        : "core.message.ui.menu.heading",
+    ),
   );
   title.id = "menu-heading";
   title.tabIndex = -1;
@@ -1165,6 +1175,21 @@ function renderMenu(context: RenderContext): HTMLElement {
     type: "LOCAL_DATA_CLEARED",
   });
   clear.className = "menu-clear";
+
+  // «Riprova il livello» (ADR-051): arcade only, story untouched — the
+  // menu-side twin of the KO card's retry. Wired to close the menu first
+  // in renderGameApp, where closeMenu exists.
+  if (pausesLevel) {
+    const restart = element(
+      context.document,
+      "button",
+      context.content.message("core.message.ui.menu.restart-level"),
+    );
+    restart.type = "button";
+    restart.dataset.menuRestart = "";
+    restart.className = "menu-clear";
+    menu.append(restart);
+  }
 
   const disclaimer = element(
     context.document,
@@ -1286,6 +1311,16 @@ export function renderGameApp(options: RenderGameAppOptions): void {
       closeMenu();
     }
   });
+
+  // The menu closes BEFORE the restart (ADR-051): closing resumes the level,
+  // and the restart then swaps the queued frame for its own — one loop, never
+  // two.
+  menu
+    .querySelector<HTMLElement>("[data-menu-restart]")
+    ?.addEventListener("click", () => {
+      closeMenu();
+      options.onRestartLevel?.();
+    });
 
   shell.append(hud, stage, menu);
   options.mount.replaceChildren(shell);

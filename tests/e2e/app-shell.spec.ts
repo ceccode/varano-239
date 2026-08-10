@@ -758,6 +758,40 @@ test("keeps the level running when audio is toggled mid-run (ADR-050)", async ({
   expect(await playerX(page)).toBe(reached);
 });
 
+test("pauses by name and restarts the attempt from the menu (ADR-051)", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await pickRole(page);
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(500);
+  await page.keyboard.up("ArrowRight");
+  await page.waitForTimeout(400);
+  expect(await playerX(page)).toBeGreaterThan(60);
+
+  await openMenu(page);
+  await expect(
+    page.getByRole("heading", {
+      name: message("core.message.ui.menu.paused"),
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: message("core.message.ui.menu.restart-level"),
+    })
+    .click();
+
+  // Menu gone, attempt back at the spawn, and the level answers the keys.
+  await expect(page.locator("[data-menu]")).toBeHidden();
+  expect(await playerX(page)).toBe(14);
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(300);
+  await page.keyboard.up("ArrowRight");
+  await expect.poll(() => playerX(page)).toBeGreaterThan(14);
+});
+
 test("moves with the touch controls and keeps an equivalent skip action", async ({
   page,
 }) => {
