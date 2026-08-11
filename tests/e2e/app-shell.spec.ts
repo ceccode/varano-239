@@ -822,6 +822,60 @@ test("pauses by name and restarts the attempt from the menu (ADR-051)", async ({
   await expect.poll(() => playerX(page)).toBeGreaterThan(14);
 });
 
+test("celebrates a finished level with its result card (ADR-056)", async ({
+  page,
+}) => {
+  // Playing a whole level to its finish line takes about twenty seconds of
+  // real time, so this one test gets a longer budget than the default.
+  test.setTimeout(120_000);
+  await page.goto("./");
+  await pickRole(page);
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+
+  // Run the level for real, jumping at the gap edges rather than on a blind
+  // cadence: «I campi di Montichiari» opens its ditches at these four marks.
+  const gapEdges = [420, 900, 1500, 2150];
+  await page.keyboard.down("ArrowRight");
+  let jumping = false;
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if (await page.locator(".arcade-result").isVisible()) break;
+    const x = await playerX(page);
+    const nearEdge = gapEdges.some((edge) => x > edge - 60 && x < edge + 8);
+    if (nearEdge !== jumping) {
+      await page.keyboard[nearEdge ? "down" : "up"]("Space");
+      jumping = nearEdge;
+    }
+    await page.waitForTimeout(120);
+  }
+  if (jumping) await page.keyboard.up("Space");
+  await page.keyboard.up("ArrowRight");
+
+  // The card waits for the player — no timer decides (ADR-056).
+  const card = page.locator(".arcade-result");
+  await expect(card).toBeVisible({ timeout: 20_000 });
+  // The keys carry «{score}» placeholders, so assert the rendered shape and
+  // the badge text, which has none.
+  await expect(card).toContainText(/Punteggio: \d+/);
+  await expect(card).toContainText(/Indizi: \d+ di 3/);
+  await expect(card).toContainText(
+    message("core.message.level.result.badge.unscathed"),
+  );
+  await expectNoViolations(page);
+  await page.waitForTimeout(1500);
+  await expect(card).toBeVisible();
+
+  // «Continua» hands over to the story, exactly like a skip would.
+  await page
+    .getByRole("button", {
+      name: message("core.message.level.result.continue"),
+    })
+    .click();
+  await expect(
+    page.getByText(message("core.message.dialogue.twist")),
+  ).toBeVisible();
+});
+
 test("moves with the touch controls and keeps an equivalent skip action", async ({
   page,
 }) => {

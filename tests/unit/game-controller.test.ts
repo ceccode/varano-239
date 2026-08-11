@@ -923,6 +923,8 @@ describe("full-screen game controller", () => {
         totalClues: 3,
         seconds: 47,
         respawns: 0,
+        bonusCollected: true,
+        cameoSeen: true,
       },
       bestScore: 1800,
       content: {

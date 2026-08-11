@@ -56,6 +56,20 @@ export const uiMessages = {
   "core.message.level.briefing.seals": "· Sigilli dei Sei Colli: {seals}/6",
   "core.message.level.briefing.condition.healthy": "· Il Varano sta bene.",
   "core.message.level.briefing.condition.weak": "· Il Varano è affaticato.",
+  // The level result card (ADR-056): the level's own moment — arcade only,
+  // so nothing here ever touches reputation, seals or endings.
+  "core.message.level.result.title": "Livello superato!",
+  "core.message.level.result.title-position":
+    "Livello {index}/{total} — fatto!",
+  "core.message.level.result.score": "Punteggio: {score}",
+  "core.message.level.result.clues": "Indizi: {clues} di {total}",
+  "core.message.level.result.lives": "Vite rimaste: {lives}",
+  "core.message.level.result.badge.clues": "Tutti gli indizi",
+  "core.message.level.result.badge.unscathed": "Nessuna vita persa",
+  "core.message.level.result.badge.star": "Stella della Leggenda",
+  "core.message.level.result.badge.cameo": "Cameo avvistato",
+  "core.message.level.result.continue": "Continua",
+
   // The legend star (ADR-044): the ★ button's own reward, score only.
   "core.message.level.bonus":
     "STELLA DELLA LEGGENDA! Solo un superpotere poteva prenderla: +500.",

@@ -304,6 +304,7 @@ export function levelScore(state: PlatformerState): number {
 export function levelOutcome(
   state: PlatformerState,
   config: PlatformerConfig,
+  cameoSeen = false,
 ): LevelOutcome {
   return {
     score: levelScore(state),
@@ -311,6 +312,8 @@ export function levelOutcome(
     totalClues: config.pickups.length,
     seconds: Math.round(state.elapsedSeconds),
     respawns: state.respawns,
+    bonusCollected: state.bonusCollected,
+    cameoSeen,
   };
 }
 
@@ -2064,6 +2067,7 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
     };
 
     let gameOverCard: HTMLElement | undefined;
+    let resultCard: HTMLElement | undefined;
 
     /**
      * «Riprova il livello» (ADR-041): a fresh attempt in place. Session state
@@ -2094,6 +2098,9 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       cameoTriggeredAt = undefined;
       gameOverCard?.remove();
       gameOverCard = undefined;
+      resultCard?.remove();
+      resultCard = undefined;
+      completionSent = false;
       narrative.textContent = request.message(config.narrativeStartKey);
       camera = cameraX(state, config);
       draw();
@@ -2101,6 +2108,89 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
       running = true;
       animationFrame = view.requestAnimationFrame(frame);
       viewport.focus();
+    };
+
+    /**
+     * The result card (ADR-056): finishing a level used to be worth a puff of
+     * particles and a 700ms pause, with the score panel appearing once, at
+     * the end of the whole campaign. This is the level's own moment — clues,
+     * ★, lives, score and up to four badges — and it waits for the player,
+     * exactly like the KO card it mirrors. Story untouched: everything here
+     * is arcade, so «Salta il livello» still ends the level identically.
+     */
+    const showResult = (outcome: LevelOutcome): void => {
+      if (resultCard !== undefined) {
+        return;
+      }
+      const card = createElement(document, "section", "arcade-result");
+      card.setAttribute("role", "dialog");
+      card.setAttribute("aria-modal", "true");
+      const title = createElement(document, "h2", "arcade-result__title");
+      title.id = "arcade-result-heading";
+      title.textContent =
+        request.position === undefined
+          ? request.message("core.message.level.result.title")
+          : request.message("core.message.level.result.title-position", {
+              index: request.position.index,
+              total: request.position.total,
+            });
+      card.setAttribute("aria-labelledby", title.id);
+
+      const stats = createElement(document, "ul", "arcade-result__stats");
+      const stat = (key: MessageKey, values: Record<string, number>): void => {
+        const row = createElement(document, "li", "arcade-result__stat");
+        row.textContent = request.message(key, values);
+        stats.append(row);
+      };
+      stat("core.message.level.result.score", { score: outcome.score });
+      stat("core.message.level.result.clues", {
+        clues: outcome.clues,
+        total: outcome.totalClues,
+      });
+      if (Number.isFinite(state.livesRemaining)) {
+        stat("core.message.level.result.lives", {
+          lives: state.livesRemaining,
+        });
+      }
+
+      // Badges: only what was actually earned, and the ★ only where the
+      // level has one to earn.
+      const badges = createElement(document, "ul", "arcade-result__badges");
+      const badgeKeys: MessageKey[] = [];
+      if (outcome.clues === outcome.totalClues) {
+        badgeKeys.push("core.message.level.result.badge.clues");
+      }
+      if (outcome.respawns === 0) {
+        badgeKeys.push("core.message.level.result.badge.unscathed");
+      }
+      if (config.bonus !== undefined && outcome.bonusCollected) {
+        badgeKeys.push("core.message.level.result.badge.star");
+      }
+      if (outcome.cameoSeen) {
+        badgeKeys.push("core.message.level.result.badge.cameo");
+      }
+      for (const key of badgeKeys) {
+        const badge = createElement(document, "li", "arcade-result__badge");
+        badge.textContent = request.message(key);
+        badges.append(badge);
+      }
+
+      const advance = createElement(document, "button", "arcade-result__go");
+      advance.type = "button";
+      advance.textContent = request.message(
+        "core.message.level.result.continue",
+      );
+      advance.addEventListener("click", () => {
+        request.onComplete(outcome);
+      });
+      card.append(title, stats);
+      if (badgeKeys.length > 0) {
+        card.append(badges);
+      }
+      card.append(advance);
+      viewport.append(card);
+      resultCard = card;
+      advance.focus();
     };
 
     /**
@@ -2170,9 +2260,15 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         running = false;
         if (!completionSent) {
           completionSent = true;
-          const outcome = levelOutcome(state, config);
+          const outcome = levelOutcome(
+            state,
+            config,
+            cameoTriggeredAt !== undefined,
+          );
+          // The celebration plays, then the card takes over and waits
+          // (ADR-056). No timer decides for the player.
           completionTimer = view.setTimeout(() => {
-            request.onComplete(outcome);
+            showResult(outcome);
           }, 700);
         }
         return;

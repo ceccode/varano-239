@@ -70,7 +70,10 @@ export function createGameController(
   /** The card shows the whole run, so each level adds to the running total. */
   const recordOutcome = (outcome: LevelOutcome): void => {
     const previous = lastOutcome;
-    lastOutcome =
+    // The run total for the ending's score card. The per-level flags are
+    // OR-ed: the campaign card says «a star was taken somewhere», while the
+    // level's own card (ADR-056) speaks for that level alone.
+    const total: LevelOutcome =
       previous === undefined
         ? outcome
         : {
@@ -79,13 +82,16 @@ export function createGameController(
             totalClues: previous.totalClues + outcome.totalClues,
             seconds: previous.seconds + outcome.seconds,
             respawns: previous.respawns + outcome.respawns,
+            bonusCollected: previous.bonusCollected || outcome.bonusCollected,
+            cameoSeen: previous.cameoSeen || outcome.cameoSeen,
           };
+    lastOutcome = total;
 
     const best = safeBestScore();
-    isRecord = best === undefined || lastOutcome.score > best;
+    isRecord = best === undefined || total.score > best;
     if (isRecord) {
       try {
-        dependencies.bestScore.save(lastOutcome.score);
+        dependencies.bestScore.save(total.score);
       } catch {
         // The personal best is optional; the session continues.
       }

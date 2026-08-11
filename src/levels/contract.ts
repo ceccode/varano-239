@@ -25,6 +25,10 @@ export interface LevelOutcome {
   readonly totalClues: number;
   readonly seconds: number;
   readonly respawns: number;
+  /** The ★ of ADR-044, taken only with a superpower engaged. */
+  readonly bonusCollected: boolean;
+  /** The Varano's one apparition (ADR-044): spotted, or missed forever. */
+  readonly cameoSeen: boolean;
 }
 
 export interface MiniGameRequest<Config extends object> {
