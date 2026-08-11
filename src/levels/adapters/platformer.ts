@@ -1928,6 +1928,29 @@ export const platformerMiniGame: MiniGamePort<PlatformerViewConfig> = {
         );
       }
 
+      // The sprint charge (ADR-055): the model has computed `sprintCharge`
+      // every frame since ADR-029 and nothing ever drew it, so level 2 — the
+      // one level whose gaps NEED the run — was a guessing game. Same 2px
+      // bar as the drone's fuel, under the player, and it flashes when full.
+      const sprint = config.sprint;
+      if (sprint !== undefined && !state.sprinting && state.sprintCharge > 0) {
+        const charge = Math.min(1, state.sprintCharge / sprint.holdSeconds);
+        context.fillStyle = palette.cables;
+        context.fillRect(drawX + 2, drawY + height + 1, width - 4, 2);
+        context.fillStyle = palette.pickup;
+        context.fillRect(
+          drawX + 2,
+          drawY + height + 1,
+          Math.round((width - 4) * charge),
+          2,
+        );
+      } else if (sprint !== undefined && state.sprinting) {
+        // Charged: a full bright bar that blinks, so «ready» is unmistakable.
+        context.fillStyle =
+          Math.floor(time * 8) % 2 === 0 ? palette.pickupCore : palette.pickup;
+        context.fillRect(drawX + 2, drawY + height + 1, width - 4, 2);
+      }
+
       // Speed lines trailing behind the sprint.
       if (state.sprinting) {
         context.fillStyle = palette.dust;
