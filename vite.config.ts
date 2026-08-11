@@ -1,6 +1,10 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { defineConfig, loadEnv, type Plugin } from "vite";
 
 import { appConfig } from "./src/app/config.ts";
+import { renderServiceWorker } from "./src/platform/pwa/sw-template.ts";
 
 function escapeHtml(value: string): string {
   return value
@@ -37,6 +41,8 @@ function contentSecurityPolicy(analyticsEndpoint: string): string {
 }
 
 function appShellCopyPlugin(analyticsEndpoint: string): Plugin {
+  let isBuild = false;
+
   const replacements = new Map<string, string>([
     ["%APP_CSP%", contentSecurityPolicy(analyticsEndpoint)],
     ["%APP_TITLE%", appConfig.title],
@@ -57,6 +63,9 @@ function appShellCopyPlugin(analyticsEndpoint: string): Plugin {
 
   return {
     name: "varano-app-shell-copy",
+    configResolved(config) {
+      isBuild = config.command === "build";
+    },
     transformIndexHtml(html) {
       let transformedHtml = html;
 
@@ -67,7 +76,61 @@ function appShellCopyPlugin(analyticsEndpoint: string): Plugin {
         );
       }
 
-      return transformedHtml;
+      // In the dev server the build plugin never runs: the version reads
+      // «dev», which is exactly what it is. In a build the placeholder must
+      // survive until writeBundle, where the real id exists (ADR-054).
+      return isBuild
+        ? transformedHtml
+        : transformedHtml.replaceAll("%APP_BUILD_ID%", "dev");
+    },
+  };
+}
+
+/**
+ * Builds sw.js from the template (ADR-054): the precache list carries the
+ * real hashed bundles and the cache name carries the build id, so every
+ * deploy ships an atomic offline copy and cleans up the previous one. The
+ * same id lands in the page's meta tag as the visible version.
+ */
+function serviceWorkerPlugin(): Plugin {
+  let buildId = "dev";
+
+  return {
+    name: "varano-service-worker",
+    apply: "build",
+    generateBundle(_options, bundle) {
+      const hashedAssets = Object.keys(bundle).filter((fileName) =>
+        fileName.startsWith("assets/"),
+      );
+      const entry = hashedAssets.find((fileName) => fileName.endsWith(".js"));
+      const match = entry === undefined ? null : /-([\w-]+)\.js$/.exec(entry);
+      buildId = match?.[1] ?? "dev";
+      this.emitFile({
+        type: "asset",
+        fileName: "sw.js",
+        source: renderServiceWorker(buildId, [
+          "./",
+          "manifest.webmanifest",
+          "privacy.html",
+          "termini.html",
+          "legal.css",
+          "icons/icon-192.png",
+          "icons/icon-512.png",
+          "icons/apple-touch-icon.png",
+          ...hashedAssets,
+        ]),
+      });
+    },
+    writeBundle(options) {
+      // The html asset is emitted by Vite's own plugin with no ordering
+      // guarantee against this one: stamping the file on disk is the one
+      // deterministic moment (ADR-054).
+      const outputDir = options.dir ?? "dist";
+      const indexPath = join(outputDir, "index.html");
+      writeFileSync(
+        indexPath,
+        readFileSync(indexPath, "utf8").replaceAll("%APP_BUILD_ID%", buildId),
+      );
     },
   };
 }
@@ -104,6 +167,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: normalizeBasePath(environment.VITE_BASE_PATH),
-    plugins: [appShellCopyPlugin(analyticsEndpoint)],
+    plugins: [appShellCopyPlugin(analyticsEndpoint), serviceWorkerPlugin()],
   };
 });

@@ -136,6 +136,15 @@ export const uiMessages = {
   "core.message.ui.options.view.legend": "Visualizzazione",
   "core.message.ui.options.contrast": "Contrasto elevato",
 
+  // Version and updates (ADR-054, owner request): the build travels on the
+  // page's meta tag; the banner announces a waiting worker.
+  "core.message.ui.version": "Versione: {build}",
+  "core.message.ui.update.check": "Controlla aggiornamenti",
+  "core.message.ui.update.none": "Sei già all'ultima versione.",
+  "core.message.ui.update.pending": "Nuova versione trovata: ricarico…",
+  "core.message.ui.update.ready":
+    "Nuova versione disponibile — tocca per aggiornare",
+
   "core.message.ui.menu.open": "Menù",
   "core.message.ui.menu.heading": "Menù",
   // With a level alive behind the overlay, the menu is the pause (ADR-051).

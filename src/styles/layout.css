@@ -883,3 +883,18 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* The update banner (ADR-054): fixed above everything, one tap to accept. */
+.update-banner {
+  position: fixed;
+  inset-block-end: max(1rem, env(safe-area-inset-bottom));
+  inset-inline: 1rem;
+  z-index: 40;
+  padding: 0.9rem 1rem;
+  border: 2px solid var(--color-accent-ink);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font: 700 1rem var(--font-body);
+  cursor: pointer;
+}
