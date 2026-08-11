@@ -175,6 +175,89 @@ describe("moving platforms (ADR-044)", () => {
   });
 });
 
+describe("the comfort sprint reaches the climax (ADR-055)", () => {
+  it("gives every level from «Varano superstar» on a sprint to run with", () => {
+    // Three roles out of four learned the run in level 2 and lost it for the
+    // three longest levels of the campaign — the climax was slower to cross
+    // than the middle. Only the Varano kept one, as its power.
+    for (const level of [
+      superstarLevelConfig,
+      parcoLevelConfig,
+      castelloLevelConfig,
+    ]) {
+      expect(level.sprint).toBeDefined();
+      expect(level.sprint.maxSpeed).toBe(235);
+    }
+  });
+
+  it("never leaves a stretch longer than 1500px without a flag", () => {
+    // The checkpoints thinned out exactly as lethality rose (ADR-055).
+    for (const level of registeredLevels) {
+      const flags = [...level.config.checkpoints]
+        .map((checkpoint) => checkpoint.x)
+        .sort((a, b) => a - b);
+      const marks = [0, ...flags, level.config.finishX];
+      for (let index = 0; index < marks.length - 1; index += 1) {
+        const stretch = (marks[index + 1] ?? 0) - (marks[index] ?? 0);
+        // 1500 is the published opening of «Varano superstar»: the ceiling
+        // is the line it sits on, not a number chosen to fail it.
+        expect(
+          stretch,
+          `${level.levelId}: ${String(Math.round(stretch))}px without a flag`,
+        ).toBeLessThanOrEqual(1500);
+      }
+    }
+  });
+});
+
+describe("a sprint off a platform never lands in a gap (comfort levels)", () => {
+  // Learned the hard way in the red zone, and the safety net for ADR-055:
+  // handing the last three levels the comfort sprint back means re-checking
+  // every one of their platform edges. Promoted from the per-level suites.
+  //
+  // Scope, and it is principled rather than convenient: this holds where the
+  // level promises that every gap fits a plain jump. «Le chat di paese» does
+  // the opposite by design (ADR-029: at least one gap is impossible without
+  // the run, pinned by sprint-model.test.ts), so there the pit IS the point
+  // and a careless walk-off is supposed to cost a life.
+  for (const level of registeredLevels) {
+    const sprint = level.config.sprint;
+    if (sprint === undefined) {
+      continue;
+    }
+    const reach = jumpReach(level.config);
+    const sorted = [...level.config.groundSegments].sort((a, b) => a.x - b.x);
+    const needsSprintSomewhere = sorted.some((segment, index) => {
+      const next = sorted[index + 1];
+      return (
+        next !== undefined &&
+        next.x - (segment.x + segment.width) > reach.horizontal
+      );
+    });
+    if (needsSprintSomewhere) {
+      continue;
+    }
+    it(`keeps every glide over ground: ${level.levelId}`, () => {
+      const segments = [...level.config.groundSegments].sort(
+        (a, b) => a.x - b.x,
+      );
+      for (const platform of level.config.platforms) {
+        const edge = platform.x + platform.width;
+        const drop = level.config.floorY - platform.y;
+        const landing =
+          edge + sprint.maxSpeed * Math.sqrt((2 * drop) / level.config.gravity);
+        expect(
+          segments.some(
+            (segment) =>
+              landing >= segment.x && landing <= segment.x + segment.width,
+          ),
+          `${level.levelId}: a sprint off ${String(edge)} lands in a gap`,
+        ).toBe(true);
+      }
+    });
+  }
+});
+
 describe("the legend star (ADR-044)", () => {
   const config = superstarLevelConfig;
   const bonus = config.bonus;

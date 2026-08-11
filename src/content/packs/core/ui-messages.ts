@@ -70,6 +70,10 @@ export const uiMessages = {
 
   // The role superpowers (ADR-031). The copy belongs to the role, not to a
   // level, so every level that grants them reuses these keys (ADR-036).
+  // The comfort sprint of ADR-029, restored to the last three levels
+  // (ADR-055): the copy belongs to the mechanic, so all three share it.
+  "core.message.power.sprint.regained":
+    "SCATTO! Le gambe si ricordano della corsa di ieri notte.",
   "core.message.power.varano.label": "Superpotere: scatto di coda",
   "core.message.power.varano.narrative":
     "SCATTO! Nessun curioso afferra una coda che corre a quella velocità.",

@@ -591,6 +591,38 @@ describe("platformer canvas adapter", () => {
     handle.destroy();
   });
 
+  it("draws the sprint charge, and blinks it once charged (ADR-055)", () => {
+    // `sprintCharge` has been computed every frame since ADR-029 and nothing
+    // ever drew it: level 2, whose gaps NEED the run, was a guessing game.
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const request = createRequest({
+      sprint: { holdSeconds: 0.9, maxSpeed: 235, acceleration: 620 },
+    });
+    // The stub must exist before the mount: the adapter grabs its context
+    // once, so a later stub would record nothing.
+    const stub = stubCanvasContext();
+    const handle = platformerMiniGame.mount(host, request);
+
+    harness.run(2);
+    const idleFills = stub.calls.filter((call) => call === "fillRect").length;
+
+    // Hold a direction: the bar fills while the charge builds.
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    harness.run(20);
+    const chargingFills = stub.calls.filter(
+      (call) => call === "fillRect",
+    ).length;
+    expect(chargingFills).toBeGreaterThan(idleFills);
+
+    // Past the hold time the sprint engages and the bar stays lit.
+    harness.run(90);
+    fireEvent.keyUp(window, { key: "ArrowRight" });
+    expect(host.dataset.playerX).toBeDefined();
+    handle.destroy();
+  });
+
   it("stops rewriting the live region on every frame (ADR-050)", () => {
     // `.arcade-status` is `role="status" aria-live="polite"`. Assigning
     // textContent replaces the node even when the string is identical, so a

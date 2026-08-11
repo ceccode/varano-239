@@ -31,7 +31,11 @@ export const campiLevelConfig = defineLevel({
     { x: 2560, y: 68, width: 56 },
   ],
   pickups: [
-    { id: "photo", x: 668, y: 66 },
+    // The opening corridor teaches the level (ADR-055): the first clue is a
+    // single hop onto the ledge already there, so the status line goes from
+    // «0 di 3» to «1 di 3» within the first seconds — the goal explained by
+    // playing it, with no tutorial copy anywhere.
+    { id: "photo", x: 335, y: 96 },
     { id: "trace", x: 1910, y: 64 },
     { id: "water", x: 2588, y: 36 },
   ],
@@ -955,6 +959,11 @@ export const roleSuperpowers = {
  */
 export const superstarLevelConfig = defineLevel({
   worldWidth: 3900,
+  sprint: {
+    holdSeconds: 0.9,
+    maxSpeed: 235,
+    acceleration: 620,
+  },
   groundSegments: [
     { x: 0, width: 620 },
     { x: 700, width: 700 },
@@ -1030,6 +1039,9 @@ export const superstarLevelConfig = defineLevel({
   checkpoints: [
     { id: "superstar-checkpoint-1", x: 1500 },
     { id: "superstar-checkpoint-2", x: 2400 },
+    // The press riser and the last onlookers sat 1486px past the nearest
+    // flag — the longest unprotected stretch of the game (ADR-055).
+    { id: "superstar-checkpoint-3", x: 3040 },
   ],
   finishX: 3780,
   finishKind: "walls",
@@ -1066,6 +1078,7 @@ export const superstarLevelConfig = defineLevel({
   narrativeCheckpointKey: "core.message.level3.narrative.checkpoint",
   narrativeRespawnKey: "core.message.level3.narrative.respawn",
   narrativeFinishKey: "core.message.level3.narrative.finish",
+  narrativeSprintKey: "core.message.power.sprint.regained",
   powersByRole: roleSuperpowers,
 });
 
@@ -1076,6 +1089,11 @@ export const superstarLevelConfig = defineLevel({
  */
 export const parcoLevelConfig = defineLevel({
   worldWidth: 4000,
+  sprint: {
+    holdSeconds: 0.9,
+    maxSpeed: 235,
+    acceleration: 620,
+  },
   groundSegments: [
     { x: 0, width: 560 },
     { x: 645, width: 660 },
@@ -1133,6 +1151,9 @@ export const parcoLevelConfig = defineLevel({
   checkpoints: [
     { id: "parco-checkpoint-1", x: 1420 },
     { id: "parco-checkpoint-2", x: 2310 },
+    // Right before the gadget van's patrol: a hit meant a 740px walk back,
+    // on the level's most likely game over (ADR-055).
+    { id: "parco-checkpoint-3", x: 2700 },
   ],
   finishX: 3880,
   finishKind: "walls",
@@ -1184,6 +1205,7 @@ export const parcoLevelConfig = defineLevel({
   narrativeRespawnKey: "core.message.level4.narrative.respawn",
   narrativeCarHitKey: "core.message.level4.narrative.car",
   narrativeFinishKey: "core.message.level4.narrative.finish",
+  narrativeSprintKey: "core.message.power.sprint.regained",
   powersByRole: roleSuperpowers,
 });
 
@@ -1197,6 +1219,11 @@ export const parcoLevelConfig = defineLevel({
  */
 export const castelloLevelConfig = defineLevel({
   worldWidth: 4200,
+  sprint: {
+    holdSeconds: 0.9,
+    maxSpeed: 235,
+    acceleration: 620,
+  },
   groundSegments: [
     // The stairwell voids between segments are the level's gaps (ADR-035).
     { x: 0, width: 620 },
@@ -1323,6 +1350,10 @@ export const castelloLevelConfig = defineLevel({
     { id: "castello-checkpoint-1", x: 1180 },
     { id: "castello-checkpoint-2", x: 2200 },
     { id: "castello-checkpoint-3", x: 2390 },
+    // The climax used to end on a 1690px run with no flag — the longest
+    // unprotected stretch in the campaign, on the level with a patrol robot
+    // in it. One flag past the robot corridor (ADR-055).
+    { id: "castello-checkpoint-4", x: 3150 },
   ],
   finishX: 4080,
   finishKind: "sunstone",
@@ -1381,6 +1412,7 @@ export const castelloLevelConfig = defineLevel({
   narrativeRespawnKey: "core.message.level5.narrative.respawn",
   narrativeCarHitKey: "core.message.level5.narrative.robot",
   narrativeFinishKey: "core.message.level5.narrative.finish",
+  narrativeSprintKey: "core.message.power.sprint.regained",
   powersByRole: roleSuperpowers,
 });
 
