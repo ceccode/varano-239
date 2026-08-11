@@ -898,3 +898,59 @@
   font: 700 1rem var(--font-body);
   cursor: pointer;
 }
+
+/* The level result card (ADR-056): the KO card's twin, in celebration key. */
+.arcade-result {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgb(8 18 14 / 88%);
+  text-align: center;
+}
+
+.arcade-result__title {
+  margin: 0;
+  color: var(--color-accent);
+  font: 700 1.1rem var(--font-display);
+}
+
+.arcade-result__stats,
+.arcade-result__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.arcade-result__stat {
+  color: var(--color-text);
+  font: 500 0.85rem var(--font-body);
+}
+
+.arcade-result__badge {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  color: var(--color-accent);
+  font: 700 0.75rem var(--font-body);
+}
+
+.arcade-result__go {
+  min-block-size: 2.75rem;
+  min-inline-size: 8rem;
+  margin-block-start: 0.35rem;
+  border: 2px solid var(--color-accent-ink);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font: 700 1rem var(--font-body);
+  cursor: pointer;
+}

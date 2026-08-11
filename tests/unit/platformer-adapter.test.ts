@@ -437,7 +437,7 @@ describe("platformer canvas adapter", () => {
     handle.destroy();
   });
 
-  it("completes the run and reports it once after the celebration delay", () => {
+  it("shows the result card after the celebration, then reports once (ADR-056)", () => {
     const harness = installFrameHarness();
     const host = document.createElement("div");
     document.body.append(host);
@@ -459,7 +459,30 @@ describe("platformer canvas adapter", () => {
     harness.run(240);
     expect(request.audio.playEffect).toHaveBeenCalledWith("finish");
     expect(onComplete).not.toHaveBeenCalled();
+
+    // The celebration plays, then the card takes over — and waits, exactly
+    // like the KO card. No timer decides for the player (ADR-056).
     vi.advanceTimersByTime(800);
+    const card = host.querySelector<HTMLElement>(".arcade-result");
+    expect(card).not.toBeNull();
+    expect(card?.getAttribute("role")).toBe("dialog");
+    expect(card?.textContent).toContain("core.message.level.result.score");
+    // Nothing is reported until the player says so.
+    expect(onComplete).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(5000);
+    expect(onComplete).not.toHaveBeenCalled();
+
+    // The badges are only the ones earned: no clue in this level, so no
+    // «tutti gli indizi» — but no life lost either.
+    expect(card?.textContent).toContain(
+      "core.message.level.result.badge.unscathed",
+    );
+
+    fireEvent.click(
+      getByRole(host, "button", {
+        name: "core.message.level.result.continue",
+      }),
+    );
     expect(onComplete).toHaveBeenCalledOnce();
 
     const outcome = onComplete.mock.calls[0]?.[0];
@@ -468,10 +491,78 @@ describe("platformer canvas adapter", () => {
     expect(outcome?.totalClues).toBe(0);
     expect(outcome?.respawns).toBe(0);
     expect(outcome?.seconds).toBeGreaterThanOrEqual(0);
+    expect(outcome?.bonusCollected).toBe(false);
+    expect(outcome?.cameoSeen).toBe(false);
 
+    handle.destroy();
+  });
+
+  it("celebrates a perfect level with every badge it earned (ADR-056)", () => {
+    // A level with a clue, a star and a cameo: the card must name all of it,
+    // and the outcome must carry the star and the cameo onward.
+    const harness = installFrameHarness();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const onComplete = vi.fn<(outcome: LevelOutcome) => void>();
+    const request = {
+      ...createRequest(
+        {
+          groundSegments: [{ x: 0, width: 400 }],
+          platforms: [],
+          pickups: [{ id: "solo", x: 60, y: 140 }],
+          checkpoints: [],
+          bonus: { id: "stella-test", x: 80, y: 140 },
+          // The registry resolves powersByRole into `power` at mount time;
+          // mounting the adapter directly means handing it the resolved one.
+          power: {
+            kind: "sprint",
+            chargeSeconds: 0.1,
+            maxSpeed: 235,
+            acceleration: 620,
+          },
+          cameo: {
+            x: 100,
+            y: 140,
+            kind: "tail",
+            narrativeKey: "core.message.level.narrative.cameo",
+          },
+          finishX: 200,
+          worldWidth: 400,
+          narrativePickupKeys: { solo: "core.message.level.status.1" },
+        },
+        "varano",
+      ),
+      onComplete,
+    };
+    const handle = platformerMiniGame.mount(host, request);
+
+    // Run right with the power held: clue, star and cameo all on the way.
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    fireEvent.keyDown(window, { key: "Shift" });
+    harness.run(300);
     vi.advanceTimersByTime(800);
-    expect(onComplete).toHaveBeenCalledOnce();
 
+    const card = host.querySelector<HTMLElement>(".arcade-result");
+    expect(card?.textContent).toContain(
+      "core.message.level.result.badge.clues",
+    );
+    expect(card?.textContent).toContain("core.message.level.result.badge.star");
+    expect(card?.textContent).toContain(
+      "core.message.level.result.badge.cameo",
+    );
+
+    fireEvent.click(
+      getByRole(host, "button", {
+        name: "core.message.level.result.continue",
+      }),
+    );
+    const outcome = onComplete.mock.calls[0]?.[0];
+    expect(outcome?.bonusCollected).toBe(true);
+    expect(outcome?.cameoSeen).toBe(true);
+    expect(outcome?.clues).toBe(1);
+
+    fireEvent.keyUp(window, { key: "ArrowRight" });
+    fireEvent.keyUp(window, { key: "Shift" });
     handle.destroy();
   });
 
