@@ -8,6 +8,7 @@ import { NoopAnalytics } from "./platform/analytics/noop-analytics";
 import { ChiptuneAudio } from "./platform/audio/chiptune-audio";
 import { LocalBestScore } from "./platform/storage/best-score";
 import { LocalSave } from "./platform/storage/local-save";
+import { LocalLevelRecords } from "./platform/storage/level-records";
 
 // Analytics stay off unless an endpoint is configured for the build (ADR-025).
 const analyticsEndpoint = (
@@ -23,6 +24,7 @@ startApplication({
   save: new LocalSave(window.localStorage),
   audio: new ChiptuneAudio(window, true, true),
   bestScore: new LocalBestScore(window.localStorage),
+  levelRecords: new LocalLevelRecords(window.localStorage),
 });
 
 // The service worker is production-only: in dev it would cache Vite modules.

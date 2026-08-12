@@ -9,6 +9,11 @@ import type { AnalyticsPort, SavePort } from "../../src/core/ports";
 import { resolveItalianMessage } from "../../src/content/locales/it";
 import { NoopGameAudio } from "../../src/platform/audio/chiptune-audio";
 import type { BestScorePort } from "../../src/platform/storage/best-score";
+import {
+  mergeRecords,
+  type LevelRecord,
+  type LevelRecordsPort,
+} from "../../src/platform/storage/level-records";
 import { renderBootstrapError } from "../../src/platform/dom/render-app";
 import { stubCanvasContext } from "./helpers/canvas-stub";
 
@@ -25,6 +30,22 @@ function createBestScore(): BestScorePort {
     load: vi.fn(() => undefined),
     save: vi.fn(),
     clear: vi.fn(),
+  };
+}
+
+function createLevelRecords(): LevelRecordsPort {
+  let records: Record<string, LevelRecord> = {};
+  return {
+    load: () => records,
+    record: (levelId, result) => {
+      records = {
+        ...records,
+        [levelId]: mergeRecords(records[levelId], result),
+      };
+    },
+    clear: () => {
+      records = {};
+    },
   };
 }
 
@@ -55,6 +76,7 @@ describe("application bootstrap", () => {
       save: createSave(),
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
 
     expect(controller.getState().phase).toBe("title");
@@ -84,6 +106,7 @@ describe("application bootstrap", () => {
       save: createSave(),
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
 
     expect(
@@ -113,6 +136,7 @@ describe("application bootstrap", () => {
       save: createSave(),
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
 
     const alert = getByRole(document.body, "alert", {

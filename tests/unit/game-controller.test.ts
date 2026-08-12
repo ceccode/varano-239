@@ -11,6 +11,11 @@ import { resolveItalianMessage } from "../../src/content/locales/it";
 import { coreStoryGraph } from "../../src/content/packs/core/pack";
 import type { GameAudio } from "../../src/platform/audio/chiptune-audio";
 import type { BestScorePort } from "../../src/platform/storage/best-score";
+import {
+  mergeRecords,
+  type LevelRecord,
+  type LevelRecordsPort,
+} from "../../src/platform/storage/level-records";
 import { renderGameApp } from "../../src/platform/dom/render-game";
 import { assetManifest } from "../../src/assets/manifest";
 import { stubCanvasContext } from "./helpers/canvas-stub";
@@ -109,6 +114,22 @@ function savedChoiceState(): GameState {
   return state;
 }
 
+function createLevelRecords(): LevelRecordsPort {
+  let records: Record<string, LevelRecord> = {};
+  return {
+    load: () => records,
+    record: (levelId, result) => {
+      records = {
+        ...records,
+        [levelId]: mergeRecords(records[levelId], result),
+      };
+    },
+    clear: () => {
+      records = {};
+    },
+  };
+}
+
 describe("full-screen game controller", () => {
   beforeEach(() => {
     document.body.replaceChildren();
@@ -133,6 +154,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
 
     pickRole();
@@ -168,6 +190,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(atLevel),
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
     // The same card, with «Continua la storia» in place of «Gioca».
     expect(mount.textContent).toContain(
@@ -201,6 +224,7 @@ describe("full-screen game controller", () => {
       save,
       audio,
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
 
     // First boot: role selection instead of an immediate run.
@@ -531,6 +555,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
     void mount;
 
@@ -593,6 +618,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio,
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
 
     const menu = mount.querySelector<HTMLElement>("[data-menu]");
@@ -669,6 +695,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio,
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
     pickRole();
 
@@ -699,6 +726,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
     pickRole();
     const host = mount.querySelector<HTMLElement>("[data-level-host]");
@@ -738,6 +766,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
     pickRole();
     const host = mount.querySelector<HTMLElement>("[data-level-host]");
@@ -757,6 +786,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
     pickRole();
 
@@ -783,6 +813,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(),
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
     pickRole();
     const host = mount.querySelector<HTMLElement>("[data-level-host]");
@@ -803,6 +834,50 @@ describe("full-screen game controller", () => {
     expect(host?.getAttribute("data-player-x")).toBe("14");
   });
 
+  it("fills the Collection as levels are finished, and clears with the data (ADR-057)", () => {
+    const { mount } = prepareDocument();
+    stubCanvasContext();
+    const levelRecords = createLevelRecords();
+    levelRecords.record("core.level.campi-di-montichiari", {
+      score: 1740,
+      clues: 3,
+      totalClues: 3,
+      bonusCollected: false,
+      cameoSeen: true,
+      unscathed: true,
+    });
+    createGameController({
+      document,
+      mount,
+      analytics: { track: vi.fn() },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+      levelRecords,
+    });
+    pickRole();
+
+    clickMessage("core.message.ui.menu.open");
+    const menu = mount.querySelector<HTMLElement>("[data-menu]");
+    // Ten rows, one per level, numbered from the story graph.
+    expect(menu?.querySelectorAll(".collection__row")).toHaveLength(10);
+    // The one played level shows what it earned; the rest wait.
+    expect(menu?.textContent).toContain("Record 1740");
+    expect(menu?.textContent).toContain(
+      resolveItalianMessage("core.message.ui.collection.cameo"),
+    );
+    expect(menu?.textContent).not.toContain(
+      resolveItalianMessage("core.message.ui.collection.star"),
+    );
+    expect(menu?.textContent).toContain(
+      resolveItalianMessage("core.message.ui.collection.pending"),
+    );
+
+    // Clearing local data empties the archive too, like the personal best.
+    clickMessage("core.message.ui.clear-save");
+    expect(levelRecords.load()).toEqual({});
+  });
+
   it("resumes a saved run automatically and skips the role selection", () => {
     const savedState = savedChoiceState();
     const { mount } = prepareDocument();
@@ -814,6 +889,7 @@ describe("full-screen game controller", () => {
       save: new MemorySave(savedState),
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
 
     expect(controller.getState()).toBe(savedState);
@@ -854,6 +930,7 @@ describe("full-screen game controller", () => {
       save: failingSave,
       audio: createAudio(),
       bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
     });
 
     controller.dispatch({

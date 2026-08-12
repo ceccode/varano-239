@@ -874,6 +874,19 @@ test("celebrates a finished level with its result card (ADR-056)", async ({
   await expect(
     page.getByText(message("core.message.dialogue.twist")),
   ).toBeVisible();
+
+  // …and the Collection remembers it (ADR-057): ten rows, the first filled.
+  await openMenu(page);
+  await page
+    .getByText(message("core.message.ui.menu.collection"), { exact: true })
+    .click();
+  const rows = page.locator(".collection__row");
+  await expect(rows).toHaveCount(10);
+  await expect(rows.first()).toContainText(/Record \d+/);
+  await expect(rows.nth(1)).toContainText(
+    message("core.message.ui.collection.pending"),
+  );
+  await expectNoViolations(page);
 });
 
 test("moves with the touch controls and keeps an equivalent skip action", async ({

@@ -954,3 +954,25 @@
   font: 700 1rem var(--font-body);
   cursor: pointer;
 }
+
+/* «La Collezione» (ADR-057): one row per level, readable down to 320px. */
+.collection__row {
+  padding-block: 0.4rem;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.collection__name {
+  margin: 0;
+  color: var(--color-text);
+  font: 700 0.9rem var(--font-body);
+}
+
+.collection__marks {
+  margin: 0.15rem 0 0;
+  color: var(--color-accent);
+  font: 500 0.8rem var(--font-body);
+}
+
+.collection__pending {
+  margin: 0.15rem 0 0;
+}

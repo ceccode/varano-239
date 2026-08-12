@@ -6,6 +6,7 @@ import { drawMemeCard, type MemeAccessory } from "./meme-card";
 import { shareScoreCard, type ShareOutcome } from "./share-card";
 import { checkForUpdates, type ContainerLike } from "../pwa/sw-update";
 import { levelPowerLabelKey } from "../../levels/registry";
+import type { LevelRecord } from "../storage/level-records";
 import { matchesConditions } from "../../core/conditions";
 import { levelPosition } from "../../content/level-position";
 import { completeSetup, type GameState } from "../../core/game-state";
@@ -36,6 +37,8 @@ export interface RenderGameAppOptions {
   readonly lastOutcome?: LevelOutcome | undefined;
   readonly bestScore?: number | undefined;
   readonly isRecord?: boolean | undefined;
+  /** The per-level archive behind «La Collezione» (ADR-057). */
+  readonly levelRecords?: Readonly<Record<string, LevelRecord>> | undefined;
   readonly content: GameContent;
   readonly dispatch: (action: GameAction) => void;
   readonly onMenuToggled?: (open: boolean) => void;
@@ -1156,6 +1159,12 @@ function renderMenu(context: RenderContext): HTMLElement {
   );
   settings.append(renderSettings(context));
 
+  const collectionSection = menuSection(
+    context,
+    "core.message.ui.menu.collection",
+    sectionOpen(context.mount, "core.message.ui.menu.collection"),
+  );
+
   const credits = menuSection(
     context,
     "core.message.ui.menu.credits",
@@ -1257,6 +1266,81 @@ function renderMenu(context: RenderContext): HTMLElement {
       });
   });
 
+  // «La Collezione» (ADR-057): the campaign's levels in story order, with
+  // what this browser has managed in each. Built from the graph, so
+  // inserting a chapter renumbers the list by itself — as it did three
+  // times during the long night.
+  const collection = element(context.document, "div");
+  collection.className = "collection";
+  const levels = context.content.story.nodes.filter(
+    (node) => node.type === "level",
+  );
+  const records = context.levelRecords ?? {};
+  let visited = 0;
+  levels.forEach((level, index) => {
+    const record = records[level.levelId];
+    const row = element(context.document, "div");
+    row.className = "collection__row";
+    const name = element(
+      context.document,
+      "p",
+      `${String(index + 1)}. ${context.content.message(level.headingKey)}`,
+    );
+    name.className = "collection__name";
+    row.append(name);
+
+    if (record === undefined) {
+      const pending = element(
+        context.document,
+        "p",
+        context.content.message("core.message.ui.collection.pending"),
+      );
+      pending.className = "collection__pending quiet-copy";
+      row.append(pending);
+    } else {
+      visited += 1;
+      const marks = element(context.document, "p");
+      marks.className = "collection__marks";
+      const badges = [
+        context.content.message("core.message.ui.collection.best", {
+          score: record.score,
+        }),
+        context.content.message("core.message.ui.collection.clues", {
+          clues: record.clues,
+          total: record.totalClues,
+        }),
+      ];
+      if (record.bonusCollected) {
+        badges.push(context.content.message("core.message.ui.collection.star"));
+      }
+      if (record.cameoSeen) {
+        badges.push(
+          context.content.message("core.message.ui.collection.cameo"),
+        );
+      }
+      if (record.unscathed) {
+        badges.push(
+          context.content.message("core.message.ui.collection.unscathed"),
+        );
+      }
+      marks.textContent = badges.join(" · ");
+      row.append(marks);
+    }
+    collection.append(row);
+  });
+  const summary = element(
+    context.document,
+    "p",
+    context.content.message("core.message.ui.collection.summary", {
+      visited,
+      total: levels.length,
+    }),
+  );
+  summary.className = "quiet-copy";
+  collection.append(summary);
+
+  collectionSection.append(collection);
+
   const clear = button(context, "core.message.ui.clear-save", {
     type: "LOCAL_DATA_CLEARED",
   });
@@ -1286,6 +1370,7 @@ function renderMenu(context: RenderContext): HTMLElement {
 
   menu.append(
     settings,
+    collectionSection,
     credits,
     privacy,
     terms,

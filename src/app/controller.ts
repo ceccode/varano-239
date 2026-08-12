@@ -8,6 +8,7 @@ import { coreStoryGraph } from "../content/packs/core/pack";
 import { renderGameApp } from "../platform/dom/render-game";
 import type { GameAudio } from "../platform/audio/chiptune-audio";
 import type { BestScorePort } from "../platform/storage/best-score";
+import type { LevelRecordsPort } from "../platform/storage/level-records";
 import type { LevelOutcome, MiniGameHandle } from "../levels/contract";
 import { mountRegisteredLevel } from "../levels/registry";
 import { levelPosition } from "../content/level-position";
@@ -19,6 +20,8 @@ export interface GameControllerDependencies {
   readonly save: SavePort;
   readonly audio: GameAudio;
   readonly bestScore: BestScorePort;
+  /** The per-level archive behind «La Collezione» (ADR-057). */
+  readonly levelRecords: LevelRecordsPort;
 }
 
 export interface GameController {
@@ -58,6 +61,14 @@ export function createGameController(
   const showBriefing = (nodeId: string): boolean =>
     briefingClearedNodeId !== nodeId &&
     (state.run?.visitedNodeIds.length ?? 0) > 1;
+
+  const safeLevelRecords = (): ReturnType<LevelRecordsPort["load"]> => {
+    try {
+      return dependencies.levelRecords.load();
+    } catch {
+      return {};
+    }
+  };
 
   const safeBestScore = (): number | undefined => {
     try {
@@ -142,6 +153,7 @@ export function createGameController(
       lastOutcome,
       bestScore: safeBestScore(),
       isRecord,
+      levelRecords: safeLevelRecords(),
       content: {
         story: coreStoryGraph,
         assets: assetManifest,
@@ -194,6 +206,20 @@ export function createGameController(
         audio: dependencies.audio,
         onComplete: (outcome) => {
           recordOutcome(outcome);
+          // The level's own archive entry (ADR-057), kept best-of so a run
+          // that finally spots the cameo keeps the star of an earlier one.
+          try {
+            dependencies.levelRecords.record(currentNode.levelId, {
+              score: outcome.score,
+              clues: outcome.clues,
+              totalClues: outcome.totalClues,
+              bonusCollected: outcome.bonusCollected,
+              cameoSeen: outcome.cameoSeen,
+              unscathed: outcome.respawns === 0,
+            });
+          } catch {
+            // The archive is a bonus; the story never waits for it.
+          }
           dispatch({ type: "MINIGAME_COMPLETED" });
         },
         onExit: () => {
@@ -220,6 +246,7 @@ export function createGameController(
         try {
           dependencies.save.clear();
           dependencies.bestScore.clear();
+          dependencies.levelRecords.clear();
         } catch {
           // Clearing storage must not block a new local session.
         }
