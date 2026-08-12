@@ -675,3 +675,17 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - **Regola scritta a chiare lettere**: indizi, stella, cameo e vite **non toccano mai** reputazione, sigilli, condizione o disponibilità dei finali. Sono punteggio, riconoscimenti e — con la Collezione — voci d'archivio. Altrimenti salterebbe l'invariante che «Salta il livello» produce un esito narrativo identico, che regge tutta l'accessibilità del gioco.
 - Verifica: la card compare dopo la celebrazione e **non riporta niente finché non si tocca «Continua»** (verificato anche a 5 secondi di attesa); un livello perfetto mostra tutti e quattro i riconoscimenti e l'esito porta stella e cameo; end-to-end che **gioca davvero il livello 1 fino al traguardo**, con axe sulla card e la conferma che il capitolo prosegue esattamente come con un salto.
 - Conseguenza: apre la strada alla «Collezione» (record per livello nel menù), che è la memoria di questi momenti.
+
+## ADR-057 — «La Collezione»: l'archivio dei dieci livelli, e la fine del piano
+
+- Stato: **Accettata**
+- Data: 12 agosto 2026
+- Contesto: con la card di fine livello (ADR-056) il giocatore **vede** cosa ha ottenuto, ma il gioco continuava a dimenticarlo un istante dopo. Stella e cameo non avevano memoria, non esisteva un punteggio per livello (solo il totale di campagna), e quindi non c'era **niente per cui tornare** su un livello già superato.
+- Decisione:
+  1. **Un archivio locale per livello**, accanto al record personale: `varano-239.level-records` con punteggio, indizi, stella, cameo e «senza cadute». Locale come tutto il resto (ADR-023): nessun account, nessuna classifica, nessun identificatore.
+  2. **Best-of, mai l'ultimo.** Ogni campo tiene il massimo fra ciò che c'era e ciò che è appena successo: una partita che finalmente avvista il cameo **non cancella** la stella presa tre partite fa. È la regola che rende la Collezione una cosa da riempire invece che un registro dell'ultimo tentativo.
+  3. **Una quinta sezione nel menù che già c'è**, non una schermata nuova: dieci righe, una per livello, costruite dal grafo della storia — quindi la numerazione si aggiorna da sola, come è successo tre volte inserendo capitoli nella lunga notte. Le righe vuote («Non ancora giocato») sono l'invito.
+  4. **Robustezza per voce**: una riga corrotta nell'archivio non costa l'archivio; JSON illeggibile vale archivio vuoto; una quota piena non interrompe mai una partita. «Cancella progressi» azzera anche questo, insieme al salvataggio e al record.
+- Conferma della regola di ADR-056: la Collezione registra **solo** punteggio e riconoscimenti arcade. Non tocca reputazione, sigilli, condizione o disponibilità dei finali, quindi «Salta il livello» continua a produrre un esito narrativo identico — semplicemente non lascia una voce d'archivio, perché il livello non è stato giocato.
+- Verifica: unit sull'archivio (best-of campo per campo, round-trip su due sessioni, voce corrotta isolata, JSON rotto, clear); unit sul menù con dieci righe numerate dal grafo, i riconoscimenti del livello giocato, «Non ancora giocato» per gli altri e l'azzeramento con i dati locali; end-to-end che **gioca il livello 1 fino al traguardo** e poi apre la Collezione per ritrovarcelo, con axe sulla sezione aperta.
+- Conseguenza: **con questa ADR si chiude il piano approvato l'8 agosto** — dieci livelli, gioco dichiarato concluso, fase 3 (bug, performance, usabilità) e fase 4 (ingaggio). Da qui in avanti ogni aggiunta è una decisione nuova, non un residuo.

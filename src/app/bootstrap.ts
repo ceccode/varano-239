@@ -4,6 +4,7 @@ import { applyUpdate, type ContainerLike } from "../platform/pwa/sw-update";
 import type { SavePort } from "../core/ports";
 import type { GameAudio } from "../platform/audio/chiptune-audio";
 import type { BestScorePort } from "../platform/storage/best-score";
+import type { LevelRecordsPort } from "../platform/storage/level-records";
 import { renderBootstrapError } from "../platform/dom/render-app";
 import { createGameController, type GameController } from "./controller";
 import { appConfig } from "./config";
@@ -14,6 +15,7 @@ export interface BootstrapDependencies {
   readonly save: SavePort;
   readonly audio: GameAudio;
   readonly bestScore: BestScorePort;
+  readonly levelRecords: LevelRecordsPort;
 }
 
 export function bootstrapApp({
@@ -22,6 +24,7 @@ export function bootstrapApp({
   save,
   audio,
   bestScore,
+  levelRecords,
 }: BootstrapDependencies): GameController {
   const mount = document.querySelector<HTMLElement>("[data-app-root]");
 
@@ -45,6 +48,7 @@ export function bootstrapApp({
     save,
     audio,
     bestScore,
+    levelRecords,
   });
 }
 

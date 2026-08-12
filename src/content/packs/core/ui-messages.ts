@@ -163,6 +163,17 @@ export const uiMessages = {
   "core.message.ui.update.ready":
     "Nuova versione disponibile — tocca per aggiornare",
 
+  // «La Collezione» (ADR-057): what this browser has managed, level by level.
+  "core.message.ui.menu.collection": "Collezione",
+  "core.message.ui.collection.pending": "Non ancora giocato",
+  "core.message.ui.collection.best": "Record {score}",
+  "core.message.ui.collection.clues": "Indizi {clues}/{total}",
+  "core.message.ui.collection.star": "★ Stella",
+  "core.message.ui.collection.cameo": "Cameo",
+  "core.message.ui.collection.unscathed": "Senza cadute",
+  "core.message.ui.collection.summary":
+    "Livelli giocati: {visited} di {total}. I record restano su questo browser.",
+
   "core.message.ui.menu.open": "Menù",
   "core.message.ui.menu.heading": "Menù",
   // With a level alive behind the overlay, the menu is the pause (ADR-051).
