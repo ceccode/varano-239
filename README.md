@@ -7,15 +7,25 @@
 
 Il gioco mescola cronaca documentata, testimonianze contraddittorie e una leggenda pixel-art. Il Varano è sempre il protagonista: può essere inseguito, protetto, interpretato dal giocatore o incoronato improbabile Conte del Castello Bonoris.
 
-Le scene giocabili sono sempre marcate **LEGGENDA — ricostruzione inventata**. I fatti reali compaiono in schede attribuite e nell'Archivio; anche le **2:39** restano un orario riportato dalla stampa, distinto dai contenuti dell'ordinanza.
+Le scene giocabili sono sempre marcate **LEGGENDA — ricostruzione inventata**. I fatti documentati e le loro fonti restano nell'Archivio, cioè nel registro editoriale [`docs/SOURCES.md`](./docs/SOURCES.md), linkato dai credits (ADR-024); anche le **2:39** restano un orario riportato dalla stampa, distinto dai contenuti dell'ordinanza.
 
-Accanto alla caccia nasce un secondo mistero: **da dove arriva il Varano?** Potrebbe essere fuggito, essere stato abbandonato oppure essere soltanto il primo indizio di un disegno molto più grande. Le ipotesi reali e la cospirazione inventata restano sempre distinguibili.
+Accanto alla caccia resta aperto un secondo mistero: **da dove arriva il Varano?** Il gioco non lo risolve. Fuga e abbandono restano ipotesi riportate e non accertate; tutto ciò che il gioco aggiunge è dichiarato LEGGENDA.
 
 ## Stato del progetto
 
-Dopo i playtest delle prime iterazioni (M1 point-and-click e M1R arcade DOM), il progetto è pivotato a **platformer arcade** (ADR-018) con onboarding a schermo intero (ADR-021): la milestone corrente è **M1P — «Livello 1: I campi di Montichiari»**.
+**La campagna è completa e pubblicata.** Dopo i playtest delle prime iterazioni (M1 point-and-click e M1R arcade DOM) il progetto è pivotato a **platformer arcade** (ADR-018) con avvio a schermo intero (ADR-021); da allora sono stati costruiti tutti e dieci i livelli, la notte lunga dei Sei Colli e il confronto finale. Il gioco è dichiarato concluso a **sei finali** (ADR-047): non sono previsti altri capitoli in questa edizione.
 
-Al caricamento il gioco parte subito, senza title screen: si guida il Varano in un livello a scorrimento laterale su canvas (corsa, salto con coyote time, tre segnali da raccogliere, checkpoint morbidi e traguardo nel canneto), con musica chiptune ed effetti generati via WebAudio e controlli touch mobile-first — anche in landscape, con i controlli in overlay. L'edizione è unica, 12+, con tono goliardico e colpi di scena (ADR-022). La narrativa vive nel gioco: una barra contestuale durante la corsa e overlay a scheda per dialogo, scelta e finale aperto, tutti nello stesso stile grafico. Un menù in-game raccoglie impostazioni (personaggio, audio), credits, privacy e termini; il registro delle fonti resta in [`docs/SOURCES.md`](./docs/SOURCES.md), linkato dai credits (ADR-024). Il finale annuncia il livello successivo e permette di condividere una cartolina pixel-art del punteggio, generata sul dispositivo (ADR-026). Il livello non ha nemici, vite, timer o game over; è sempre saltabile e con `prefers-reduced-motion` viene sostituito da un percorso narrativo equivalente. La webapp è installabile come PWA portrait-first con supporto offline. `origins` e `all-registered` degradano esplicitamente al caso `core` finché i relativi pack non saranno implementati.
+Cosa c'è oggi, in breve:
+
+- **10 livelli** in un'unica campagna (~22 minuti), ciascuno con fondale, traccia chiptune, tre indizi, checkpoint, cameo del Varano e una stella bonus raggiungibile solo col superpotere del ruolo;
+- **3 vite per tentativo** (ADR-041), nessun nemico e nessun timer; «Salta il livello» è sempre disponibile e produce lo stesso esito narrativo;
+- **sei sigilli** raccolti negli interludi dei colli, che sbloccano il finale «Il Conte dei Sei Colli», e la condizione del Varano visibile nel briefing;
+- **card di fine livello** (ADR-056) e **«La Collezione»** (ADR-057), l'archivio locale dei dieci livelli con il meglio ottenuto in ciascuno;
+- **card-meme condivisibile** a fine campagna e cartolina del punteggio, entrambe generate sul dispositivo (ADR-026/049);
+- menù in-game con impostazioni (personaggio, audio, scala del testo, alto contrasto), Collezione, credits, privacy e termini; dai credits si raggiunge il registro delle fonti;
+- **PWA installabile** con offline atomico, aggiornamenti annunciati e numero di versione visibile nelle impostazioni (ADR-054).
+
+L'edizione è unica, 12+, con tono goliardico e colpi di scena (ADR-022). La parte arcade è il default per tutti (ADR-046): nessun segnale di sistema la nasconde, e il percorso assistito resta disponibile dalle modalità Storia e Calma. Il lavoro successivo riguarda performance, usabilità e i livelli esistenti, non nuovi capitoli.
 
 ## Sviluppo locale
 
@@ -35,19 +45,20 @@ npx playwright install chromium
 
 Comandi disponibili:
 
-| Comando                | Scopo                                                               |
-| ---------------------- | ------------------------------------------------------------------- |
-| `npm run dev`          | Avvia il server Vite di sviluppo.                                   |
-| `npm run preview`      | Serve localmente l'ultima build di produzione.                      |
-| `npm run build`        | Controlla i tipi e genera `dist/`.                                  |
-| `npm run typecheck`    | Esegue TypeScript strict senza emettere file.                       |
-| `npm run lint`         | Esegue ESLint senza accettare warning.                              |
-| `npm run format`       | Formatta i file supportati con Prettier.                            |
-| `npm run format:check` | Verifica la formattazione senza modificare file.                    |
-| `npm run test`         | Esegue i test unitari e DOM con Vitest.                             |
-| `npm run test:e2e`     | Esegue Playwright e axe su build con base `/`.                      |
-| `npm run validate`     | Compila i contratti e valida grafo, fonti, asset e combinazioni M1. |
-| `npm run check`        | Esegue in ordine tutti i gate definiti in `docs/QUALITY.md`.        |
+| Comando                | Scopo                                                             |
+| ---------------------- | ----------------------------------------------------------------- |
+| `npm run dev`          | Avvia il server Vite di sviluppo.                                 |
+| `npm run preview`      | Serve localmente l'ultima build di produzione.                    |
+| `npm run build`        | Controlla i tipi e genera `dist/`.                                |
+| `npm run typecheck`    | Esegue TypeScript strict senza emettere file.                     |
+| `npm run lint`         | Esegue ESLint senza accettare warning.                            |
+| `npm run format`       | Formatta i file supportati con Prettier.                          |
+| `npm run format:check` | Verifica la formattazione senza modificare file.                  |
+| `npm run test`         | Esegue i test unitari e DOM con Vitest.                           |
+| `npm run test:e2e`     | Esegue Playwright e axe su build con base `/`.                    |
+| `npm run validate`     | Compila i contratti e valida grafo, fonti, asset e messaggi.      |
+| `npm run size`         | Verifica il tetto di peso del bundle (60 KB JS / 10 KB CSS gzip). |
+| `npm run check`        | Esegue in ordine tutti i gate definiti in `docs/QUALITY.md`.      |
 
 La build usa base `/` (Netlify, ADR-020). La configurazione accetta `VITE_BASE_PATH` per eventuali altri sottopercorsi. Usa la stessa base per build e preview. La build non ha dipendenze runtime e non carica font, script o asset remoti.
 
@@ -55,39 +66,39 @@ Le pull request producono un artifact di preview scaricabile dopo il quality gat
 
 ## Prospettive giocabili
 
-- **Cacciatore** — segue tracce e falsi indizi. Nella versione completa, scegliendo l'approccio «Cerca una prova», può arrivare a un abbattimento non grafico, con conseguenze narrative e senza meccaniche realistiche d'arma.
+- **Cacciatore** — segue tracce e falsi indizi. Se nel prologo ha scelto «Documenta la scena», al confronto finale può arrivare a un abbattimento non grafico, con conseguenze narrative e senza meccaniche realistiche d'arma.
 - **Custode animalista** — tenta di localizzare il Varano e preparare un intervento sicuro.
 - **Sindaco eroe** — sindaco del comune totalmente fittizio di Borgocoda, guida la propria delegazione in un'esercitazione intercomunale inventata; cerca una prova fra mappe, droni e reputazione.
 - **Varano** — evita gli umani e sceglie fra salvezza, fuga e conquista del Castello Bonoris.
 
-L'edizione è unica, consigliata a un pubblico 12+, con tono goliardico e scherzoso (ADR-022). Il personaggio si sceglie in ogni momento dal menù in-game; approccio e profondità del mistero (Dossier Origini, contenuti extra) arriveranno con i prossimi capitoli.
+Ogni ruolo ha il proprio obiettivo, il proprio superpotere e battute proprie in ogni capitolo. Il personaggio si sceglie in ogni momento dal menù in-game; cambiarlo a livello vivo rimonta il tentativo, perché cambia il potere.
 
-Soltanto il Cacciatore con approccio «Cerca una prova» potrà scegliere direttamente di uccidere il Varano. La scelta è annunciata e confermata, avviene fuori campo, non mostra gore e non viene trasformata in un mini-gioco di mira.
+L'edizione è unica, consigliata a un pubblico 12+, con tono goliardico e scherzoso (ADR-022): al giocatore non viene offerta nessuna scelta di sensibilità (ADR-048). Soltanto il Cacciatore che ha scelto di documentare la scena può scegliere direttamente di uccidere il Varano. La scelta è annunciata e confermata, avviene fuori campo, non mostra gore e non viene trasformata in un mini-gioco di mira.
 
 ## Direzione del gioco
 
-- Avventura narrativa DOM-first con scene pixel-art e brevi livelli arcade facoltativi.
+- Platformer arcade su canvas con narrativa DOM-first: barra contestuale durante la corsa, overlay a scheda per dialogo, scelta e finale.
 - Browser mobile-first e desktop.
-- Touch, mouse e tastiera.
-- Italiano completo; battute bresciane facoltative e revisionate.
-- Nessun game over punitivo o sfida basata obbligatoriamente sui riflessi.
+- Touch e tastiera.
+- Italiano completo.
+- Nessuna sfida obbligatoria basata sui riflessi: ogni livello è saltabile con lo stesso esito narrativo.
 - Contenuti distinti come **FATTO**, **TESTIMONIANZA**, **IPOTESI**, **LEGGENDA** o **SCONFESSATO**.
 - Personaggi umani inventati o compositi, senza rappresentare persone reali.
-- Misteri e capitoli opzionali aggiungibili come contenuti dichiarativi; nuove meccaniche isolate dietro un registro di livelli compilato.
+- Capitoli e livelli sono contenuti dichiarativi compilati insieme al gioco; una meccanica nuova resta isolata dietro il registro dei livelli.
 
 ## Direzione tecnica
 
 - TypeScript in modalità strict.
 - Vite.
 - Interfaccia DOM-first, accessibile e testabile.
-- Nessun framework UI o game framework nel vertical slice o nel prototipo arcade.
+- Nessun framework UI o game framework: zero dipendenze runtime.
 - Stato narrativo gestito da funzioni pure e contenuti dichiarativi.
-- Pacchetti narrativi compilati insieme al gioco, senza plugin runtime o codice remoto.
+- Contenuti narrativi compilati insieme al gioco, senza plugin runtime o codice remoto.
 - Test unitari, di integrazione ed end-to-end.
 - Salvataggio locale, senza account o backend.
 - Analytics facoltativi e limitati a visite aggregate e avvii della partita, senza tracciare ruoli, scelte o finali.
 
-Un framework 2D potrà essere valutato soltanto se futuri mini-giochi real-time ne dimostreranno la necessità. La storia e i controlli accessibili resteranno comunque nel DOM.
+Il platformer è implementato con un modello fisico puro in TypeScript e un rendering canvas procedurale: un framework 2D resta escluso finché non esiste una prova misurata che serva davvero (la procedura è in [`docs/DECISIONS.md`](./docs/DECISIONS.md)). La storia e i controlli accessibili restano comunque nel DOM.
 
 ## Principi
 
@@ -102,7 +113,7 @@ Un framework 2D potrà essere valutato soltanto se futuri mini-giochi real-time 
 
 Il gioco non è una guida alla ricerca dell'animale. Non avvicinare, inseguire, spaventare o tentare di catturare animali selvatici o esotici: mantieni le distanze e avvisa le autorità competenti.
 
-La morte resta non grafica. Nel solo percorso Cacciatore + «Cerca una prova» della modalità completa, il giocatore può esserne direttamente responsabile; il gioco mostra conseguenze, non celebra la violenza e non insegna l'uso di armi.
+La morte resta non grafica. Nel solo percorso del Cacciatore che ha scelto di documentare la scena, il giocatore può esserne direttamente responsabile; il gioco mostra conseguenze, non celebra la violenza e non insegna l'uso di armi.
 
 ## Documentazione
 

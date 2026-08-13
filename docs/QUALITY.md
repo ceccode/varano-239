@@ -2,17 +2,20 @@
 
 ## Contratto della CI
 
-`npm run check` deve eseguire, in ordine fail-fast:
+`npm run check` esegue, in ordine fail-fast:
 
 1. `npm run format:check`
-2. `npm run lint`
+2. `npm run lint` (zero warning ammessi)
 3. `npm run typecheck`
 4. `npm run validate`
 5. `npm run test -- --coverage`
 6. `npm run build`
-7. `npm run test:e2e`
+7. `npm run size`
+8. `npm run test:e2e`
 
 Il repository non è pronto per il merge se uno di questi comandi fallisce. La CI usa una versione LTS di Node fissata in `.nvmrc` e il lockfile viene committato.
+
+Ogni livello e ogni feature arrivano come **draft PR**: il proprietario la prova prima che diventi Ready for review, e il merge su `main` pubblica su Netlify.
 
 ## Strumenti di sviluppo
 
@@ -55,42 +58,34 @@ Veloci, senza DOM e senza rete:
 
 - reducer per ogni fase e azione;
 - condizioni ed effetti;
-- calcolo deterministico degli esiti;
 - clamp dei punteggi;
-- casualità con seed;
-- migrazioni del salvataggio;
-- fallback al `coreCheckpointNodeId` con rimozione completa di tutti i riferimenti namespaced di un pack assente e della relativa versione attiva;
-- snapshot `activePackVersions`: un pack aggiunto alla build non entra a metà di un vecchio salvataggio;
-- composizione distinta `new-run | resume`, incluse versione diversa, pack opzionale assente e core incompatibile;
-- fallback italiano per il dialetto;
+- collegamento dei capitoli e numerazione dei livelli derivata dal grafo;
+- decodifica del salvataggio: tollerante sulle impostazioni, severa sul run, con le migrazioni degli ID rinominati;
+- archivio dei livelli: merge best-of, round trip fra sessioni, voce corrotta isolata, JSON rotto, cancellazione;
+- modelli fisici per livello, invarianti del registro e budget di disegno;
 - allowlist analytics.
 
 ### Test dei contenuti
 
 `validateContent()` deve verificare:
 
-- ID unici e riferimenti esistenti;
-- grafo raggiungibile e senza cicli privi di uscita;
-- tutte le combinazioni cartesiane supportate `role × approach × sensitivity × storyScope` arrivano a un finale: 48 con i valori correnti;
-- ogni profondità del mistero torna al percorso core senza rompere una specifica combinazione di ruolo, approccio o sensibilità;
-- `gentle` non raggiunge mai esiti postumi;
-- `killedByHunter` è raggiungibile soltanto con `hunter + evidence + complete`, dopo una conferma aggiuntiva e con almeno due alternative non letali;
-- ruoli o approcci diversi non possono causare direttamente la morte del Varano;
-- ogni famiglia di finale descritta nel game design privato è raggiungibile da almeno un percorso, e quelle con esito postumo soltanto in `complete`;
+- ID unici, dentro il namespace del pack, e riferimenti esistenti;
+- ogni nodo raggiungibile dall'ingresso;
+- ogni capitolo che dichiara ingresso, checkpoint e uscita dentro sé stesso;
+- ciascuno dei quattro ruoli arriva a un finale;
+- `killedByHunter` è raggiungibile soltanto dal Cacciatore che ha scelto «Documenta la scena», dopo una conferma con focus su «annulla» e con almeno due alternative non letali sempre visibili;
+- opzione ed epilogo letali hanno entrambi `sensitivityTags: ["impliedAnimalDeath"]`;
+- nessun indizio o premio è esclusivo dell'abbattimento;
 - tutte le carte FATTO, TESTIMONIANZA e IPOTESI hanno fonti conformi;
 - ogni LEGGENDA ha un avviso di finzione e ogni SCONFESSATO una confutazione;
-- nessun indizio sull'origine o premio è esclusivo dell'abbattimento;
-- ogni Story Pack rispetta namespace, dipendenze, punti d'innesto, uscita e finali core;
-- un mistero con teorie diverse dal Dossier Origini non richiede modifiche al core;
+- ogni fonte usa HTTPS e date valide;
 - ogni nodo giocabile è LEGGENDA e mantiene il banner; la fotografia attendibile e l'orario 2:39 restano due schede distinte, FATTO e TESTIMONIANZA;
-- `EndingNode`, `ChapterEndNode` e `LevelNode` non accettano uscite estranee al proprio contratto;
-- ogni `ChapterEndNode` core non terminale ha una sola rotta base; un capitolo opzionale dichiara `exitNodeId`, `insertion.at` esistente e `insertion.order` intero non negativo;
-- opzione ed epilogo letali hanno `sensitivityTags: ["impliedAnimalDeath"]`;
-- ogni testo italiano, asset e nome accessibile esiste;
+- ogni `LevelNode` risolve una coppia `levelId`/`configId` registrata, con le sue chiavi di messaggio;
+- ogni testo italiano, asset e testo alternativo esiste;
 - ogni sorpresa ha un `hostSceneNodeId` valido e nessun popup compare in una scena `noSurprise`;
-- le battute dialettali non contengono informazioni uniche.
+- esiste il finale di fallback `core.outcome.open-mystery`.
 
-La validazione enumera tutte le diramazioni finite dell'MVP. Se il numero cresce troppo, è un segnale di scope eccessivo, non un motivo per saltare il test.
+L'elenco completo e sempre aggiornato è il codice di `src/content/validate-content.ts`: se una regola non è lì, non è verificata.
 
 ### Test DOM
 
@@ -106,31 +101,32 @@ Per ciascuna feature verificare comportamento, non markup accidentale:
 
 ### End-to-end
 
-Flussi minimi:
+La suite gira su tre profili — mobile compatto (320 px), mobile grande e desktop — e copre:
 
-1. una partita per ciascun ruolo fino al finale previsto dal game design privato;
-2. Cacciatore `complete + evidence`: annullamento sicuro della scelta letale e finale vivo;
-3. Cacciatore `complete + evidence`: conferma dell'abbattimento fuori campo e relativo epilogo;
-4. Custode, Sindaco e Varano senza accesso alla scelta letale;
-5. pacchetto opzionale completato, saltato e rimosso da un salvataggio compatibile;
-6. salvataggio, ricarica, ripresa e cancellazione dati;
-7. Modalità Storia con salto di ogni sfida;
-8. Menù usabile da tastiera con il livello in pausa (ADR-050); Modalità Calma senza popup animati; con `prefers-reduced-motion` la parte arcade parte comunque (ADR-046);
-9. percorso completo con sola tastiera;
-10. analytics configurati e non configurati come descritto in `PRIVACY.md`;
-11. apertura di una fonte esterna dal menù.
+1. avvio diretto in un gioco accessibile e solo-locale, con scansione axe;
+2. la storia intera con la sola tastiera, fino al finale, e la ripartenza;
+3. la scelta letale: conferma esplicita, annullamento sicuro, epilogo;
+4. menù in-game: impostazioni, credits, privacy, termini e apertura di una fonte esterna;
+5. il superpotere del ruolo, per ciascuno dei quattro ruoli;
+6. ripresa automatica del salvataggio dopo un reload;
+7. con `prefers-reduced-motion` la parte arcade parte comunque (ADR-046);
+8. il livello resta vivo togliendo la musica dal menù, e la posizione non si azzera (ADR-050);
+9. pausa dichiarata e «Riprova il livello» dal menù (ADR-051);
+10. la card di fine livello e la riga corrispondente nella Collezione (ADR-056/057);
+11. controlli touch, con l'azione di salto equivalente sempre disponibile;
+12. senza JavaScript, il documento resta leggibile.
 
-Per M1R la suite verifica inoltre movimento reale con tastiera, pressione dei controlli touch, presenza del salto equivalente, assenza del loop real-time con movimento ridotto e salvataggio/ripresa dal `LevelNode`.
+Axe non gira solo sulla prima schermata: scandisce anche il menù aperto, la scheda di briefing, il dialogo di conferma della scelta letale, la schermata di finale con la card-meme e il tema ad alto contrasto.
 
 Ogni adapter di livello usa la stessa suite contrattuale: configurazione presente, completamento, salto equivalente e `destroy()` senza timer o listener residui.
 
-Eseguire almeno su profili Playwright mobile compatto, mobile grande e desktop Chromium. Prima del rilascio aggiungere uno smoke test su Firefox e WebKit.
+Prima del rilascio aggiungere uno smoke test su Firefox e WebKit.
 
 ## Coverage
 
-- `core`, migrazioni e validazione contenuti: minimo 90% branch e line.
-- totale TypeScript: minimo 80% line.
-- nessun obiettivo quantitativo per CSS, cataloghi testuali o asset.
+- Soglia applicata da `vitest.config.ts` e quindi dal gate: **80% su branch, funzioni, righe e statement** su tutto `src/`.
+- Esclusi dal calcolo i soli file di puri tipi (`core/model.ts`, `content/dossier.ts`, `content/story-pack.ts`) e `main.ts`, che è il bootstrap del browser.
+- Nessun obiettivo quantitativo per CSS, cataloghi testuali o asset.
 
 Il coverage non sostituisce i test dei comportamenti critici. Non scrivere test vuoti per raggiungere la soglia.
 
@@ -150,7 +146,7 @@ Obiettivo: WCAG 2.2 livello AA per i flussi essenziali.
 - La conferma dell'abbattimento apre con il focus su «Torna indietro» e non accetta attivazioni accidentali.
 - La scena postuma non usa immagini ambigue o sorprendenti.
 
-L'analisi automatica con axe è necessaria ma non sufficiente. Ogni milestone richiede una prova manuale di tastiera e zoom.
+L'analisi automatica con axe è necessaria ma non sufficiente: ogni PR che tocca l'interfaccia richiede una prova manuale di tastiera e zoom.
 
 ## Compatibilità
 
@@ -192,8 +188,7 @@ Prima del rilascio, una persona diversa dall'autore controlla:
 - assenza di somiglianze intenzionali con persone reali;
 - Sindaco Eroe e Cacciatore riconoscibili come archetipi LEGGENDA anche in screenshot privi di contesto;
 - assenza di istruzioni che incoraggino una ricerca nel mondo reale;
-- rispetto nei finali postumi e nell'abbattimento, senza rappresentazioni grafiche o ricompense;
-- battute dialettali revisionate da persona competente.
+- rispetto nei finali postumi e nell'abbattimento, senza rappresentazioni grafiche o ricompense.
 
 ## Checklist di rilascio
 
@@ -204,6 +199,6 @@ Prima del rilascio, una persona diversa dall'autore controlla:
 - Endpoint analytics e raccolta dati verificati nel pannello provider.
 - `SOURCES.md` e data dell'Archivio aggiornati.
 - `ASSETS.md` completo e senza placeholder.
-- Licenze di terze parti presenti.
 - URL di produzione su Netlify (app.varano239.it) provato da finestra privata.
-- Tag di versione e changelog.
+- Prova offline manuale sulla deploy preview per ogni PR che tocca il service worker.
+- Versione visibile nelle impostazioni coerente con il deploy (ADR-054).

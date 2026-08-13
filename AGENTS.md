@@ -8,29 +8,31 @@ Leggere, nell'ordine:
 
 1. `README.md`
 2. `docs/README.md`
-3. `docs/private/ROADMAP.md` (documento privato, non versionato)
-4. il documento funzionale relativo al milestone corrente
-5. `docs/ARCHITECTURE.md`
-6. `docs/QUALITY.md`
-7. le decisioni in `docs/DECISIONS.md`
+3. `docs/ARCHITECTURE.md`
+4. `docs/QUALITY.md`
+5. le decisioni in `docs/DECISIONS.md`, dall'ultima all'indietro
+
+I documenti di trama in `docs/private/` (game design, trattamento, narrativa, roadmap) servono soltanto per modifiche narrative.
 
 Per modifiche narrative o ai dossier, leggere inoltre `docs/SOURCES.md`, `docs/private/NARRATIVE.md` e `docs/CONTENT_MODEL.md` prima di intervenire.
 
 I documenti in `docs/private/` contengono trama, finali e colpi di scena: sono ignorati da git per non anticipare la storia (ADR-028). Non copiarne contenuti narrativi non ancora pubblicati nei documenti pubblici, nei messaggi di commit o nelle pull request.
 
-Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che si intendono soddisfare. Implementare la più piccola fetta verticale che produca valore verificabile.
+Prima di scrivere codice, dichiarare gli acceptance criteria che si intendono soddisfare. Implementare la più piccola fetta verticale che produca valore verificabile.
+
+**La campagna è chiusa**: dieci livelli, undici capitoli, sei finali (ADR-047). Il lavoro corrente riguarda performance, usabilità e i livelli esistenti. Aggiungere un capitolo, un livello o un finale è una decisione del proprietario, non un'iniziativa autonoma.
 
 ## Vincoli non negoziabili
 
 - Pubblico 12+, nessuna parolaccia, gore o rappresentazione grafica della morte.
 - Il Varano è il protagonista narrativo anche quando non è il personaggio giocabile.
 - Tutte le persone umane sono inventate o composite.
-- Tutto il grafo giocabile mostra il banner persistente LEGGENDA. FATTO, TESTIMONIANZA, IPOTESI e SCONFESSATO compaiono soltanto nelle schede del Dossier o nell'Archivio.
+- Tutto il grafo giocabile mostra il banner persistente LEGGENDA. FATTO, TESTIMONIANZA, IPOTESI e SCONFESSATO vivono soltanto nell'Archivio, cioè in `docs/SOURCES.md`: nessun nodo pubblicato è una scheda di Dossier (ADR-024).
 - Il Sindaco Eroe governa il comune totalmente fittizio di Borgocoda e guida soltanto la propria delegazione in un'esercitazione intercomunale inventata: non rappresenta il sindaco reale, non esercita autorità sulla Montichiari reale, non firma l'ordinanza reale e non ne riproduce voce, volto, biografia o citazioni.
 - Il Cacciatore, il fucile e ogni sua azione sono LEGGENDA dalla prima apparizione e non vengono presentati come parte delle ricerche documentate.
 - Le campagne sono versioni alternative: nessun finale inventato deve essere presentato come esito reale.
 - L'edizione è unica, 12+, con tono goliardico e scherzoso (ADR-022): nessuna scelta di sensibilità offerta al giocatore.
-- La sola azione letale diretta ammessa è `hunter + evidence` nel nodo finale dedicato. Richiede conferma esplicita, avviene fuori campo e non include una meccanica di mira o uso realistico dell'arma.
+- La sola azione letale diretta ammessa è quella del Cacciatore che ha scelto «Documenta la scena» nel prologo, nel nodo finale dedicato. Richiede conferma esplicita con il focus su «Torna indietro», avviene fuori campo e non include una meccanica di mira o uso realistico dell'arma. La clausola `sensitivity-is complete` di ADR-013 è caduta con l'asse (ADR-048): l'edizione **è** quella completa.
 - I finali con morte o corpo ritrovato sono mostrati con rispetto, senza dettagli o gag.
 - Nessun invito a cercare il rettile nel mondo reale; niente AR, coordinate precise o geolocalizzazione.
 - Fatti, testimonianze, ipotesi, leggende e piste sconfessate devono essere distinti visivamente e nei dati.
@@ -41,7 +43,7 @@ Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che 
 - Nessun account, classifica, pubblicità, testo libero inviato a server o identificatore persistente.
 - Analytics consentiti: visite aggregate e `game_start`, senza proprietà aggiuntive. Il provider è disabilitato se manca una configurazione esplicita.
 - Il gioco deve essere completabile senza suono, mouse, riflessi rapidi o mini-giochi obbligatori. Le vite e il game over di livello (ADR-041) valgono per chi gioca la sfida arcade: «Salta il livello» resta sempre disponibile con lo stesso esito narrativo, un game over non cancella mai i progressi della storia e non viene mai rappresentato come morte grafica. La parte arcade è il default per tutti (ADR-046): nessun segnale di sistema la nasconde; il percorso assistito resta nel dominio dietro le modalità `story`/`calm`.
-- Nuovi misteri e capitoli sono Story Pack dichiarativi a build time. Un nuovo livello usa un `LevelNode` e, se introduce una meccanica, un adapter isolato nel registro compilato; niente script remoto, callback arbitrarie o modifica dei nodi core.
+- Capitoli e livelli sono contenuti dichiarativi compilati a build time. Un livello usa un `LevelNode` e, se introduce una meccanica, un adapter isolato nel registro compilato; niente script remoto, callback arbitrarie o modifica dei capitoli già scritti.
 
 ## Principi di implementazione
 
@@ -49,7 +51,7 @@ Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che 
 
 - Preferire funzioni e tipi espliciti a framework, metaprogrammazione e astrazioni generiche.
 - Non creare un'astrazione finché non esistono almeno due usi reali che condividono lo stesso comportamento.
-- Non introdurre dependency injection container, event bus globale, ECS o plugin system nell'MVP.
+- Non introdurre dependency injection container, event bus globale, ECS o plugin system.
 - Non introdurre un plugin system runtime per le espansioni: usare il registro statico descritto in `docs/EXPANSIONS.md`.
 - Non usare una libreria per una funzione piccola e stabile che può essere implementata e testata localmente.
 - Ogni modulo deve avere una responsabilità descrivibile in una frase.
@@ -86,9 +88,16 @@ Prima di scrivere codice, dichiarare il milestone e gli acceptance criteria che 
 - Le scene pixel-art sono presentazione; le azioni restano disponibili nel DOM.
 - Le animazioni decorative rispettano `prefers-reduced-motion`; i popup a sorpresa rispettano la modalità calma interna. Il segnale di sistema non instrada mai fuori dall'arcade (ADR-046).
 
+## Flusso di lavoro
+
+- Non fare commit né push su `main`. Lavorare su un branch e aprire una pull request: un merge su `main` pubblica su Netlify.
+- Ogni livello e ogni feature arrivano come **draft PR**, che il proprietario prova prima che diventi Ready for review. È lui a mergiare.
+- Prima della draft PR: `npm run check` verde **e** verifica in un browser reale, con zero errori in console.
+- Ogni commit porta il trailer `AI-Mode: agent`.
+
 ## Politica sul game framework
 
-Il vertical slice e l'MVP narrativo non usano Phaser o altri game framework.
+Il gioco non usa Phaser o altri game framework: dieci livelli girano su un adapter unico e un modello fisico puro.
 
 Un agente può proporre un framework soltanto se:
 
@@ -103,7 +112,7 @@ Non migrare il motore narrativo o la UI accessibile dentro un canvas.
 ## Contenuti e narrativa
 
 - Tutto il testo visibile usa chiavi di messaggio, non stringhe sparse nei componenti.
-- L'italiano è il catalogo base; le battute bresciane sono un overlay facoltativo con fallback automatico.
+- L'italiano è l'unico catalogo: una chiave mancante fa fallire la build, non produce un fallback silenzioso.
 - La satira colpisce confusione, burocrazia e febbre mediatica, non etnia, disabilità, età o singole persone reali.
 - Le scene di morte e la scelta letale non contengono gag. Le battute possono riprendere soltanto nella scena successiva.
 - Non descrivere tecniche, distanze, munizioni, mira o istruzioni d'arma; l'abbattimento è una decisione narrativa, non una simulazione.
@@ -130,7 +139,7 @@ Una modifica è completa soltanto quando:
 - tastiera, touch e movimento ridotto sono verificati;
 - non introduce eventi analytics o dati personali non autorizzati;
 - documentazione, fonti e registro asset in `docs/ASSETS.md` sono aggiornati;
-- non lascia TODO privi di issue o milestone.
+- non lascia TODO privi di issue.
 
 ## Decisioni che richiedono il proprietario
 
@@ -140,6 +149,7 @@ Fermarsi e chiedere conferma prima di:
 - introdurre un game framework;
 - raccogliere nuovi dati o eventi analytics;
 - cambiare fascia d'età, tono, ruolo del Varano o regole della scelta letale;
+- aggiungere capitoli, livelli o finali oltre la campagna chiusa da ADR-047;
 - usare nomi, immagini, loghi o opere di persone/enti reali;
 - aggiungere multiplayer, account, classifiche, backend o geolocalizzazione;
 - cambiare licenza.

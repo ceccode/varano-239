@@ -125,7 +125,6 @@ export interface Hotspot {
 export interface DialogueLine {
   readonly speakerId: SpeakerId;
   readonly textKey: MessageKey;
-  readonly dialectTextKey?: MessageKey;
   readonly portraitAssetId?: AssetId;
   readonly when?: readonly Condition[];
 }

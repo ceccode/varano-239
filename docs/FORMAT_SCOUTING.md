@@ -1,16 +1,16 @@
 # Scouting del formato di gioco
 
-## Decisione consigliata
+> **Documento storico.** Registra il confronto fra i formati candidati fatto ad agosto 2026 e la sua conclusione. **Non descrive il gioco attuale**: la domanda è stata chiusa da ADR-018 a favore del platformer arcade su canvas, che è ciò che il gioco è oggi. Resta qui perché la motivazione di una scelta strutturale vale più della scelta stessa.
 
-Realizzare l'MVP come **avventura narrativa point-and-click a scene pixel-art**, con piccoli enigmi e interazioni touch. Conservare l'idea di un platform alla Super Mario Bros come possibile mini-gioco futuro, non come struttura dell'intero prodotto.
+## Come è andata
 
-Questa scelta rende centrali storia, fonti e quattro prospettive; funziona su telefono senza controlli virtuali complessi; permette accessibilità tramite HTML; riduce asset, fisica e test necessari.
+La prima raccomandazione era un'**avventura narrativa point-and-click a scene pixel-art**, con il platform tenuto come possibile mini-gioco: rendeva centrali storia, fonti e quattro prospettive, e costava poco in asset, fisica e test.
 
-## Riesame dopo M1
+Il playtest del proprietario del 1 agosto 2026 l'ha bocciata: tecnicamente leggibile, ma poco arcade, poco giocabile, poco coinvolgente. ADR-017 ha allora autorizzato **M1R**, una corsa laterale 320×180 costruita come confronto diretto.
 
-Il primo prototipo DOM-first è risultato tecnicamente leggibile ma, nel playtest del proprietario del 1 agosto 2026, poco arcade, poco giocabile e poco coinvolgente. La domanda di milestone non è quindi superata.
+Ha vinto quella. **ADR-018 ha ribaltato la raccomandazione qui sotto**: il platformer non è un mini-gioco dentro un'avventura, è la struttura del prodotto, e la narrativa gli vive intorno nel DOM. Dieci livelli dopo, la scelta ha retto — con un solo adapter, un modello fisico puro e zero dipendenze runtime.
 
-ADR-017 autorizza **M1R**, un confronto più netto: una corsa laterale 320×180 con movimento, salto, tre segnali e scorrimento. Resta un `LevelNode` isolato, facoltativo e saltabile; non usa asset, personaggi, livelli, suoni o identità di Super Mario Bros e non introduce un framework. Il suo esito deciderà se mantenere una struttura ibrida o rivedere ancora il formato prima di M2.
+Il confronto originale segue, invariato.
 
 ## Confronto
 

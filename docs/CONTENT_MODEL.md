@@ -2,7 +2,7 @@
 
 ## Obiettivo
 
-La storia deve poter cambiare e crescere senza introdurre logica nei dati, callback arbitrarie o quattro copie degli stessi capitoli. Per l'MVP i contenuti sono moduli TypeScript verificati con `satisfies`; non servono CMS, database, JSON runtime o plugin caricati dalla rete.
+La storia deve poter cambiare senza introdurre logica nei dati, callback arbitrarie o quattro copie degli stessi capitoli. I contenuti sono moduli TypeScript verificati con `satisfies`, compilati insieme al gioco: non servono CMS, database, JSON runtime o plugin caricati dalla rete.
 
 ## Identificatori
 
@@ -37,12 +37,11 @@ type ScoreName = "evidence" | "care" | "publicTrust";
 Formato consigliato:
 
 ```text
-core.node.prologue.field-intro
-core.message.prologue.field-flash
-core.asset.scene.field-night
-core.source.comune.ordinanza-2026
-core.dossier.photo-confirmed
-core.outcome.varano-count
+core.node.finale.rescued
+core.message.finale.option.shoot
+core.level.colle-san-pancrazio
+core.choice.prologue.priority
+core.outcome.count-of-six-hills
 ```
 
 Gli ID sono stabili e non contengono testo tradotto.
@@ -152,6 +151,11 @@ export interface LevelNode extends BaseNode {
   readonly type: "level";
   readonly levelId: LevelId;
   readonly configId: LevelConfigId;
+  /** Titolo e introduzione propri: ogni livello si presenta (ADR-030). */
+  readonly headingKey: MessageKey;
+  readonly introKey: MessageKey;
+  /** «Dove eravamo»: il riassunto mostrato nel briefing (ADR-034). */
+  readonly recapKey: MessageKey;
   readonly completedNodeId: NodeId;
   readonly skippedNodeId: NodeId;
 }
@@ -168,9 +172,13 @@ export interface EndingNode extends BaseNode {
 }
 ```
 
+**Quali di questi tipi sono davvero in gioco.** Il pack pubblicato usa soltanto `dialogue`, `choice`, `level` ed `ending`. `scene`, `dossier-card`, `surprise` e `chapter-end` restano definiti e renderizzabili, ma nessun nodo li usa: `scene` e `surprise` sono i residui del prototipo point-and-click, `dossier-card` è caduto con ADR-024 quando l'Archivio è passato a `docs/SOURCES.md`. Il renderer lo dichiara nel proprio `switch`. Sono cuciture, non funzioni: chi legge questo modello non deve dedurre che il gioco mostri schede o hotspot, perché oggi non lo fa.
+
 ## Misteri e indizi
 
-Lo stato di un mistero è derivato dagli indizi scoperti; non salvare un secondo campo `mysteryStatus` che potrebbe divergere.
+I contratti esistono, i contenuti no: nel pack `core` `mysteries` e `theories` sono array vuoti, e l'origine del Varano resta dichiaratamente irrisolta. Sono la cucitura per un eventuale seguito, non una funzione che il gioco usa oggi.
+
+Se un giorno venissero riempiti, la regola è: lo stato di un mistero è derivato dagli indizi scoperti; non salvare un secondo campo `mysteryStatus` che potrebbe divergere.
 
 ```ts
 export interface TheoryDefinition {
@@ -220,10 +228,11 @@ export interface Hotspot {
 export interface DialogueLine {
   readonly speakerId: SpeakerId;
   readonly textKey: MessageKey;
-  readonly dialectTextKey?: MessageKey;
   readonly portraitAssetId?: AssetId;
 }
 ```
+
+Il nome del parlante non si scrive nella battuta: la bolla lo ricava dallo `speakerId` con la chiave `<pack>.message.speaker.<id>`, validata in build (ADR-043).
 
 Le coordinate hotspot sono percentuali da 0 a 100. `validateContent()` verifica che il rettangolo sia valido e che esista sempre un'etichetta testuale equivalente.
 
@@ -234,8 +243,6 @@ Il linguaggio delle condizioni resta volutamente piccolo:
 ```ts
 export type Condition =
   | { readonly type: "role-is"; readonly role: Role }
-  | { readonly type: "approach-is"; readonly approach: Approach }
-  | { readonly type: "sensitivity-is"; readonly sensitivity: Sensitivity }
   | { readonly type: "story-scope-is"; readonly scope: StoryScope }
   | {
       readonly type: "flag-is";
@@ -320,31 +327,22 @@ export interface ChoiceConfirmation {
 
 I punteggi restano nell'intervallo 0–6. Il reducer applica clamp; il contenuto non gestisce direttamente numeri fuori intervallo.
 
-Il validatore applica anche il contesto del pacchetto. Un pack opzionale può scrivere soltanto ID col proprio namespace o flag condivisi presenti nella allowlist `campaign.*`; non può modificare punteggi, condizione, destino del Varano o ID posseduti dal core. In questo modo un dossier rimosso non lascia effetti invisibili sui finali principali.
+Il validatore verifica che ogni ID stia nel namespace del proprio pack. La regola più forte — un pack opzionale non può toccare punteggi, condizione, destino o ID del core — è scritta ma non ancora codificata: varrà quando esisterà un secondo pack.
 
 ## Esiti
 
-Gli esiti sono deterministici e ordinati per priorità:
-
-```ts
-export interface OutcomeRule {
-  readonly outcomeId: OutcomeId;
-  readonly priority: number;
-  readonly when: readonly Condition[];
-}
-```
+L'esito non è calcolato da un motore di regole a priorità: è **il finale in cui il giocatore arriva**. Ogni `EndingNode` dichiara il proprio `outcomeId`, e il confronto sulla torre porta a uno dei sei tramite opzioni con `when`. La scelta di non introdurre un `OutcomeRule` separato è deliberata: due sorgenti di verità sull'esito diverrebbero due sorgenti da tenere d'accordo.
 
 La validazione deve dimostrare che:
 
-- ogni combinazione cartesiana supportata `role × approach × sensitivity × storyScope` raggiunge almeno un finale: 48 combinazioni con i valori correnti;
-- ogni scope narrativo supportato torna al core e non rompe una specifica combinazione di ruolo, approccio o sensibilità;
-- `gentle` non può raggiungere `foundDead` o `killedByHunter`;
-- `complete` può raggiungere `foundDead` senza azione del giocatore;
-- `killedByHunter` è raggiungibile soltanto da `hunter + evidence + complete`, con conferma e tag `impliedAnimalDeath`;
-- nessun altro ruolo o approccio può produrre un'azione letale diretta;
+- ognuno dei quattro ruoli — l'unico asse di setup rimasto (ADR-048) — raggiunge almeno un finale;
+- `killedByHunter` è raggiungibile soltanto dal Cacciatore che ha scelto «Documenta la scena», con conferma e tag `impliedAnimalDeath` sull'opzione **e** sul finale;
+- nessun altro ruolo può produrre un'azione letale diretta;
 - il finale letale non aggiunge indizi esclusivi, premi o analytics;
-- regole con la stessa priorità non si sovrappongono;
-- esiste un fallback `core.outcome.open-mystery`.
+- il finale con la corona richiede tutti e sei i sigilli, che i tre interludi dei colli assegnano;
+- esiste un finale di fallback `core.outcome.open-mystery`, e la sua assenza fa fallire la build.
+
+Sono **sei famiglie di finale** e il tetto è dichiarato (ADR-047): rescued, escaped, il Varano che sceglie, il Conte dei Sei Colli, l'abbattimento e il mistero aperto.
 
 ## Riutilizzo fra ruoli
 
@@ -361,15 +359,10 @@ Indicatore di allarme: se un capitolo contiene quattro file quasi uguali per ruo
 
 ```ts
 export type MessageCatalog = Readonly<Record<MessageKey, string>>;
-
-export interface LocaleBundle {
-  readonly locale: "it" | "it-BS";
-  readonly messages: MessageCatalog;
-}
 ```
 
-- Il catalogo italiano deve coprire tutte le chiavi referenziate.
-- Il catalogo bresciano può essere parziale.
+- L'italiano è l'unica lingua e deve coprire tutte le chiavi referenziate; una chiave mancante fa fallire la build.
+- Ogni capitolo porta il proprio `messages.ts`; `pack.ts` li unisce al catalogo di chrome.
 - Niente HTML nei messaggi; rendering con `textContent`.
 - Placeholder permessi solo tramite una funzione tipizzata e valori interni, mai input utente.
 
@@ -415,112 +408,41 @@ export interface StoryPack {
 }
 ```
 
-Il core espone pochi punti d'innesto stabili:
+`ChapterInsertion` esiste come cucitura per un eventuale pack opzionale: nel pack `core` è sempre assente. Ogni ID posseduto da un pack inizia con il suo Pack ID, e il validatore rifiuta un ID fuori namespace.
 
-```text
-core.hook.after-red-zone
-core.hook.after-superstar
-core.hook.before-castle
-core.hook.after-credits
-```
-
-Un pacchetto può usare più hook tramite capitoli distinti. Ogni capitolo opzionale ha un solo `exitNodeId`, che deve identificare un `chapter-end`; il compositore collega quell'uscita al capitolo seguente nello stesso hook oppure alla rotta core. Un capitolo core che termina direttamente in `EndingNode` può omettere `exitNodeId`. Gli ID sono namespaced, per esempio `origins.open-cage.scene.greenhouse`.
-
-## Definizione e grafo composto
+## Il grafo
 
 ```ts
-export interface CampaignDefinition {
-  readonly id: "varano-239";
-  readonly titleKey: MessageKey;
-  readonly subtitleKey: MessageKey;
-  readonly entryNodeId: NodeId;
-  readonly contentVersion: number;
-  readonly sharedFlagIds: readonly FlagId[];
-  readonly coreTransitions: readonly CoreChapterTransition[];
-  readonly outcomes: readonly OutcomeRule[];
-  readonly packs: readonly StoryPack[];
-}
-
-export interface CoreChapterTransition {
-  readonly exitNodeId: NodeId;
-  readonly targetNodeId: NodeId;
-  readonly extensionPointId?: ExtensionPointId;
-}
-
 export interface StoryGraph {
   readonly entryNodeId: NodeId;
-  readonly chapters: Readonly<Record<ChapterId, Chapter>>;
-  readonly nodes: Readonly<Record<NodeId, StoryNode>>;
-  readonly chapterExitTargets: Readonly<Record<NodeId, NodeId>>;
-  readonly dossierCards: Readonly<Record<DossierCardId, DossierCard>>;
-  readonly clues: Readonly<Record<ClueId, ClueDefinition>>;
-  readonly messages: MessageCatalog;
-  readonly mysteries: Readonly<Record<MysteryId, MysteryDefinition>>;
-  readonly theories: Readonly<Record<TheoryId, TheoryDefinition>>;
-  readonly sources: Readonly<Record<SourceId, SourceRef>>;
-  readonly outcomes: readonly OutcomeRule[];
-}
-
-export type StorySelection =
-  | { readonly kind: "new-run"; readonly scope: StoryScope }
-  | {
-      readonly kind: "resume";
-      readonly activePackVersions: Readonly<Record<StoryPackId, number>>;
-    };
-
-export interface StoryComposition {
-  readonly graph: StoryGraph;
-  readonly activePackVersions: Readonly<Record<StoryPackId, number>>;
-  readonly unavailablePackIds: readonly StoryPackId[];
+  readonly nodes: readonly StoryNode[];
 }
 ```
 
-`composeStoryPacks(CampaignDefinition, StorySelection)` produce `StoryComposition`; gli autori non mantengono registri appiattiti duplicati. La definizione contiene tutti gli input necessari: ingresso, esiti, flag condivisi e transizioni core. Il titolo viene letto dalla definizione della campagna: non duplicarlo in componenti, metadati o test senza una funzione di configurazione condivisa.
+Il grafo è volutamente minimo: un ingresso e una lista di nodi. Non esiste un compositore multi-pack — `composeStoryPacks()` non è implementata, perché con un solo pack non ci sarebbe niente da comporre. Il collegamento fra capitoli lo fa `chainChapters()`, che sostituisce il segnaposto `nextChapterNodeId` di ogni capitolo con l'ingresso del successivo (ADR-034). È questo a rendere l'inserimento di un capitolo a metà campagna un'operazione che **non tocca i capitoli già scritti**.
 
-`coreTransitions` assegna una destinazione a ogni `ChapterEndNode` core non terminale; una transizione diventa un punto d'innesto soltanto se dichiara `extensionPointId`. Il compositore copia prima tutte le rotte base, poi raggruppa i capitoli opzionali per `insertion.at`, li ordina per `order`, Pack ID e Chapter ID, e costruisce `chapterExitTargets`: uscita core → primo capitolo opzionale → eventuali capitoli successivi → `targetNodeId` originale. Se non esistono inserimenti, conserva la rotta base. `order` deve essere un intero non negativo; gli spareggi rendono la build deterministica, ma la CI segnala gli ordini duplicati nello stesso pack.
-
-Per una nuova partita, `scope` seleziona i pack dalla build corrente. Per una ripresa, il compositore include soltanto gli ID presenti nello snapshot `activePackVersions`: un pack appena aggiunto non entra a metà della storia. Una differenza di versione richiede prima una migrazione; un pack opzionale non più registrato compare in `unavailablePackIds` e attiva il fallback del salvataggio. L'assenza o incompatibilità del pack core rende invece il salvataggio non ripristinabile e offre una nuova partita.
-
-Ogni ID posseduto da un pack inizia con il suo Pack ID. I soli ID senza proprietario di pack sono i flag `campaign.*` elencati esplicitamente in `sharedFlagIds`; il validatore ricava condizioni ed effetti dai dati e rifiuta ogni altro accesso cross-pack.
+Il grafo è anche la fonte della numerazione: `level-position.ts` conta i nodi di tipo `level` per produrre «Liv. N/10» nell'HUD e le righe della Collezione. Aggiungere un livello aggiorna i numeri da solo, senza costanti da tenere allineate.
 
 ## Validazione di build
 
-`npm run validate` deve fallire per:
+`npm run validate` compila i contratti di tipo ed esegue `validateContent()` sul pack. La build fallisce per:
 
-- ID duplicati o riferimenti inesistenti;
-- teoria associata a un mistero inesistente o elencata da un mistero diverso;
-- indizio che sostiene o contraddice una teoria di un altro mistero;
-- nodi irraggiungibili dal prologo;
-- cicli senza uscita;
-- finali irraggiungibili;
-- chiavi italiane o asset mancanti;
-- hotspot senza etichetta o fuori area;
-- `fact`/`testimony`/`hypothesis` senza fonti conformi;
-- `legend` senza avviso di finzione o che renda riconoscibile un soggetto reale accusato;
-- `disproven` senza fonte autorevole di confutazione;
-- URL fonte non HTTPS;
-- data `verifiedAt` non valida;
-- `SurpriseNode` senza `hostSceneNodeId` valido o associato a una scena `noSurprise`;
-- nodo giocabile privo di `narrativeLayer: "legend"` o schermata senza il banner persistente di ricostruzione;
-- finale postumo raggiungibile in modalità `gentle`;
-- `killedByHunter` raggiungibile fuori da `hunter + evidence + complete`;
-- scelta letale senza conferma aggiuntiva, tag sensibile o alternative non letali;
-- indizio disponibile soltanto dopo l'abbattimento;
-- combinazioni di setup prive di esito;
-- contenuti dialettali usati come informazione necessaria;
-- ID di pacchetto senza namespace o collisioni con il core;
-- dipendenza di pacchetto mancante o ciclica;
-- hook contenuto nella `insertion` di capitolo inesistente o non pubblicato da una transizione core;
-- `coreTransitions` che non assegna una e una sola rotta a ogni `ChapterEndNode` core non terminale;
-- transizione core con uscita diversa da un `ChapterEndNode` core o destinazione core inesistente;
-- `entryNodeId`, eventuale `exitNodeId` o `checkpointNodeId` estraneo al capitolo dichiarato;
-- pacchetto senza via di uscita o che rende irraggiungibile un finale core;
-- nodo, flag o messaggio core sovrascritto da un'espansione;
-- lettura o scrittura cross-pack di un flag non presente in `sharedFlagIds`, anche se usa il prefisso `campaign.*`;
-- effetto di pack opzionale che cambia punteggio, condizione, destino o un ID posseduto dal core;
-- `ChapterBundle` core con `insertion`, oppure bundle opzionale senza `exitNodeId`, `insertion.at` e `insertion.order` validi;
-- opzione che imposta `killedByHunter` o relativo `EndingNode` senza `sensitivityTags: ["impliedAnimalDeath"]`;
-- collisione fra messaggi, indizi, carte, fonti o regole di esito durante la composizione;
-- `EndingNode`, `ChapterEndNode` o `LevelNode` con uscite ulteriori rispetto al proprio contratto.
+- ID duplicati;
+- ID fuori dal namespace del pack;
+- riferimento a un nodo, messaggio, asset o carta del Dossier inesistente;
+- nodo irraggiungibile dall'ingresso del pack;
+- pack senza capitolo d'ingresso;
+- `entryNodeId`, `exitNodeId` o `checkpointNodeId` di un capitolo che punta a un nodo di un altro capitolo;
+- hotspot fuori dai limiti della scena (rettangolo in percentuali 0–100);
+- `SurpriseNode` con host che non è una scena o è una scena `noSurprise`;
+- `LevelNode` la cui coppia `levelId`/`configId` non è nel registro dei livelli, o le cui chiavi di messaggio mancano;
+- asset senza il messaggio di testo alternativo;
+- `fact`/`testimony`/`hypothesis` senza almeno una fonte registrata;
+- `legend` senza `fictionNoticeKey`;
+- `disproven` senza almeno una fonte di confutazione in `refutationSourceIds`;
+- URL di fonte non HTTPS o malformato, `accessedAt`/`publishedAt`/`verifiedAt` con data non valida;
+- opzione letale senza conferma con focus su «annulla», non gated al Cacciatore, o che non punta a un finale taggato `impliedAnimalDeath`;
+- nodo di scelta con un'opzione letale ma meno di due alternative non letali sempre visibili;
+- assenza del finale di fallback `core.outcome.open-mystery`.
 
-La validazione del grafo è codice di dominio e deve avere test unitari propri.
+La validazione del grafo è codice di dominio e ha i suoi test in `tests/content/`.

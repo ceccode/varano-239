@@ -12,21 +12,22 @@ Non serve conoscere chi gioca, quale personaggio sceglie, come risponde, quale f
 ## Cosa significano i numeri
 
 - **Visite**: sessioni stimate dal servizio di analytics.
-- **Avvii**: numero di pressioni effettive su «Inizia la storia», una per nuova partita.
+- **Avvii**: una per nuova partita, cioè per ogni scelta di ruolo nella schermata iniziale. Una ripresa dal salvataggio non conta.
 - **Visitatori unici**: stima tecnica, non conteggio esatto di persone. La stessa persona può risultare più volte in giorni o dispositivi diversi; più persone sullo stesso dispositivo possono risultare come una.
 
 Nella UI e nei report usare «visite stimate», non «persone identificate».
 
 ## Dati locali
 
-Nella M1 il browser conserva soltanto:
+Il browser conserva soltanto, in `localStorage`, tre chiavi:
 
-- avanzamento, checkpoint, scelte narrative e schede del Dossier scoperte;
-- ruolo, approccio, sensibilità, profondità del mistero ed esito, tutti esclusivamente locali;
-- impostazioni di accessibilità;
-- versione dello schema locale.
+| Chiave                     | Contenuto                                                                                                 |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `varano-239.save`          | avanzamento, checkpoint, scelte narrative, schede del Dossier scoperte, ruolo, esito e impostazioni       |
+| `varano-239.best-score`    | il record personale di punteggio                                                                          |
+| `varano-239.level-records` | l'archivio della Collezione: per ogni livello punteggio, indizi, stella, cameo e «senza cadute» (ADR-057) |
 
-I campi per teorie, inventario e versioni dei pack sono già predisposti nello stato ma restano vuoti finché i relativi contenuti non esistono. Il salvataggio usa la chiave `varano-239.save` in `localStorage`, non viene sincronizzato e non lascia il dispositivo. Il menu offre «Cancella progressi e preferenze locali». Non memorizzare nome, email, data di nascita, posizione, testo libero, data e ora del salvataggio o identificatori di analytics.
+I campi per teorie, inventario e versioni dei pack sono predisposti nello stato ma restano vuoti, perché i relativi contenuti non esistono. Niente viene sincronizzato e niente lascia il dispositivo. Il menù offre «Cancella progressi e preferenze locali», che azzera tutte e tre le chiavi. Non memorizzare nome, email, data di nascita, posizione, testo libero, data e ora del salvataggio o identificatori di analytics.
 
 ## Eventi remoti ammessi
 
@@ -40,9 +41,9 @@ export type AnalyticsEvent =
 Regole:
 
 - nessun payload o proprietà custom;
-- nessun evento per ruolo, approccio, sensibilità, profondità del mistero, pacchetto, capitolo, scelta, teoria o finale;
+- nessun evento per ruolo, capitolo, livello, punteggio, scelta o finale;
 - `page_view` una volta al caricamento del client;
-- `game_start` una volta dopo «Inizia la storia», non a ogni ripresa del salvataggio;
+- `game_start` una volta per nuova partita, non a ogni ripresa del salvataggio;
 - l'adapter traduce `game_start` in un evento GoatCounter con nome fisso e `no_session: true`, così ogni nuova partita viene contata anche se la stessa sessione ne avvia più di una; questa è configurazione statica dell'adapter, non un payload narrativo;
 - nessun errore, tempo di sessione, click, movimento del mouse o heatmap;
 - nessuna registrazione di URL con query string o frammenti;
@@ -89,15 +90,14 @@ Alternative:
 - Il provider è selezionato tramite variabile di build validata; nessun endpoint hardcoded nei test.
 - Lo script parte con `no_onload: true`: soltanto l'adapter tipizzato invia i due percorsi fissi, senza titolo dinamico, query string o referrer.
 - Nella dashboard disabilitare pageview individuali e tutte le dimensioni opzionali non necessarie: posizione, browser, sistema, lingua e larghezza schermo.
-- Se `navigator.doNotTrack === "1"` o il browser espone un segnale Global Privacy Control attivo, non caricare lo script e usare `NoopAnalytics`.
-- Le impostazioni mostrano «Condividi statistiche anonime» e consentono di disattivare le richieste future. La preferenza resta locale.
+- Se `navigator.doNotTrack === "1"` o il browser espone un segnale Global Privacy Control attivo, l'adapter non carica nemmeno lo script e si comporta come `NoopAnalytics`. **Oggi questo è l'unico opt-out**: non esiste un interruttore in-app, e l'informativa non deve prometterne uno.
 - La Content Security Policy autorizza soltanto dominio del sito e dominio analytics scelto.
 - Non usare Google Tag Manager, cookie manager, advertising SDK o proxy volto a eludere gli ad blocker.
 - Non abilitare nel provider raccolta di pageview individuali, dettagli geografici più fini del necessario o conservazione non indispensabile.
 
 ## Informativa breve proposta
 
-> Il gioco salva i progressi soltanto su questo dispositivo. Se le statistiche anonime sono attive, invia a GoatCounter una visita e l'eventuale avvio della partita, senza account, cookie, scelte di gioco o identificatori persistenti. Puoi disattivarle nelle Impostazioni.
+> Il gioco salva i progressi soltanto su questo dispositivo. Sul sito pubblicato invia a GoatCounter una visita aggregata e l'avvio di una nuova partita, senza account, cookie, scelte di gioco o identificatori persistenti. Se il tuo browser segnala «Do Not Track» o Global Privacy Control, non viene inviato nulla.
 
 L'informativa completa deve indicare almeno titolare del progetto, provider, finalità, categorie di dati trattati, base giuridica valutata dal titolare, durata/conservazione applicabile, modalità di esercizio dei diritti e data di aggiornamento. Prima della pubblicazione il proprietario deve inserire i propri dati reali e verificare l'assetto legale; questo documento non sostituisce consulenza legale.
 
@@ -113,7 +113,6 @@ In E2E intercettare tutte le richieste di rete dopo il caricamento degli asset l
 | Due nuove partite        | Due `game_start` nella stessa sessione |
 | Riprendi partita         | Nessun `game_start`                    |
 | DNT o GPC                | Zero richieste analytics               |
-| Toggle disattivato       | Zero richieste successive              |
 | Provider irraggiungibile | Gioco completabile, nessun errore UI   |
 | URL con query/frammento  | Nessun query/frammento inviato         |
 
