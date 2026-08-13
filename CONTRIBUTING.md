@@ -4,15 +4,15 @@ Grazie per voler contribuire. Il progetto è amatoriale, gratuito e pensato per 
 
 ## Regole fondamentali
 
-- Pubblico 12+: niente parolacce o gore. La sola violenza letale diretta ammessa è la scelta finale `hunter + evidence + complete`.
+- Pubblico 12+: niente parolacce o gore. La sola violenza letale diretta ammessa è la scelta finale del Cacciatore che ha scelto «Documenta la scena» nel prologo.
 - Il Varano resta il protagonista narrativo in ogni percorso.
 - Le persone umane sono inventate o composite.
-- Le scene giocabili sono sempre marcate LEGGENDA; i fatti reali compaiono in schede attribuite e nell'Archivio.
+- Le scene giocabili sono sempre marcate LEGGENDA; i fatti reali vivono nell'Archivio, cioè in `docs/SOURCES.md`, linkato dai credits.
 - Il Sindaco Eroe governa il comune totalmente fittizio di Borgocoda, guida soltanto la propria delegazione in un'esercitazione inventata e non riproduce il sindaco reale; il Cacciatore armato è LEGGENDA dalla prima apparizione.
 - I finali sono versioni alternative e non devono sembrare cronaca reale.
 - Fuga, abbandono e complotto sono teorie narrative: nessuna può accusare persone o organizzazioni reali.
 - Fatti, testimonianze, ipotesi, leggende e piste sconfessate devono essere distinguibili nei dati e nell'interfaccia.
-- Il gioco deve essere completabile con touch, mouse o sola tastiera e senza audio.
+- Il gioco deve essere completabile con touch o sola tastiera, senza audio e senza riflessi rapidi: ogni livello è saltabile con lo stesso esito narrativo.
 - Nessun account, pubblicità, geolocalizzazione, classifica o tracciamento individuale.
 
 ## Prima di iniziare
@@ -46,6 +46,7 @@ npm run format:check
 npm run test
 npm run test:e2e
 npm run validate
+npm run size
 npm run check
 ```
 
@@ -61,14 +62,14 @@ npm run check
 - Non introdurre una libreria per risolvere una funzione piccola e stabile.
 - Non creare cartelle generiche come `utils`, `helpers`, `common` o `services`.
 - Ogni modulo deve avere una responsabilità descrivibile in una frase.
-- Nuovi misteri e capitoli sono Story Pack dichiarativi registrati a build time. Un nuovo livello aggiunge un `LevelNode` e, per una nuova meccanica, un adapter isolato nel registro compilato, secondo `docs/EXPANSIONS.md`.
+- Capitoli e livelli sono contenuti dichiarativi compilati a build time. Un livello aggiunge un `LevelNode` e, per una meccanica davvero nuova, un adapter isolato nel registro, secondo `docs/EXPANSIONS.md`. La campagna è però **chiusa a dieci livelli e sei finali** (ADR-047): aggiungerne è una decisione del proprietario, non un contributo ordinario.
 - I bug fix riproducibili devono includere un test di regressione.
 
 ## Interfaccia e accessibilità
 
 - Usare HTML semantico e veri elementi `button` per le azioni.
 - Mantenere focus visibile e prevedibile dopo dialoghi e popup.
-- Offrire un elenco testuale equivalente agli hotspot pixel-art.
+- Offrire sempre un'alternativa testuale a ciò che è solo grafico.
 - Non affidare informazioni soltanto a colore, suono, posizione o movimento.
 - Rispettare `prefers-reduced-motion` nelle animazioni decorative e la modalità senza sorprese; la parte arcade resta il default per tutti (ADR-046).
 - Ogni mini-gioco deve poter essere saltato con un esito narrativo equivalente.
@@ -83,9 +84,8 @@ npm run check
 - Specie, dimensioni e destino reale del Varano restano incerti finché non esiste una fonte diretta verificabile.
 - Nessuna scena deve incoraggiare visite o ricerche nella zona reale degli avvistamenti.
 - La scena postuma e l'abbattimento sono fuori campo, rispettosi e senza gag.
-- La scelta «Abbatti il Varano» è disponibile solo a `hunter + evidence + complete`, richiede conferma e non usa mira, precisione o simulazione d'arma.
+- La scelta «Abbatti il Varano» è disponibile solo al Cacciatore che ha scelto «Documenta la scena», richiede conferma con il focus su «Torna indietro» e non usa mira, precisione o simulazione d'arma.
 - Fuga e abbandono restano TESTIMONIANZA o IPOTESI attribuite; reperti, responsabili, organizzazioni, codici e complotti sono LEGGENDA, completamente inventati e non riconoscibili tramite dettagli indiretti.
-- Le battute bresciane sono facoltative e richiedono revisione di una persona competente.
 
 ## Asset e proprietà intellettuale
 
@@ -98,7 +98,7 @@ npm run check
 
 ## Privacy
 
-Gli unici eventi analytics ammessi sono una visita aggregata e l'avvio di una nuova partita, senza proprietà aggiuntive. Non raccogliere ruolo, approccio, sensibilità, capitoli, scelte, finale, posizione o identificatori persistenti.
+Gli unici eventi analytics ammessi sono una visita aggregata e l'avvio di una nuova partita, senza proprietà aggiuntive. Non raccogliere ruolo, capitoli, livelli, punteggi, scelte, finale, posizione o identificatori persistenti.
 
 Il gioco deve funzionare normalmente se analytics, rete o salvataggio locale non sono disponibili.
 
@@ -108,11 +108,11 @@ Una pull request deve:
 
 - risolvere un solo problema ben delimitato;
 - descrivere comportamento precedente e nuovo;
-- collegare l'issue o il milestone;
+- collegare l'issue;
 - includere test pertinenti;
 - includere screenshot o video per cambi visivi;
 - aggiornare documentazione, fonti e registro asset quando necessario;
-- aggiungere validazione e test di raggiungibilità per ogni nuovo pacchetto narrativo;
+- aggiungere validazione e test di raggiungibilità per ogni nuovo contenuto narrativo;
 - superare `npm run check`.
 
 Evitare di combinare refactor estesi e nuove funzionalità quando possono essere revisionati separatamente.
@@ -126,7 +126,7 @@ Una modifica è completa quando:
 - funziona con tastiera, touch e movimento ridotto;
 - non amplia dati raccolti o dipendenze senza approvazione;
 - aggiorna documentazione e provenienza degli asset;
-- non lascia TODO privi di issue o milestone.
+- non lascia TODO privi di issue.
 
 ## Segnalazioni delicate
 

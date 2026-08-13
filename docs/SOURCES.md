@@ -201,30 +201,13 @@ Queste fonti sostengono la gag della «fama mondiale», non misurano la notoriet
 | Provenienza            | fuga o abbandono da privato                                                                     | Ipotesi, non fatto                                                                                               |
 | Disegno intenzionale   | nessuna fonte consultata lo sostiene                                                            | Soltanto LEGGENDA con soggetti inventati                                                                         |
 
-## Schede documentarie previste
+## Dov'è l'Archivio
 
-| ID                                 | Timbro        | Titolo UI                                      | Fonte minima                                 |
-| ---------------------------------- | ------------- | ---------------------------------------------- | -------------------------------------------- |
-| `core.dossier.photo-confirmed`     | FATTO         | Segnalazioni fotografiche ritenute attendibili | Ordinanza n. 132                             |
-| `core.dossier.photo-0239`          | TESTIMONIANZA | L'orario delle 2:39                            | Open + Kodami                                |
-| `core.dossier.ordinance-132`       | FATTO         | Dieci giorni di zona interdetta                | Ordinanza n. 132                             |
-| `core.dossier.search-tools`        | FATTO         | Droni termici e due gabbie                     | Ordinanza n. 132                             |
-| `core.dossier.no-capture-at-order` | FATTO         | Non catturato al 28 luglio                     | Ordinanza n. 132                             |
-| `core.dossier.species-uncertain`   | FATTO         | Nessuna identificazione diretta nell'atto      | Ordinanza `Varanus spp.`; confronto Kodami   |
-| `core.dossier.media-publications`  | FATTO         | La notizia oltre le testate italiane           | EFE/Swissinfo + PAP + canale ANSA Cina       |
-| `core.dossier.world-famous`        | LEGGENDA      | Famoso in tutto il mondo, forse                | Avviso di iperbole; nessun dato di notorietà |
-| `core.dossier.castle-history`      | FATTO         | Il castello neogotico                          | Comune + Montichiari Musei                   |
+**L'Archivio è questo documento.** Il gioco non contiene nessuna scheda di Dossier: dalla ADR-024 il registro editoriale vive qui, in `docs/SOURCES.md`, ed è linkato dai credits nel menù in-game. I contratti `DossierCard` e `dossier-card` restano nei tipi, ma nessun nodo pubblicato li usa; il renderer lo dichiara esplicitamente.
 
-### Contenuto sospeso
+Di conseguenza tutto ciò che il giocatore può leggere come FATTO, TESTIMONIANZA o IPOTESI è la cronologia verificata qui sopra, con le sue fonti e la sua data. Tutto ciò che il gioco mette in scena è LEGGENDA, e lo dichiara con il banner persistente.
 
-La scheda `core.dossier.six-hills` non entra nel gioco finché una revisione locale non conferma grafie, associazioni territoriali e fonte primaria dei nomi. Nel frattempo «Sei Colli» resta un'espressione narrativa marcata **LEGGENDA**, non un elenco presentato come fatto o ipotesi reale.
-
-## Dossier Origini previsti
-
-| ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Timbro | Contenuto                             | Regola                                                              |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------------------------------- | ------------------------------------------------------------------- |
-| `core.dossier.origin-unknown`                                                                                                                                                                                                                                                                                                                                                                                                                                             | FATTO  | Le fonti non accertano la provenienza | Descrivere il limite della ricerca, non un fatto assoluto sul mondo |
-| Le schede dei pacchetti non ancora pubblicati — comprese le piste inventate sull'origine del Varano — sono registrate nei documenti di trama privati, per non anticipare contenuti che il gioco non ha ancora mostrato. Valgono comunque le stesse regole: ogni FATTO, TESTIMONIANZA e IPOTESI cita fonti conformi, ogni LEGGENDA dichiara di essere finzione, i responsabili sono sempre inventati e non riconoscibili e nessun soggetto rimanda a enti o persone reali. |
+«Sei Colli» resta un'espressione narrativa marcata **LEGGENDA**: i sei nomi usati dai sigilli non sono presentati come elenco storico accertato, perché le grafie e le associazioni territoriali non sono state confermate da una fonte locale primaria.
 
 ## Procedura di aggiornamento
 

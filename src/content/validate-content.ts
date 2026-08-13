@@ -43,9 +43,7 @@ function nodeMessageKeys(node: StoryNode): readonly MessageKey[] {
       // is derived from the speaker id by convention, per pack namespace.
       return node.lines.flatMap((line) => [
         line.speakerId.replace(".speaker.", ".message.speaker."),
-        ...(line.dialectTextKey === undefined
-          ? [line.textKey]
-          : [line.textKey, line.dialectTextKey]),
+        line.textKey,
       ]);
     case "choice":
       return [
