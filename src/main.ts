@@ -43,8 +43,14 @@ void loadLocale(initialLocale)
 
 // The service worker is production-only: in dev it would cache Vite modules.
 // A new version installs and WAITS (ADR-054): the page announces it with the
-// banner, and the reload happens once, when the player accepts.
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
+// banner, and the reload happens once, when the player accepts. The
+// distributable build disables it (VITE_NO_SW): portal iframes cannot register
+// a service worker and the offline update banner means nothing there (FASE 8).
+if (
+  import.meta.env.PROD &&
+  import.meta.env.VITE_NO_SW !== "1" &&
+  "serviceWorker" in navigator
+) {
   const container = navigator.serviceWorker;
   reloadOnControllerChange(container, () => {
     window.location.reload();

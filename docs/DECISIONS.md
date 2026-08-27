@@ -195,6 +195,7 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Decisione: il sito statico viene pubblicato su **Netlify** con `netlify.toml` (build `npm run build`, publish `dist/`, base path `/`) all'indirizzo **app.varano239.it**. La landing page è su **varano239.it** (progetto separato). GitHub Pages è stato rimosso come mirror.
 - Perché: richiesta esplicita del proprietario; Netlify offre deploy da CLI, anteprime e dominio dedicato senza sottocartella, semplificando il base path.
 - Conseguenza: il base path di produzione predefinito diventa `/`; `VITE_BASE_PATH` resta disponibile per eventuali mirror in sottocartella. Nessun backend, nessun segreto nel bundle.
+- Aggiornamento (27 agosto 2026): la **build distribuibile** (`npm run dist`, FASE 8 del piano di lancio) accetta anche il base relativo `./` e disattiva il service worker (`VITE_NO_SW`), per lo ZIP da caricare su portali che incastonano il gioco in un iframe (itch.io per primo). La route di produzione su Netlify resta invariata su `/`.
 
 ## ADR-021 — Gioco a schermo intero senza title screen
 

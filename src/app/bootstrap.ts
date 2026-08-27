@@ -8,7 +8,6 @@ import type { BestScorePort } from "../platform/storage/best-score";
 import type { LevelRecordsPort } from "../platform/storage/level-records";
 import { renderBootstrapError } from "../platform/dom/render-app";
 import { createGameController, type GameController } from "./controller";
-import { appConfigForLocale } from "./config";
 
 export interface BootstrapDependencies {
   readonly document: Document;
@@ -106,9 +105,10 @@ export function startApplication(dependencies: BootstrapDependencies): void {
   } catch (error) {
     console.error("Application bootstrap failed.", error);
     dependencies.document.documentElement.classList.remove("js");
-    renderBootstrapError(
-      dependencies.document,
-      appConfigForLocale(dependencies.initialLocale ?? "it").bootstrapError,
-    );
+    const locale: Locale = dependencies.initialLocale ?? "it";
+    renderBootstrapError(dependencies.document, {
+      title: resolveMessage(locale, "core.message.bootstrap-error.title"),
+      body: resolveMessage(locale, "core.message.bootstrap-error.body"),
+    });
   }
 }

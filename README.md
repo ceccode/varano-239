@@ -94,9 +94,14 @@ Commands:
 | `npm run test:e2e`     | Run Playwright and axe against a `/`-based build.                    |
 | `npm run validate`     | Compile the contracts and validate graph, sources, assets, messages. |
 | `npm run size`         | Enforce the bundle budget (80 KB JS / 10 KB CSS gzip).               |
+| `npm run dist`         | Build the portable zip `varano239-web.zip` for portals (FASE 8).     |
 | `npm run check`        | Run every gate defined in `docs/QUALITY.md`, in order.               |
 
 The build uses base `/` (Netlify, ADR-020). The configuration accepts `VITE_BASE_PATH` for other subpaths; use the same base for build and preview. The build has no runtime dependencies and loads no remote fonts, scripts or assets.
+
+### Distributable web build
+
+`npm run dist` produces `varano239-web.zip` (contents in `dist-dist/`) for portals that host the game in an iframe, starting with itch.io. It rebuilds with a **relative base** (`./`) and **without the service worker** (portal iframes cannot register one), then fails if the artifact keeps absolute asset paths or depends on the production domains. `index.html` sits at the zip root. The zip is gitignored and regenerated on demand.
 
 Pull requests produce a downloadable preview artifact after the quality gate. Pushes on `main` re-run `npm run check` and publish the static artifact to **Netlify** at [app.varano239.it](https://app.varano239.it). The landing page is at [varano239.it](https://varano239.it).
 

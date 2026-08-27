@@ -3,6 +3,8 @@ node_modules/
 
 # Production and tool output
 dist/
+dist-dist/
+varano239-web.zip
 coverage/
 .vite/
 .cache/
