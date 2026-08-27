@@ -58,7 +58,7 @@ In caso di conflitto:
 - La campagna è chiusa a **10 livelli e 6 finali** (ADR-047): capitoli e livelli sono contenuti dichiarativi compilati, un nuovo livello aggiunge una cartella di capitolo e una voce nel registro senza toccare quelli già scritti (ADR-034).
 - TypeScript + Vite, zero dipendenze runtime; il loop principale è un platformer canvas con motore locale (ADR-018), avvio immediato a schermo intero e menù in-game (ADR-021); menù e overlay narrativi restano nel DOM.
 - La parte arcade è il default per tutti (ADR-046); «Salta il livello» resta sempre disponibile con lo stesso esito narrativo.
-- Nessun account o backend; analytics limitati a visite aggregate e `game_start`.
+- Nessun account o backend; analytics limitati al funnel aggregato e senza payload definito da ADR-059.
 
 ## Aggiornare la documentazione
 

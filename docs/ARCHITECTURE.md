@@ -360,8 +360,18 @@ export function decodeSave(value: unknown): GameState | undefined;
 ## Analytics
 
 ```ts
-export type AnalyticsEvent =
-  { readonly name: "page_view" } | { readonly name: "game_start" };
+export type AnalyticsEvent = {
+  readonly name:
+    | "page_view"
+    | "game_start"
+    | "level_1_complete"
+    | "level_3_complete"
+    | "level_6_complete"
+    | "level_10_complete"
+    | "game_complete"
+    | "share_attempt"
+    | "replay_start";
+};
 
 export interface AnalyticsPort {
   track(event: AnalyticsEvent): void;
@@ -374,9 +384,11 @@ Non usare `track(name: string, payload?: unknown)`: una firma aperta consentireb
 - L'adapter consigliato per il lancio è GoatCounter; non invia titoli dinamici, referrer completi, proprietà custom, ruolo, percorso narrativo o impostazioni.
 - `page_view` viene emesso dal bootstrap una volta sola; non è una transizione del dominio narrativo.
 - `game_start` parte una volta a ogni nuova partita, cioè quando il giocatore sceglie un ruolo nella schermata iniziale; una ripresa dal salvataggio non lo emette. L'adapter GoatCounter usa nome fisso e `no_session: true` per contare anche più nuove partite nella stessa sessione.
+- Il controller emette le sole milestone fisse dei livelli 1, 3, 6 e 10 dopo il completamento arcade, mai dopo «Salta il livello»; entrando in qualunque finale emette `game_complete` senza esito.
+- I controlli di fine campagna emettono `share_attempt` e `replay_start` al clic, senza contenuto, risultato o altre proprietà.
 - DNT/GPC disabilitano l'adapter in modo conservativo.
 - Il gioco non dipende dalla rete e ignora gli errori analytics.
-- Destino del Varano, teoria scelta, pacchetti completati e scelta letale restano esclusivamente locali.
+- Destino del Varano, ruolo, scelte, punteggio, lingua e impostazioni restano esclusivamente locali.
 
 ## Contratto mini-giochi
 

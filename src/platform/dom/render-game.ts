@@ -47,6 +47,10 @@ export interface RenderGameAppOptions {
   /** Whether the level should open with its briefing card (ADR-034). */
   readonly showBriefing?: boolean | undefined;
   readonly onBriefingCleared?: (() => void) | undefined;
+  /** Counts the intent only; no card, score or ending data leaves the device. */
+  readonly onShareAttempt?: (() => void) | undefined;
+  /** The ending's explicit new-run control, distinct from clearing local data. */
+  readonly onReplayStart?: (() => void) | undefined;
 }
 
 interface RenderContext extends RenderGameAppOptions {
@@ -719,6 +723,7 @@ function renderScorePanel(context: RenderContext): HTMLElement | undefined {
   notice.setAttribute("role", "status");
 
   share.addEventListener("click", () => {
+    context.onShareAttempt?.();
     if (view === null) {
       return;
     }
@@ -808,6 +813,7 @@ function renderMemePanel(
   notice.setAttribute("role", "status");
 
   share.addEventListener("click", () => {
+    context.onShareAttempt?.();
     if (view === null) {
       return;
     }
@@ -856,11 +862,17 @@ function renderEnding(
   if (scorePanel !== undefined) {
     card.append(scorePanel);
   }
-  card.append(
-    button(cardContext, "core.message.ui.ending.restart", {
-      type: "LOCAL_DATA_CLEARED",
-    }),
+  const restart = element(
+    context.document,
+    "button",
+    context.content.message("core.message.ui.ending.restart"),
   );
+  restart.type = "button";
+  restart.addEventListener("click", () => {
+    context.onReplayStart?.();
+    context.dispatch({ type: "LOCAL_DATA_CLEARED" });
+  });
+  card.append(restart);
 }
 
 function renderUnavailable(context: RenderContext): void {
