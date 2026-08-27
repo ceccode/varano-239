@@ -1,53 +1,77 @@
 # VARANO 2:39
 
-> Il mistero dei Sei Colli  
-> Quattro punti di vista. Sei colli. Una sola foto.
+_An open-source narrative browser game inspired by a bizarre true story from Northern Italy._
+
+**Four points of view. Six hills. One photo at 2:39 a.m.**
 
 <p align="center">
   <a href="https://app.varano239.it">
-    <img src="https://varano239.it/og-image.png" alt="VARANO 2:39 — Il mistero dei Sei Colli, ricostruzione inventata in pixel art" width="960" />
+    <img src="https://varano239.it/og-image.png" alt="VARANO 2:39 — The Mystery of the Six Hills, an invented pixel-art reconstruction" width="960" />
   </a>
 </p>
 
 <p align="center">
-  <strong><a href="https://app.varano239.it">GIOCA ORA</a></strong><br />
-  10 livelli · 4 ruoli · 6 finali · circa 20 minuti<br />
-  Gratis · Nel browser · Nessuna installazione · Nessun account
+  <strong><a href="https://app.varano239.it">PLAY NOW</a></strong><br />
+  10 levels · 4 roles · 6 endings · ~20 minutes<br />
+  Free · In your browser · No download · No account
 </p>
 
-**VARANO 2:39** è un videogioco narrativo gratuito e open-source, consigliato a un pubblico **12+**, liberamente ispirato al misterioso rettile avvistato nelle campagne di Montichiari nel luglio 2026.
+## What is VARANO 2:39?
 
-Il gioco mescola cronaca documentata, testimonianze contraddittorie e una leggenda pixel-art. Il Varano è sempre il protagonista: può essere inseguito, protetto, interpretato dal giocatore o incoronato improbabile Conte del Castello Bonoris.
+A free, open-source narrative game, recommended for a **12+** audience, loosely inspired by the mysterious reptile spotted in the countryside near Montichiari, Italy, in July 2026.
 
-Le scene giocabili sono sempre marcate **LEGGENDA — ricostruzione inventata**. I fatti documentati e le loro fonti restano nell'Archivio, cioè nel registro editoriale [`docs/SOURCES.md`](./docs/SOURCES.md), linkato dai credits (ADR-024); anche le **2:39** restano un orario riportato dalla stampa, distinto dai contenuti dell'ordinanza.
+The game mixes documented news, contradictory witness accounts and a pixel-art legend. The monitor lizard is always the protagonist: it can be chased, protected, played by you, or crowned the improbable Count of Castello Bonoris.
 
-Accanto alla caccia resta aperto un secondo mistero: **da dove arriva il Varano?** Il gioco non lo risolve. Fuga e abbandono restano ipotesi riportate e non accertate; tutto ciò che il gioco aggiunge è dichiarato LEGGENDA.
+The playable scenes are always marked **LEGEND — an invented reconstruction**. The documented facts and their sources stay in the editorial archive, [`docs/SOURCES.md`](./docs/SOURCES.md), linked from the credits (ADR-024). The **2:39** time also remains a time reported by the press.
 
-## Stato del progetto
+A second mystery stays open on purpose: **where did the monitor lizard come from?** The game does not solve it. Escape and abandonment remain reported, unverified hypotheses — everything the game adds is declared LEGEND.
 
-**La campagna è completa e pubblicata.** Dopo i playtest delle prime iterazioni (M1 point-and-click e M1R arcade DOM) il progetto è pivotato a **platformer arcade** (ADR-018) con avvio a schermo intero (ADR-021); da allora sono stati costruiti tutti e dieci i livelli, la notte lunga dei Sei Colli e il confronto finale. Il gioco è dichiarato concluso a **sei finali** (ADR-047): non sono previsti altri capitoli in questa edizione.
+## Game features
 
-Cosa c'è oggi, in breve:
+- **10 levels** in a single campaign (~20 minutes), each with its own background, chiptune track, three clues, checkpoint, a cameo of the lizard and a bonus star reachable only with the role's superpower;
+- **4 perspectives**: Hunter, Wildlife Guardian, Hero Mayor and the Monitor Lizard itself — each with its own goal, superpower and dialogue in every chapter;
+- **6 endings**: the story changes with what you do — and the game invites you to replay with another role;
+- **3 lives per attempt** (ADR-041), no enemies and no timer; «Skip the level» is always available and produces the same story outcome;
+- **six seals** collected in the hill interludes unlock the «Count of the Six Hills» ending, and the lizard's condition is visible in the briefing;
+- **level result card** (ADR-056) and **«La Collezione»** (ADR-057), the local archive of the ten levels with your best result in each;
+- **shareable meme card** at the end of a campaign and a postcard of your score, both generated on your device (ADR-026/049);
+- in-game menu with settings (character, audio, text scale, high contrast), Collection, credits, privacy and terms; the credits reach the sources register;
+- **installable PWA** with atomic offline, announced updates and a visible version number in settings (ADR-054).
 
-- **10 livelli** in un'unica campagna (~22 minuti), ciascuno con fondale, traccia chiptune, tre indizi, checkpoint, cameo del Varano e una stella bonus raggiungibile solo col superpotere del ruolo;
-- **3 vite per tentativo** (ADR-041), nessun nemico e nessun timer; «Salta il livello» è sempre disponibile e produce lo stesso esito narrativo;
-- **sei sigilli** raccolti negli interludi dei colli, che sbloccano il finale «Il Conte dei Sei Colli», e la condizione del Varano visibile nel briefing;
-- **card di fine livello** (ADR-056) e **«La Collezione»** (ADR-057), l'archivio locale dei dieci livelli con il meglio ottenuto in ciascuno;
-- **card-meme condivisibile** a fine campagna e cartolina del punteggio, entrambe generate sul dispositivo (ADR-026/049);
-- menù in-game con impostazioni (personaggio, audio, scala del testo, alto contrasto), Collezione, credits, privacy e termini; dai credits si raggiunge il registro delle fonti;
-- **PWA installabile** con offline atomico, aggiornamenti annunciati e numero di versione visibile nelle impostazioni (ADR-054).
+The edition is a single, 12+, playful-tone release (ADR-022). The arcade mode is the default for everyone (ADR-046): no system signal hides it, and the assisted path stays available in the Story and Calm modes. Current work focuses on performance, usability and the existing levels — not new chapters.
 
-L'edizione è unica, 12+, con tono goliardico e colpi di scena (ADR-022). La parte arcade è il default per tutti (ADR-046): nessun segnale di sistema la nasconde, e il percorso assistito resta disponibile dalle modalità Storia e Calma. Il lavoro successivo riguarda performance, usabilità e i livelli esistenti, non nuovi capitoli.
+## The real story
 
-## Sviluppo locale
+In July 2026 somebody photographed a monitor lizard wandering the fields near Montichiari, a small town in northern Italy. The pages and the local press told the story at 2:39 a.m., when the trail went cold.
 
-Prerequisiti:
+VARANO 2:39 takes that news story and builds a fully playable story around it.
 
-- Node.js 24 LTS, fissato in [`.nvmrc`](./.nvmrc);
+**News where it is documented. Legend where the game begins.** The sources of the documented facts are listed in [`docs/SOURCES.md`](./docs/SOURCES.md).
+
+## Technical highlights
+
+- **TypeScript strict** with Vite, **zero runtime dependencies** — no UI framework, no game framework, no external runtime;
+- **DOM-first, accessible UI**: Canvas for the pixel-art scenes, semantic HTML for menus, dialogue, choices and endings; completable without sound, mouse or quick reflexes (12+);
+- **purity**: narrative state driven by pure functions over a single `GameState`; the platformer uses a pure physics model (ADR-018);
+- **declarative content**: chapters and levels are typed data compiled alongside the game — no remote scripts, no runtime plugin system [`docs/EXPANSIONS.md`](./docs/EXPANSIONS.md);
+- **complete Italian and English editions** (ADR-060): same message keys, same placeholders, no silent fallback;
+- **privacy-first analytics** (optional, disabled by default): visits and a fixed set of aggregate milestones, no identifiers, no choices, no endings (ADR-059);
+- **local save only** — no account, no backend;
+- **tested**: unit, integration and end-to-end tests, keyboard/touch/reduced-motion verified.
+
+## Architecture & documentation
+
+All product, story, architecture, privacy, quality and expansion specifications live in the [documentation index](./docs/README.md). Binding instructions for AI agents and contributors are also in [`AGENTS.md`](./AGENTS.md). `docs/DECISIONS.md` records every architectural decision (ADR).
+
+## Local development
+
+Prerequisites:
+
+- Node.js 24 LTS, pinned in [`.nvmrc`](./.nvmrc);
 - npm;
-- Chromium per i test end-to-end.
+- Chromium for end-to-end tests.
 
-Installazione iniziale:
+Initial setup:
 
 ```sh
 nvm use
@@ -55,93 +79,65 @@ npm ci
 npx playwright install chromium
 ```
 
-Comandi disponibili:
+Commands:
 
-| Comando                | Scopo                                                             |
-| ---------------------- | ----------------------------------------------------------------- |
-| `npm run dev`          | Avvia il server Vite di sviluppo.                                 |
-| `npm run preview`      | Serve localmente l'ultima build di produzione.                    |
-| `npm run build`        | Controlla i tipi e genera `dist/`.                                |
-| `npm run typecheck`    | Esegue TypeScript strict senza emettere file.                     |
-| `npm run lint`         | Esegue ESLint senza accettare warning.                            |
-| `npm run format`       | Formatta i file supportati con Prettier.                          |
-| `npm run format:check` | Verifica la formattazione senza modificare file.                  |
-| `npm run test`         | Esegue i test unitari e DOM con Vitest.                           |
-| `npm run test:e2e`     | Esegue Playwright e axe su build con base `/`.                    |
-| `npm run validate`     | Compila i contratti e valida grafo, fonti, asset e messaggi.      |
-| `npm run size`         | Verifica il tetto di peso del bundle (60 KB JS / 10 KB CSS gzip). |
-| `npm run check`        | Esegue in ordine tutti i gate definiti in `docs/QUALITY.md`.      |
+| Command                | Purpose                                                              |
+| ---------------------- | -------------------------------------------------------------------- |
+| `npm run dev`          | Start the Vite development server.                                   |
+| `npm run preview`      | Serve the latest production build locally.                           |
+| `npm run build`        | Type-check and generate `dist/`.                                     |
+| `npm run typecheck`    | Run TypeScript strict without emitting files.                        |
+| `npm run lint`         | Run ESLint without accepting warnings.                               |
+| `npm run format`       | Format supported files with Prettier.                                |
+| `npm run format:check` | Verify formatting without modifying files.                           |
+| `npm run test`         | Run unit and DOM tests with Vitest.                                  |
+| `npm run test:e2e`     | Run Playwright and axe against a `/`-based build.                    |
+| `npm run validate`     | Compile the contracts and validate graph, sources, assets, messages. |
+| `npm run size`         | Enforce the bundle budget (80 KB JS / 10 KB CSS gzip).               |
+| `npm run check`        | Run every gate defined in `docs/QUALITY.md`, in order.               |
 
-La build usa base `/` (Netlify, ADR-020). La configurazione accetta `VITE_BASE_PATH` per eventuali altri sottopercorsi. Usa la stessa base per build e preview. La build non ha dipendenze runtime e non carica font, script o asset remoti.
+The build uses base `/` (Netlify, ADR-020). The configuration accepts `VITE_BASE_PATH` for other subpaths; use the same base for build and preview. The build has no runtime dependencies and loads no remote fonts, scripts or assets.
 
-Le pull request producono un artifact di preview scaricabile dopo il quality gate. I push su `main` eseguono nuovamente `npm run check` e pubblicano l'artifact statico su **Netlify** all'indirizzo [app.varano239.it](https://app.varano239.it). La landing page è su [varano239.it](https://varano239.it).
+Pull requests produce a downloadable preview artifact after the quality gate. Pushes on `main` re-run `npm run check` and publish the static artifact to **Netlify** at [app.varano239.it](https://app.varano239.it). The landing page is at [varano239.it](https://varano239.it).
 
-## Prospettive giocabili
+## Game direction
 
-- **Cacciatore** — segue tracce e falsi indizi. Se nel prologo ha scelto «Documenta la scena», al confronto finale può arrivare a un abbattimento non grafico, con conseguenze narrative e senza meccaniche realistiche d'arma.
-- **Custode animalista** — tenta di localizzare il Varano e preparare un intervento sicuro.
-- **Sindaco eroe** — sindaco del comune totalmente fittizio di Borgocoda, guida la propria delegazione in un'esercitazione intercomunale inventata; cerca una prova fra mappe, droni e reputazione.
-- **Varano** — evita gli umani e sceglie fra salvezza, fuga e conquista del Castello Bonoris.
+- Arcade platformer on canvas with DOM-first narrative: contextual bar during the run, card overlay for dialogue, choice and ending.
+- Mobile-first and desktop browser.
+- Touch and keyboard.
+- Complete Italian and English editions.
+- No mandatory reflex challenge: every level is skippable with the same story outcome.
+- Content distinguished as **FACT**, **TESTIMONY**, **HYPOTHESIS**, **LEGEND** or **RECANTED**.
+- Human characters are invented or composite and never represent real people.
+- Chapters and levels are declarative content compiled with the game; a new mechanic stays isolated behind the level register.
 
-Ogni ruolo ha il proprio obiettivo, il proprio superpotere e battute proprie in ogni capitolo. Il personaggio si sceglie in ogni momento dal menù in-game; cambiarlo a livello vivo rimonta il tentativo, perché cambia il potere.
+## Safety & disclaimer
 
-L'edizione è unica, consigliata a un pubblico 12+, con tono goliardico e scherzoso (ADR-022): al giocatore non viene offerta nessuna scelta di sensibilità (ADR-048). Soltanto il Cacciatore che ha scelto di documentare la scena può scegliere direttamente di uccidere il Varano. La scelta è annunciata e confermata, avviene fuori campo, non mostra gore e non viene trasformata in un mini-gioco di mira.
+The game is not a guide to find the animal. Do not approach, chase, startle or try to catch wild or exotic animals: keep your distance and alert the competent authorities.
 
-## Direzione del gioco
+Death remains non-graphic. Only in the Hunter's path, when he chose «Document the scene» in the prologue, the player can be directly responsible for it; the game shows consequences, does not celebrate violence and does not teach weapon use.
 
-- Platformer arcade su canvas con narrativa DOM-first: barra contestuale durante la corsa, overlay a scheda per dialogo, scelta e finale.
-- Browser mobile-first e desktop.
-- Touch e tastiera.
-- Italiano e inglese completi.
-- Nessuna sfida obbligatoria basata sui riflessi: ogni livello è saltabile con lo stesso esito narrativo.
-- Contenuti distinti come **FATTO**, **TESTIMONIANZA**, **IPOTESI**, **LEGGENDA** o **SCONFESSATO**.
-- Personaggi umani inventati o compositi, senza rappresentare persone reali.
-- Capitoli e livelli sono contenuti dichiarativi compilati insieme al gioco; una meccanica nuova resta isolata dietro il registro dei livelli.
+## Contributing
 
-## Direzione tecnica
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening an issue or a pull request.
 
-- TypeScript in modalità strict.
-- Vite.
-- Interfaccia DOM-first, accessibile e testabile.
-- Nessun framework UI o game framework: zero dipendenze runtime.
-- Stato narrativo gestito da funzioni pure e contenuti dichiarativi.
-- Contenuti narrativi compilati insieme al gioco, senza plugin runtime o codice remoto.
-- Test unitari, di integrazione ed end-to-end.
-- Salvataggio locale, senza account o backend.
-- Analytics facoltativi e limitati a visite aggregate e avvii della partita, senza tracciare ruoli, scelte o finali.
+## Licensing
 
-Il platformer è implementato con un modello fisico puro in TypeScript e un rendering canvas procedurale: un framework 2D resta escluso finché non esiste una prova misurata che serva davvero (la procedura è in [`docs/DECISIONS.md`](./docs/DECISIONS.md)). La storia e i controlli accessibili restano comunque nel DOM.
+The project uses two licenses, explained in [LICENSING.md](./LICENSING.md):
 
-## Principi
+- the **code** is free software under [GNU AGPL-3.0-only](./LICENSE): you can study, modify and redistribute it, and whoever publishes a modified version (even as a website) must publish its source code;
+- **story, text, pixel art, music and level design** use [CC BY-NC-SA 4.0](./LICENSE-CONTENT): shareable and modifiable with attribution, but **not for commercial purposes**. Because the game is inseparable from its content, the work as a whole cannot be sold.
 
-- **KISS** — preferire soluzioni piccole, esplicite e comprensibili.
-- **Mantenibilità** — moduli con responsabilità chiare e dipendenze direzionate.
-- **Testabilità** — logica di gioco indipendente dal browser e dagli asset.
-- **Accessibilità** — ogni percorso deve poter essere completato senza suono, mouse o riflessi rapidi.
-- **Privacy first** — raccogliere soltanto ciò che è strettamente necessario.
-- **Rispetto delle fonti** — nessun finale inventato viene presentato come esito reale.
+The name **VARANO 2:39** and the characters are not licensed: a derivative version must use its own name. Images, fonts, music and other assets must be original or accompanied by a compatible license and clear provenance information.
 
-## Sicurezza e disclaimer
+---
 
-Il gioco non è una guida alla ricerca dell'animale. Non avvicinare, inseguire, spaventare o tentare di catturare animali selvatici o esotici: mantieni le distanze e avvisa le autorità competenti.
+## Italiano
 
-La morte resta non grafica. Nel solo percorso del Cacciatore che ha scelto di documentare la scena, il giocatore può esserne direttamente responsabile; il gioco mostra conseguenze, non celebra la violenza e non insegna l'uso di armi.
+VARANO 2:39 è un videogioco narrativo gratuito e open-source ispirato al misterioso varano avvistato nei campi di Montichiari nel luglio 2026: dieci livelli, quattro ruoli, sei finali e circa venti minuti di gioco, direttamente nel browser, senza account.
 
-## Documentazione
-
-Tutte le specifiche di prodotto, storia, architettura, privacy, qualità ed espansione sono raccolte nell'[indice della documentazione](./docs/README.md). Le istruzioni vincolanti per agenti AI e contributori si trovano anche in [`AGENTS.md`](./AGENTS.md).
-
-## Contribuire
-
-Leggi [CONTRIBUTING.md](./CONTRIBUTING.md) prima di aprire una issue o una pull request.
-
-## Licenza
-
-Il progetto usa due licenze, spiegate in [LICENSING.md](./LICENSING.md):
-
-- il **codice** è software libero con licenza [GNU AGPL-3.0-only](./LICENSE): puoi studiarlo, modificarlo e ridistribuirlo, e chi pubblica una versione modificata (anche solo come sito) deve pubblicarne i sorgenti;
-- **storia, testi, pixel art, musica e level design** usano [CC BY-NC-SA 4.0](./LICENSE-CONTENT): condivisibili e modificabili citando l'autore, ma **non per scopi commerciali**. Poiché il gioco è inseparabile dai suoi contenuti, l'opera nel suo insieme non può essere venduta.
-
-Il nome **VARANO 2:39** e i personaggi non sono concessi in licenza: una versione derivata deve usare un nome proprio. Immagini, font, musica e altri asset devono essere originali oppure accompagnati da una licenza compatibile e da informazioni chiare sulla provenienza.
+- **Gioca subito**: [app.varano239.it](https://app.varano239.it)
+- **Landing page**: [varano239.it](https://varano239.it)
+- **Documentazione**: [`docs/README.md`](./docs/README.md)
 
 Copyright © 2026 Francesco Falanga.
