@@ -313,12 +313,14 @@ Ridisegnare la vista principale a ogni transizione è accettabile, purché il fo
 
 Tutto il testo visibile usa `MessageKey`.
 
-- `content/locales/it.ts` è l'unico catalogo, completo e obbligatorio.
+- `content/locales/it.ts` compone il catalogo sorgente italiano; `content/locales/en.ts` contiene lo stesso insieme esatto di chiavi in inglese (ADR-060).
 - Ogni capitolo porta il proprio `messages.ts`, unito al catalogo di chrome in `pack.ts`.
-- Una chiave mancante è un errore di validazione in build, non un fallback silenzioso a runtime.
+- Una chiave mancante o un insieme di segnaposto diverso è un errore di build, non un fallback silenzioso a runtime.
 - Il testo con segnaposto è interpolato dal risolutore, che riceve valori tipizzati.
 
-Non esiste una seconda lingua né un catalogo dialettale: `dialectEnabled` è uscito dalle impostazioni con ADR-053. Non introdurre una libreria i18n; una funzione tipizzata di lookup è sufficiente.
+La lingua è scelta attraverso gli URL canonici `/` e `/en/`, esposta nella schermata iniziale e salvata con le altre impostazioni. Il percorso è autorevole quando si riprende una partita, così URL, metadata e testo non divergono. Non esiste un catalogo dialettale: `dialectEnabled` è uscito dalle impostazioni con ADR-053. Non introdurre una libreria i18n; la funzione tipizzata `resolveMessage()` è sufficiente.
+
+Il catalogo inglese è un chunk dinamico caricato da `loadLocale()` soltanto su `/en/`: l'edizione italiana non scarica i circa 18 KB gzip della traduzione. Il build registra lo stesso catalogo nel solo processo Vite per generare la shell statica inglese.
 
 ## Asset
 

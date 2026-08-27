@@ -1,4 +1,5 @@
 import type { AssetDefinition } from "../../assets/manifest";
+import type { Locale } from "../../core/model";
 import type { GameAction } from "../../core/actions";
 import type { LevelOutcome } from "../../levels/contract";
 import { drawScoreCard } from "./score-card";
@@ -60,8 +61,12 @@ interface RenderContext extends RenderGameAppOptions {
 const repositoryUrl = "https://github.com/ceccode/varano-239";
 const sourcesDocumentUrl = `${repositoryUrl}/blob/main/docs/SOURCES.md`;
 // Same-origin legal pages: they work offline and under any base path.
-const privacyPageUrl = "privacy.html";
-const termsPageUrl = "termini.html";
+function legalPageUrl(context: RenderContext, page: "privacy" | "terms") {
+  if (context.state.settings.locale === "en") {
+    return page === "privacy" ? "../privacy-en.html" : "../terms-en.html";
+  }
+  return page === "privacy" ? "privacy.html" : "termini.html";
+}
 
 const roleObjectiveKeys: Readonly<Record<Role, MessageKey>> = {
   hunter: "core.message.scene.objective.hunter",
@@ -917,6 +922,32 @@ function renderRoleSelect(context: RenderContext): void {
   const panel = element(context.document, "section");
   panel.className = "role-select game-screen";
   const panelContext: RenderContext = { ...context, screen: panel };
+  const language = element(context.document, "div");
+  language.className = "language-select";
+  language.setAttribute(
+    "aria-label",
+    context.content.message("core.message.ui.language.label"),
+  );
+  language.setAttribute("role", "group");
+  for (const locale of ["it", "en"] as const satisfies readonly Locale[]) {
+    const control = element(
+      context.document,
+      "a",
+      context.content.message(`core.message.ui.language.${locale}`),
+    );
+    control.lang = locale;
+    control.href =
+      locale === context.state.settings.locale
+        ? "./"
+        : locale === "en"
+          ? "en/"
+          : "../";
+    if (context.state.settings.locale === locale) {
+      control.setAttribute("aria-current", "page");
+    }
+    language.append(control);
+  }
+  panel.append(language);
   heading(panelContext, "core.message.ui.role-select.heading");
   panel.append(
     element(
@@ -1216,7 +1247,10 @@ function renderMenu(context: RenderContext): HTMLElement {
       "p",
       context.content.message("core.message.ui.privacy.body"),
     ),
-    externalLink("core.message.ui.privacy.link", privacyPageUrl),
+    externalLink(
+      "core.message.ui.privacy.link",
+      legalPageUrl(context, "privacy"),
+    ),
   );
 
   const terms = menuSection(
@@ -1230,7 +1264,7 @@ function renderMenu(context: RenderContext): HTMLElement {
       "p",
       context.content.message("core.message.ui.terms.body"),
     ),
-    externalLink("core.message.ui.terms.link", termsPageUrl),
+    externalLink("core.message.ui.terms.link", legalPageUrl(context, "terms")),
   );
 
   // Version and updates (ADR-054): the build id lands in the page's meta at

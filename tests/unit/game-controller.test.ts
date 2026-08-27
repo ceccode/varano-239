@@ -11,6 +11,11 @@ import { createInitialState, type GameState } from "../../src/core/game-state";
 import type { AnalyticsPort, SavePort } from "../../src/core/ports";
 import { reduce } from "../../src/core/reducer";
 import { resolveItalianMessage } from "../../src/content/locales/it";
+import {
+  registerEnglishMessages,
+  resolveMessage,
+} from "../../src/content/locales";
+import { englishMessages } from "../../src/content/locales/en";
 import { coreStoryGraph } from "../../src/content/packs/core/pack";
 import type { GameAudio } from "../../src/platform/audio/chiptune-audio";
 import type { BestScorePort } from "../../src/platform/storage/best-score";
@@ -23,6 +28,8 @@ import { renderGameApp } from "../../src/platform/dom/render-game";
 import { assetManifest } from "../../src/assets/manifest";
 import { stubCanvasContext } from "./helpers/canvas-stub";
 import { coreInterludes } from "../helpers/interludes";
+
+registerEnglishMessages(englishMessages);
 
 class MemorySave implements SavePort {
   readonly save = vi.fn((state: GameState) => {
@@ -189,6 +196,55 @@ describe("full-screen game controller", () => {
     expect(mount.textContent).not.toContain(
       resolveItalianMessage("core.message.level.recap"),
     );
+  });
+
+  it("opens directly in English and exposes reciprocal language links", () => {
+    const { mount } = prepareDocument();
+    const track = vi.fn<AnalyticsPort["track"]>();
+    createGameController({
+      document,
+      mount,
+      analytics: { track },
+      save: new MemorySave(),
+      audio: createAudio(),
+      bestScore: createBestScore(),
+      levelRecords: createLevelRecords(),
+      initialLocale: "en",
+    });
+
+    expect(document.documentElement.lang).toBe("en");
+    expect(mount.textContent).toContain(
+      resolveMessage("en", "core.message.ui.role-select.heading"),
+    );
+    expect(
+      getByRole(document.body, "link", { name: "English" }).getAttribute(
+        "aria-current",
+      ),
+    ).toBe("page");
+    expect(
+      getByRole(document.body, "link", { name: "Italiano" }).getAttribute(
+        "href",
+      ),
+    ).toBe("../");
+    expect(track).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      getByRole(document.body, "button", {
+        name: new RegExp(
+          `^${resolveMessage("en", "core.message.ui.role-select.varano.title")}`,
+        ),
+      }),
+    );
+    fireEvent.click(
+      getByRole(document.body, "button", {
+        name: resolveMessage("en", "core.message.ui.menu.open"),
+      }),
+    );
+    expect(
+      getByRole(document.body, "link", {
+        name: resolveMessage("en", "core.message.ui.privacy.link"),
+      }).getAttribute("href"),
+    ).toBe("../privacy-en.html");
   });
 
   it("keeps the assisted card behind the story/calm play modes (ADR-046)", () => {

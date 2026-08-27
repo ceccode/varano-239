@@ -112,7 +112,7 @@ Non migrare il motore narrativo o la UI accessibile dentro un canvas.
 ## Contenuti e narrativa
 
 - Tutto il testo visibile usa chiavi di messaggio, non stringhe sparse nei componenti.
-- L'italiano è l'unico catalogo: una chiave mancante fa fallire la build, non produce un fallback silenzioso.
+- Italiano e inglese sono cataloghi completi (ADR-060): una chiave mancante o un segnaposto divergente fa fallire la build, senza fallback silenzioso.
 - La satira colpisce confusione, burocrazia e febbre mediatica, non etnia, disabilità, età o singole persone reali.
 - Le scene di morte e la scelta letale non contengono gag. Le battute possono riprendere soltanto nella scena successiva.
 - Non descrivere tecniche, distanze, munizioni, mira o istruzioni d'arma; l'abbattimento è una decisione narrativa, non una simulazione.

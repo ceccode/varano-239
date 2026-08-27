@@ -61,10 +61,12 @@ self.addEventListener("fetch", (event) => {
   // cache miss its own entries — the offline boot then fails with the file
   // sitting right there in the cache.
   if (request.mode === "navigate") {
+    const navigationPath = new URL(request.url).pathname;
+    const fallback = navigationPath.endsWith("/en/") ? "./en/" : "./";
     event.respondWith(
       fetch(request)
         .then((response) => cachePut(request, response))
-        .catch(() => caches.match("./", { ignoreVary: true })),
+        .catch(() => caches.match(fallback, { ignoreVary: true })),
     );
     return;
   }

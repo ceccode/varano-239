@@ -1,7 +1,6 @@
-import {
-  getItalianMessage,
-  type ItalianMessageKey,
-} from "../content/locales/it.ts";
+import { resolveMessage } from "../content/locales/index.ts";
+import type { ItalianMessageKey } from "../content/locales/it.ts";
+import type { Locale } from "../core/model.ts";
 
 const copyKeys = {
   title: "core.message.title",
@@ -24,33 +23,40 @@ const copyKeys = {
   bootstrapErrorBody: "core.message.bootstrap-error.body",
 } as const satisfies Readonly<Record<string, ItalianMessageKey>>;
 
-function resolveCopy(key: keyof typeof copyKeys): string {
-  return getItalianMessage(copyKeys[key]);
+function resolveCopy(locale: Locale, key: keyof typeof copyKeys): string {
+  return resolveMessage(locale, copyKeys[key]);
 }
 
-export const appConfig = {
-  title: resolveCopy("title"),
-  subtitle: resolveCopy("subtitle"),
-  metaDescription: resolveCopy("metaDescription"),
-  canonicalUrl: "https://app.varano239.it/",
-  socialImageUrl: "https://varano239.it/og-image.png",
-  socialImageAlt: resolveCopy("socialImageAlt"),
-  shell: {
-    skipLink: resolveCopy("skipLink"),
-    ageLabel: resolveCopy("ageLabel"),
-    navigationLabel: resolveCopy("navigationLabel"),
-    sourcesLink: resolveCopy("sourcesLink"),
-    statusTitle: resolveCopy("statusTitle"),
-    description: resolveCopy("description"),
-    ready: resolveCopy("ready"),
-    safetyTitle: resolveCopy("safetyTitle"),
-    safetyBody: resolveCopy("safetyBody"),
-    sourcesTitle: resolveCopy("sourcesTitle"),
-    sourcesBody: resolveCopy("sourcesBody"),
-    sourcesDocumentLink: resolveCopy("sourcesDocumentLink"),
-  },
-  bootstrapError: {
-    title: resolveCopy("bootstrapErrorTitle"),
-    body: resolveCopy("bootstrapErrorBody"),
-  },
-} as const;
+export function appConfigForLocale(locale: Locale) {
+  return {
+    title: resolveCopy(locale, "title"),
+    subtitle: resolveCopy(locale, "subtitle"),
+    metaDescription: resolveCopy(locale, "metaDescription"),
+    canonicalUrl:
+      locale === "en"
+        ? "https://app.varano239.it/en/"
+        : "https://app.varano239.it/",
+    socialImageUrl: "https://varano239.it/og-image.png",
+    socialImageAlt: resolveCopy(locale, "socialImageAlt"),
+    shell: {
+      skipLink: resolveCopy(locale, "skipLink"),
+      ageLabel: resolveCopy(locale, "ageLabel"),
+      navigationLabel: resolveCopy(locale, "navigationLabel"),
+      sourcesLink: resolveCopy(locale, "sourcesLink"),
+      statusTitle: resolveCopy(locale, "statusTitle"),
+      description: resolveCopy(locale, "description"),
+      ready: resolveCopy(locale, "ready"),
+      safetyTitle: resolveCopy(locale, "safetyTitle"),
+      safetyBody: resolveCopy(locale, "safetyBody"),
+      sourcesTitle: resolveCopy(locale, "sourcesTitle"),
+      sourcesBody: resolveCopy(locale, "sourcesBody"),
+      sourcesDocumentLink: resolveCopy(locale, "sourcesDocumentLink"),
+    },
+    bootstrapError: {
+      title: resolveCopy(locale, "bootstrapErrorTitle"),
+      body: resolveCopy(locale, "bootstrapErrorBody"),
+    },
+  } as const;
+}
+
+export const appConfig = appConfigForLocale("it");

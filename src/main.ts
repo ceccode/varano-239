@@ -9,23 +9,37 @@ import { ChiptuneAudio } from "./platform/audio/chiptune-audio";
 import { LocalBestScore } from "./platform/storage/best-score";
 import { LocalSave } from "./platform/storage/local-save";
 import { LocalLevelRecords } from "./platform/storage/level-records";
+import type { Locale } from "./core/model";
+import { loadLocale } from "./content/locales";
 
 // Analytics stay off unless an endpoint is configured for the build (ADR-025).
 const analyticsEndpoint = (
   import.meta.env.VITE_GOATCOUNTER_ENDPOINT ?? ""
 ).trim();
+const initialLocale: Locale = document.documentElement.lang
+  .toLowerCase()
+  .startsWith("en")
+  ? "en"
+  : "it";
 
-startApplication({
-  document,
-  analytics:
-    analyticsEndpoint === ""
-      ? new NoopAnalytics()
-      : new GoatCounterAnalytics(window, analyticsEndpoint),
-  save: new LocalSave(window.localStorage),
-  audio: new ChiptuneAudio(window, true, true),
-  bestScore: new LocalBestScore(window.localStorage),
-  levelRecords: new LocalLevelRecords(window.localStorage),
-});
+void loadLocale(initialLocale)
+  .then(() => {
+    startApplication({
+      document,
+      analytics:
+        analyticsEndpoint === ""
+          ? new NoopAnalytics()
+          : new GoatCounterAnalytics(window, analyticsEndpoint),
+      save: new LocalSave(window.localStorage),
+      audio: new ChiptuneAudio(window, true, true),
+      bestScore: new LocalBestScore(window.localStorage),
+      levelRecords: new LocalLevelRecords(window.localStorage),
+      initialLocale,
+    });
+  })
+  .catch((error: unknown) => {
+    console.error("Locale unavailable; keeping the static fallback.", error);
+  });
 
 // The service worker is production-only: in dev it would cache Vite modules.
 // A new version installs and WAITS (ADR-054): the page announces it with the

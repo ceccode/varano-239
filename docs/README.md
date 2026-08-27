@@ -59,6 +59,7 @@ In caso di conflitto:
 - TypeScript + Vite, zero dipendenze runtime; il loop principale è un platformer canvas con motore locale (ADR-018), avvio immediato a schermo intero e menù in-game (ADR-021); menù e overlay narrativi restano nel DOM.
 - La parte arcade è il default per tutti (ADR-046); «Salta il livello» resta sempre disponibile con lo stesso esito narrativo.
 - Nessun account o backend; analytics limitati al funnel aggregato e senza payload definito da ADR-059.
+- Italiano e inglese completi, con URL e metadata canonici distinti (ADR-060).
 
 ## Aggiornare la documentazione
 

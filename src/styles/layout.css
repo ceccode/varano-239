@@ -434,6 +434,28 @@
   letter-spacing: 0.05em;
 }
 
+.language-select {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+.language-select a {
+  display: inline-grid;
+  place-items: center;
+  min-block-size: 2.75rem;
+  padding: 0.45rem 0.75rem;
+  border: 2px solid var(--color-border);
+  background: rgb(13 23 19 / 92%);
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.language-select a[aria-current="page"] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
 .role-select__cards {
   display: grid;
   gap: var(--space-2);

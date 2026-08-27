@@ -59,6 +59,7 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Perché: l'MVP non richiede CMS o caricamento remoto; i tipi evitano riferimenti rotti e callback arbitrarie.
 - Alternative: JSON runtime, CMS headless, logica scritta direttamente nei componenti.
 - Conseguenza: chi scrive contenuti modifica dati tipizzati; l'italiano è catalogo completo e il bresciano overlay parziale.
+- Superata in parte da ADR-053 (nessun overlay bresciano) e ADR-060 (italiano e inglese completi).
 
 ## ADR-006 — Tre livelli di verità
 
@@ -716,3 +717,16 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Implementazione: il dominio emette soltanto `game_start`; il controller applicativo conosce i quattro indici di funnel e gli intenti UI. GoatCounter riceve nomi fissi con `event: true` e `no_session: true`; `NoopAnalytics` resta il default.
 - Verifica: test dell'allowlist completa e delle variabili GoatCounter, dei quattro soli checkpoint, dell'assenza di milestone sui salti, del completamento senza esito, degli intenti share/replay e del comportamento silenzioso con provider indisponibile.
 - Conseguenza: questa ADR sostituisce il limite a due soli eventi di ADR-009 e ADR-025. Aggiungere un altro evento, una proprietà o una dimensione resta una decisione del proprietario.
+
+## ADR-060 — Italiano e inglese sono due edizioni complete della stessa campagna
+
+- Stato: **Accettata**
+- Data: 27 agosto 2026
+- Contesto: per distribuire il gioco fuori dall'Italia non basta tradurre la landing: onboarding, dieci livelli, undici capitoli, sei finali, card, testi alternativi, metadata e pagine legali devono parlare la stessa lingua. Il proprietario ha approvato esplicitamente l'inglese, superando il vincolo monolingua documentato da ADR-005 e ADR-058.
+- Decisione: italiano e inglese sono cataloghi completi con lo stesso insieme di `MessageKey` e gli stessi segnaposto. `resolveMessage(locale, key, values)` è l'unico lookup; una chiave mancante o un placeholder divergente fallisce i controlli. Non entra una libreria i18n e non esiste alcun fallback silenzioso.
+- URL e scoperta: `/` è l'edizione italiana, `/en/` quella inglese. Entrambe pubblicano canonical, `hreflang`, Open Graph e fallback senza JavaScript coerenti. Il selettore nella schermata iniziale è un collegamento reciproco, quindi cambiare lingua non rimonta mai un livello vivo. Il percorso richiesto prevale sulla lingua di un vecchio salvataggio.
+- Persistenza e privacy: `locale` entra nelle impostazioni decodificate in modo tollerante da ADR-053; un salvataggio precedente usa italiano. La lingua resta locale e non viene aggiunta agli analytics di ADR-059.
+- Contenuto: nomi propri, Montichiari, Castello Bonoris, Borgocoda e il titolo restano invariati. «Il Varano» diventa «The Monitor Lizard», LEGGENDA diventa LEGEND e Sei Colli diventa Six Hills. I limiti 12+, la distinzione fra cronaca e finzione, la scelta letale fuori campo e tutti i disclaimer restano semanticamente equivalenti.
+- Verifica: parità esatta delle chiavi e dei segnaposto; walkthrough inglese; controlli tastiera, focus e nomi accessibili; metadata e fallback delle due route; pagine privacy/termini; build e test completi su entrambi i repository.
+- Performance: il catalogo inglese è un chunk separato caricato soltanto da `/en/`; l'italiano mantiene il bundle iniziale sotto 60 KB gzip. Il budget combinato degli asset JavaScript sale consapevolmente da 60 a 80 KB per includere i circa 18 KB gzip della seconda lingua, ancora molto sotto i 150 KB documentati.
+- Conseguenza: landing e gioco possono essere distribuiti su portali internazionali senza mantenere fork di codice o contenuto. Una terza lingua richiede un catalogo completo e la stessa disciplina di route, metadata, legal e test.

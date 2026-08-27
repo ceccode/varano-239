@@ -87,6 +87,9 @@ describe("service worker template (ADR-054)", () => {
     );
     expect(installBlock).not.toContain("skipWaiting");
     expect(source).toContain("varano-skip-waiting");
+    expect(source).toContain(
+      'navigationPath.endsWith("/en/") ? "./en/" : "./"',
+    );
   });
 });
 

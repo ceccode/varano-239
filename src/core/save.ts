@@ -77,6 +77,9 @@ function tolerantSettings(value: unknown): AccessibilitySettings {
     return defaults;
   }
   return {
+    locale: isStringMember(value.locale, ["it", "en"])
+      ? value.locale
+      : defaults.locale,
     playMode: isStringMember(value.playMode, ["standard", "story", "calm"])
       ? value.playMode
       : defaults.playMode,

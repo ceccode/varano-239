@@ -26,11 +26,11 @@ Nella UI e nei report usare «visite stimate», non «persone identificate».
 
 Il browser conserva soltanto, in `localStorage`, tre chiavi:
 
-| Chiave                     | Contenuto                                                                                                 |
-| -------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `varano-239.save`          | avanzamento, checkpoint, scelte narrative, schede del Dossier scoperte, ruolo, esito e impostazioni       |
-| `varano-239.best-score`    | il record personale di punteggio                                                                          |
-| `varano-239.level-records` | l'archivio della Collezione: per ogni livello punteggio, indizi, stella, cameo e «senza cadute» (ADR-057) |
+| Chiave                     | Contenuto                                                                                                              |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `varano-239.save`          | avanzamento, checkpoint, scelte narrative, schede del Dossier scoperte, ruolo, esito e impostazioni, inclusa la lingua |
+| `varano-239.best-score`    | il record personale di punteggio                                                                                       |
+| `varano-239.level-records` | l'archivio della Collezione: per ogni livello punteggio, indizi, stella, cameo e «senza cadute» (ADR-057)              |
 
 I campi per teorie, inventario e versioni dei pack sono predisposti nello stato ma restano vuoti, perché i relativi contenuti non esistono. Niente viene sincronizzato e niente lascia il dispositivo. Il menù offre «Cancella progressi e preferenze locali», che azzera tutte e tre le chiavi. Non memorizzare nome, email, data di nascita, posizione, testo libero, data e ora del salvataggio o identificatori di analytics.
 

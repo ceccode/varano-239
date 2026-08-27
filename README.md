@@ -92,7 +92,7 @@ L'edizione è unica, consigliata a un pubblico 12+, con tono goliardico e scherz
 - Platformer arcade su canvas con narrativa DOM-first: barra contestuale durante la corsa, overlay a scheda per dialogo, scelta e finale.
 - Browser mobile-first e desktop.
 - Touch e tastiera.
-- Italiano completo.
+- Italiano e inglese completi.
 - Nessuna sfida obbligatoria basata sui riflessi: ogni livello è saltabile con lo stesso esito narrativo.
 - Contenuti distinti come **FATTO**, **TESTIMONIANZA**, **IPOTESI**, **LEGGENDA** o **SCONFESSATO**.
 - Personaggi umani inventati o compositi, senza rappresentare persone reali.
