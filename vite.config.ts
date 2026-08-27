@@ -102,7 +102,7 @@ function appShellCopyPlugin(analyticsEndpoint: string): Plugin {
  * deploy ships an atomic offline copy and cleans up the previous one. The
  * same id lands in the page's meta tag as the visible version.
  */
-function serviceWorkerPlugin(): Plugin {
+function serviceWorkerPlugin(options: { enabled: boolean }): Plugin {
   let buildId = "dev";
 
   return {
@@ -115,6 +115,9 @@ function serviceWorkerPlugin(): Plugin {
       const entry = hashedAssets.find((fileName) => fileName.endsWith(".js"));
       const match = entry === undefined ? null : /-([\w-]+)\.js$/.exec(entry);
       buildId = match?.[1] ?? "dev";
+      if (!options.enabled) {
+        return;
+      }
       this.emitFile({
         type: "asset",
         fileName: "sw.js",
@@ -165,7 +168,15 @@ function normalizeBasePath(value: string | undefined): string {
     trimmedValue.includes("?") ||
     trimmedValue.includes("#")
   ) {
-    throw new Error("VITE_BASE_PATH must be a root-relative path.");
+    throw new Error(
+      "VITE_BASE_PATH must be a root-relative path, or ./ for a distributable build.",
+    );
+  }
+
+  // A relative base lets the distributable zip work from any hosting path,
+  // including portal iframes and locally extracted folders (FASE 8).
+  if (trimmedValue === "./" || trimmedValue === ".") {
+    return "./";
   }
 
   const withLeadingSlash = trimmedValue.startsWith("/")
@@ -182,10 +193,15 @@ export default defineConfig(({ mode }) => {
   const analyticsEndpoint = (
     environment.VITE_GOATCOUNTER_ENDPOINT ?? ""
   ).trim();
+  // The distributable zip has no PWA life (portal iframes cannot register a
+  // service worker), so the flag also skips the banner-driven update flow.
+  const serviceWorkerEnabled = environment.VITE_NO_SW !== "1";
+  const outDir = environment.VITE_OUT_DIR?.trim() ?? "dist";
 
   return {
     base: normalizeBasePath(environment.VITE_BASE_PATH),
     build: {
+      outDir,
       rollupOptions: {
         input: {
           en: join(process.cwd(), "en/index.html"),
@@ -193,6 +209,9 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    plugins: [appShellCopyPlugin(analyticsEndpoint), serviceWorkerPlugin()],
+    plugins: [
+      appShellCopyPlugin(analyticsEndpoint),
+      serviceWorkerPlugin({ enabled: serviceWorkerEnabled }),
+    ],
   };
 });

@@ -6,6 +6,7 @@ export default defineConfig([
   globalIgnores([
     "coverage/",
     "dist/",
+    "dist-dist/",
     "node_modules/",
     "playwright-report/",
     "test-results/",
