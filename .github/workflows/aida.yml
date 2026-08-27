@@ -2,15 +2,21 @@ name: AIDA Metrics
 
 # AI Development Accounting (ADR-038): measures how much of the repository is
 # AI-built and how that code holds up. Read-only over git history; the report
-# is an artifact, never a gate — a metrics run must not block a merge.
+# is informative, never a gate — a metrics run must not block a merge.
+#
+# Since the 1.0 CLI (@aida-dev/cli >= 1.0.2) the workflow also covers pull
+# requests: the change set is measured on its own and the report is posted as a
+# comment, created once and updated in place. Author identities stay redacted.
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   report:
@@ -32,13 +38,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate AIDA report
+      - name: Generate AIDA report (default branch)
+        if: github.event_name == 'push'
         run: npx aida collect --since 90d --redact-authors && npx aida analyze && npx aida report
+
+      - name: Generate AIDA report (pull request)
+        if: github.event_name == 'pull_request'
+        run: npx aida collect --pr --redact-authors && npx aida analyze && npx aida report
+
+      - name: Post AIDA report comment (pull request)
+        # Fork pull requests get a read-only token and cannot comment.
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx aida comment
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v7
         with:
           name: aida-report
           path: aida-output/
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 30

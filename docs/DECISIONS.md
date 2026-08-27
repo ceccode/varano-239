@@ -442,6 +442,13 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Limite dichiarato: l'hook è volontario e locale a ogni clone; il `defaultMode` è una dichiarazione retroattiva. La copertura _dichiarata_ comincia da questo commit.
 - Conseguenza: le metriche si leggono con `npm run aida` in locale o dall'artifact `aida-report` in Actions. Nessun dato lascia la macchina o il runner CI.
 
+### Aggiornamento (27 agosto 2026) — CLI 1.0 e report nelle pull request
+
+- `@aida-dev/cli` aggiornata da 0.15.0 a **1.0.2**. Il contratto 1.0 è breaking (schema nuovi, artifact delle versioni precedenti non rileggibili), quindi il repo segue la 1.0 ufficiale.
+- Il workflow CI ora copre anche le **pull request del repo**: `aida collect --pr --redact-authors` misura il solo changeset con la base rilevata da `GITHUB_BASE_REF`, e `aida comment` posta il report come **commento informativo**, creato una volta e aggiornato in place (mai un gate). Serve il permesso `pull-requests: write`, usato solo con `GITHUB_TOKEN`; sulle PR di fork il commento è saltato. I nomi restano redatti e, rispetto all'adozione iniziale, l'unico dato che lascia il runner è il report già redatto e statico.
+- `fetch-prs` resta non adottato: richiederebbe un token con più permessi e non aggiunge valore per il lancio.
+- Conseguenza aggiornata: le metriche si leggono in locale (`npm run aida`), dall'artifact `aida-report` su `main` e dal commento del report nelle PR.
+
 ## ADR-039 — Livello 5 «Dentro il Castello»: la salita, il fondale da interno e i depistaggi dell'AI
 
 - Stato: **Accettata**
