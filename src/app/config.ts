@@ -7,6 +7,7 @@ const copyKeys = {
   title: "core.message.title",
   subtitle: "core.message.subtitle",
   metaDescription: "core.message.meta-description",
+  socialImageAlt: "core.message.social-image-alt",
   skipLink: "core.message.shell.skip-link",
   ageLabel: "core.message.shell.age-label",
   navigationLabel: "core.message.shell.nav-label",
@@ -31,6 +32,9 @@ export const appConfig = {
   title: resolveCopy("title"),
   subtitle: resolveCopy("subtitle"),
   metaDescription: resolveCopy("metaDescription"),
+  canonicalUrl: "https://app.varano239.it/",
+  socialImageUrl: "https://varano239.it/og-image.png",
+  socialImageAlt: resolveCopy("socialImageAlt"),
   shell: {
     skipLink: resolveCopy("skipLink"),
     ageLabel: resolveCopy("ageLabel"),
