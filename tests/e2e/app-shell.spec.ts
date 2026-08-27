@@ -137,6 +137,41 @@ test("boots straight into an accessible, local-only full-screen game", async ({
   expect(consoleErrors).toEqual([]);
 });
 
+test("publishes canonical and social metadata for the complete game", async ({
+  page,
+}) => {
+  await page.goto("./");
+
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    appConfig.canonicalUrl,
+  );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    appConfig.metaDescription,
+  );
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    "content",
+    `${appConfig.title} — ${appConfig.subtitle}`,
+  );
+  await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
+    "content",
+    appConfig.metaDescription,
+  );
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+    "content",
+    appConfig.canonicalUrl,
+  );
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    appConfig.socialImageUrl,
+  );
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary_large_image",
+  );
+});
+
 test("completes the whole story with the keyboard and restarts", async ({
   page,
 }) => {
@@ -923,6 +958,10 @@ test.describe("without JavaScript", () => {
       page.getByRole("link", { name: appConfig.shell.sourcesDocumentLink }),
     ).toBeVisible();
     await expect(page.getByText(appConfig.shell.description)).toBeVisible();
+    await expect(page.getByText(/10 livelli/)).toBeVisible();
+    await expect(page.getByText(/4 ruoli/)).toBeVisible();
+    await expect(page.getByText(/6 finali/)).toBeVisible();
+    await expect(page.getByText(/Tre livelli/)).toHaveCount(0);
     await expect(page.getByRole("button")).toHaveCount(0);
   });
 });

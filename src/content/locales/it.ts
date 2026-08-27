@@ -5,14 +5,16 @@ const shellMessages = {
   "core.message.title": "VARANO 2:39",
   "core.message.subtitle": "Il mistero dei Sei Colli",
   "core.message.meta-description":
-    "Platformer narrativo 12+ che distingue cronaca documentata e leggenda inventata.",
+    "Gioco narrativo gratuito in pixel art ispirato al misterioso varano avvistato a Montichiari. 10 livelli, 4 ruoli, 6 finali e circa 20 minuti di gioco.",
+  "core.message.social-image-alt":
+    "Silhouette pixel-art gialla di un varano su cielo notturno blu, con il titolo VARANO 2:39 e il timbro LEGGENDA.",
   "core.message.shell.skip-link": "Vai al contenuto",
   "core.message.shell.age-label": "Platformer narrativo 12+",
   "core.message.shell.nav-label": "Navigazione principale",
   "core.message.shell.sources-link": "Archivio e fonti",
-  "core.message.shell.status-title": "Tre livelli giocabili",
+  "core.message.shell.status-title": "10 livelli · 4 ruoli · 6 finali",
   "core.message.shell.description":
-    "Tre livelli platformer con musica chiptune, sempre saltabili: i campi di Montichiari, le chat di paese e il circo mediatico sotto il Castello, seguiti da un finale aperto.",
+    "10 livelli platformer con musica chiptune, 4 ruoli e 6 finali in circa 20 minuti. Ogni livello è saltabile e la storia continua con lo stesso esito narrativo.",
   "core.message.shell.ready":
     "Applicazione inizializzata. Il Livello 1 «I campi di Montichiari» è pronto.",
   "core.message.shell.safety-title": "Sicurezza",
