@@ -361,7 +361,7 @@ Indicatore di allarme: se un capitolo contiene quattro file quasi uguali per ruo
 export type MessageCatalog = Readonly<Record<MessageKey, string>>;
 ```
 
-- L'italiano è l'unica lingua e deve coprire tutte le chiavi referenziate; una chiave mancante fa fallire la build.
+- Italiano e inglese devono coprire lo stesso insieme di chiavi referenziate; una chiave mancante o segnaposto divergenti fanno fallire la build (ADR-060).
 - Ogni capitolo porta il proprio `messages.ts`; `pack.ts` li unisce al catalogo di chrome.
 - Niente HTML nei messaggi; rendering con `textContent`.
 - Placeholder permessi solo tramite una funzione tipizzata e valori interni, mai input utente.

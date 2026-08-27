@@ -1,6 +1,7 @@
 export type NodeId = string;
 export type ChapterId = string;
 export type MessageKey = string;
+export type Locale = "it" | "en";
 export type AssetId = string;
 export type SourceId = string;
 export type DossierCardId = string;

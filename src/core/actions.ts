@@ -1,7 +1,8 @@
 import type { GameState } from "./game-state";
-import type { HotspotId, OptionId, Role, StoryScope } from "./model";
+import type { HotspotId, Locale, OptionId, Role, StoryScope } from "./model";
 
 export interface SettingsUpdate {
+  readonly locale?: Locale;
   readonly playMode?: "standard" | "story" | "calm";
   readonly textScale?: "small" | "medium" | "large";
   readonly highContrast?: boolean;

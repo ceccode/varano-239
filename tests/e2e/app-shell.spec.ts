@@ -1,7 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-import { appConfig } from "../../src/app/config";
+import { appConfig, appConfigForLocale } from "../../src/app/config";
+import {
+  registerEnglishMessages,
+  resolveMessage,
+} from "../../src/content/locales";
+import { englishMessages } from "../../src/content/locales/en";
 import { resolveItalianMessage } from "../../src/content/locales/it";
 import {
   coreInterludes,
@@ -9,6 +14,7 @@ import {
 } from "../helpers/interludes";
 
 const message = resolveItalianMessage;
+registerEnglishMessages(englishMessages);
 
 function playerX(page: Page): Promise<number> {
   return page
@@ -170,6 +176,44 @@ test("publishes canonical and social metadata for the complete game", async ({
     "content",
     "summary_large_image",
   );
+});
+
+test("publishes and boots the complete English edition", async ({ page }) => {
+  const englishConfig = appConfigForLocale("en");
+  await page.goto("en/");
+
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    englishConfig.canonicalUrl,
+  );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    englishConfig.metaDescription,
+  );
+  await expect(
+    page.getByText(resolveMessage("en", "core.message.ui.role-select.heading")),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Italiano" })).toHaveAttribute(
+    "href",
+    "../",
+  );
+  await page
+    .locator(".role-card")
+    .filter({
+      has: page.getByText(
+        resolveMessage("en", "core.message.ui.role-select.varano.title"),
+        { exact: true },
+      ),
+    })
+    .click();
+  await expect(page.locator(".arcade-canvas")).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: resolveMessage("en", "core.message.level.skip"),
+    }),
+  ).toBeVisible();
+  await expectNoViolations(page);
 });
 
 test("completes the whole story with the keyboard and restarts", async ({

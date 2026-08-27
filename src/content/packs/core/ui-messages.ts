@@ -107,6 +107,9 @@ export const uiMessages = {
   "core.message.ui.role-select.heading": "Chi sei, questa notte?",
   "core.message.ui.role-select.body":
     "Montichiari, ore 2:39. Una foto sfocata, un rettile leggendario e mezzo paese col naso fuori dalla finestra. Scegli il tuo ruolo: ognuno insegue un obiettivo diverso.",
+  "core.message.ui.language.label": "Lingua",
+  "core.message.ui.language.it": "Italiano",
+  "core.message.ui.language.en": "English",
   "core.message.ui.role-select.varano.title": "Il Varano",
   "core.message.ui.role-select.varano.goal":
     "Sfuggi a tutti, fai sparire gli indizi e — perché no — punta al Castello Bonoris.",

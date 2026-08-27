@@ -1,5 +1,6 @@
 import type { AnalyticsPort } from "../core/ports";
-import { resolveItalianMessage } from "../content/locales/it";
+import { resolveMessage } from "../content/locales";
+import type { Locale } from "../core/model";
 import { applyUpdate, type ContainerLike } from "../platform/pwa/sw-update";
 import type { SavePort } from "../core/ports";
 import type { GameAudio } from "../platform/audio/chiptune-audio";
@@ -7,7 +8,7 @@ import type { BestScorePort } from "../platform/storage/best-score";
 import type { LevelRecordsPort } from "../platform/storage/level-records";
 import { renderBootstrapError } from "../platform/dom/render-app";
 import { createGameController, type GameController } from "./controller";
-import { appConfig } from "./config";
+import { appConfigForLocale } from "./config";
 
 export interface BootstrapDependencies {
   readonly document: Document;
@@ -16,6 +17,7 @@ export interface BootstrapDependencies {
   readonly audio: GameAudio;
   readonly bestScore: BestScorePort;
   readonly levelRecords: LevelRecordsPort;
+  readonly initialLocale?: Locale | undefined;
 }
 
 export function bootstrapApp({
@@ -25,6 +27,7 @@ export function bootstrapApp({
   audio,
   bestScore,
   levelRecords,
+  initialLocale = "it",
 }: BootstrapDependencies): GameController {
   const mount = document.querySelector<HTMLElement>("[data-app-root]");
 
@@ -49,6 +52,7 @@ export function bootstrapApp({
     audio,
     bestScore,
     levelRecords,
+    initialLocale,
   });
 }
 
@@ -66,12 +70,19 @@ export function installUpdateBanner(
   banner.type = "button";
   banner.className = "update-banner";
   banner.hidden = true;
-  banner.textContent = resolveItalianMessage("core.message.ui.update.ready");
+  const updateCopy = (): void => {
+    const locale: Locale = document.documentElement.lang.startsWith("en")
+      ? "en"
+      : "it";
+    banner.textContent = resolveMessage(locale, "core.message.ui.update.ready");
+  };
+  updateCopy();
   banner.addEventListener("click", () => {
     banner.disabled = true;
     onAccept();
   });
   document.defaultView?.addEventListener("varano-update-ready", () => {
+    updateCopy();
     banner.hidden = false;
   });
   document.body.append(banner);
@@ -95,6 +106,9 @@ export function startApplication(dependencies: BootstrapDependencies): void {
   } catch (error) {
     console.error("Application bootstrap failed.", error);
     dependencies.document.documentElement.classList.remove("js");
-    renderBootstrapError(dependencies.document, appConfig.bootstrapError);
+    renderBootstrapError(
+      dependencies.document,
+      appConfigForLocale(dependencies.initialLocale ?? "it").bootstrapError,
+    );
   }
 }

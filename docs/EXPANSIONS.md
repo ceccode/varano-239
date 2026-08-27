@@ -13,7 +13,7 @@ Ogni capitolo è una cartella con due file:
 ```text
 src/content/packs/core/chapters/cNN-slug/
   chapter.ts    il ChapterBundle: nodi, carte del Dossier, fonti
-  messages.ts   il catalogo italiano del capitolo
+  messages.ts   il catalogo sorgente italiano del capitolo; l'inglese deve aggiungere le stesse chiavi
 ```
 
 I numeri di cartella (`c00`…`c09`, più `c99-finale`) sono l'**ordine di produzione**. L'ordine di storia vive nell'array di `pack.ts` e può essere diverso: i cinque capitoli della lunga notte sono stati prodotti dopo i primi, ma giocati prima (ADR-045).

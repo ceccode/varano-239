@@ -35,3 +35,13 @@
   for = "/index.html"
   [headers.values]
     Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/en/"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/en/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"

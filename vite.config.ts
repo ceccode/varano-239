@@ -3,8 +3,14 @@ import { join } from "node:path";
 
 import { defineConfig, loadEnv, type Plugin } from "vite";
 
-import { appConfig } from "./src/app/config.ts";
+import { appConfigForLocale } from "./src/app/config.ts";
+import { englishMessages } from "./src/content/locales/en.ts";
+import { registerEnglishMessages } from "./src/content/locales/index.ts";
 import { renderServiceWorker } from "./src/platform/pwa/sw-template.ts";
+
+// Both static shells are rendered at build time; the browser still loads the
+// English catalogue lazily only on /en/.
+registerEnglishMessages(englishMessages);
 
 function escapeHtml(value: string): string {
   return value
@@ -43,33 +49,34 @@ function contentSecurityPolicy(analyticsEndpoint: string): string {
 function appShellCopyPlugin(analyticsEndpoint: string): Plugin {
   let isBuild = false;
 
-  const replacements = new Map<string, string>([
-    ["%APP_CSP%", contentSecurityPolicy(analyticsEndpoint)],
-    ["%APP_TITLE%", appConfig.title],
-    ["%APP_SUBTITLE%", appConfig.subtitle],
-    ["%APP_META_DESCRIPTION%", appConfig.metaDescription],
-    ["%APP_CANONICAL_URL%", appConfig.canonicalUrl],
-    ["%APP_SOCIAL_IMAGE_URL%", appConfig.socialImageUrl],
-    ["%APP_SOCIAL_IMAGE_ALT%", appConfig.socialImageAlt],
-    ["%APP_SKIP_LINK%", appConfig.shell.skipLink],
-    ["%APP_AGE_LABEL%", appConfig.shell.ageLabel],
-    ["%APP_NAVIGATION_LABEL%", appConfig.shell.navigationLabel],
-    ["%APP_SOURCES_LINK%", appConfig.shell.sourcesLink],
-    ["%APP_STATUS_TITLE%", appConfig.shell.statusTitle],
-    ["%APP_DESCRIPTION%", appConfig.shell.description],
-    ["%APP_SAFETY_TITLE%", appConfig.shell.safetyTitle],
-    ["%APP_SAFETY_BODY%", appConfig.shell.safetyBody],
-    ["%APP_SOURCES_TITLE%", appConfig.shell.sourcesTitle],
-    ["%APP_SOURCES_BODY%", appConfig.shell.sourcesBody],
-    ["%APP_SOURCES_DOCUMENT_LINK%", appConfig.shell.sourcesDocumentLink],
-  ]);
-
   return {
     name: "varano-app-shell-copy",
     configResolved(config) {
       isBuild = config.command === "build";
     },
-    transformIndexHtml(html) {
+    transformIndexHtml(html, context) {
+      const locale = context.path.startsWith("/en/") ? "en" : "it";
+      const appConfig = appConfigForLocale(locale);
+      const replacements = new Map<string, string>([
+        ["%APP_CSP%", contentSecurityPolicy(analyticsEndpoint)],
+        ["%APP_TITLE%", appConfig.title],
+        ["%APP_SUBTITLE%", appConfig.subtitle],
+        ["%APP_META_DESCRIPTION%", appConfig.metaDescription],
+        ["%APP_CANONICAL_URL%", appConfig.canonicalUrl],
+        ["%APP_SOCIAL_IMAGE_URL%", appConfig.socialImageUrl],
+        ["%APP_SOCIAL_IMAGE_ALT%", appConfig.socialImageAlt],
+        ["%APP_SKIP_LINK%", appConfig.shell.skipLink],
+        ["%APP_AGE_LABEL%", appConfig.shell.ageLabel],
+        ["%APP_NAVIGATION_LABEL%", appConfig.shell.navigationLabel],
+        ["%APP_SOURCES_LINK%", appConfig.shell.sourcesLink],
+        ["%APP_STATUS_TITLE%", appConfig.shell.statusTitle],
+        ["%APP_DESCRIPTION%", appConfig.shell.description],
+        ["%APP_SAFETY_TITLE%", appConfig.shell.safetyTitle],
+        ["%APP_SAFETY_BODY%", appConfig.shell.safetyBody],
+        ["%APP_SOURCES_TITLE%", appConfig.shell.sourcesTitle],
+        ["%APP_SOURCES_BODY%", appConfig.shell.sourcesBody],
+        ["%APP_SOURCES_DOCUMENT_LINK%", appConfig.shell.sourcesDocumentLink],
+      ]);
       let transformedHtml = html;
 
       for (const [placeholder, message] of replacements) {
@@ -113,9 +120,13 @@ function serviceWorkerPlugin(): Plugin {
         fileName: "sw.js",
         source: renderServiceWorker(buildId, [
           "./",
+          "./en/",
           "manifest.webmanifest",
+          "manifest-en.webmanifest",
           "privacy.html",
+          "privacy-en.html",
           "termini.html",
+          "terms-en.html",
           "legal.css",
           "icons/icon-192.png",
           "icons/icon-512.png",
@@ -129,11 +140,15 @@ function serviceWorkerPlugin(): Plugin {
       // guarantee against this one: stamping the file on disk is the one
       // deterministic moment (ADR-054).
       const outputDir = options.dir ?? "dist";
-      const indexPath = join(outputDir, "index.html");
-      writeFileSync(
-        indexPath,
-        readFileSync(indexPath, "utf8").replaceAll("%APP_BUILD_ID%", buildId),
-      );
+      for (const indexPath of [
+        join(outputDir, "index.html"),
+        join(outputDir, "en/index.html"),
+      ]) {
+        writeFileSync(
+          indexPath,
+          readFileSync(indexPath, "utf8").replaceAll("%APP_BUILD_ID%", buildId),
+        );
+      }
     },
   };
 }
@@ -170,6 +185,14 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: normalizeBasePath(environment.VITE_BASE_PATH),
+    build: {
+      rollupOptions: {
+        input: {
+          en: join(process.cwd(), "en/index.html"),
+          main: join(process.cwd(), "index.html"),
+        },
+      },
+    },
     plugins: [appShellCopyPlugin(analyticsEndpoint), serviceWorkerPlugin()],
   };
 });

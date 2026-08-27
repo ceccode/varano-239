@@ -2,17 +2,17 @@
 // prose nobody checked. This makes a tighter ceiling part of `npm run check`,
 // with the same zero-dependency approach as generate-icons.mjs.
 //
-// The ceilings leave real headroom over today's build (~45 KB gzip JS,
-// ~4 KB CSS) while staying far under the documented 150 KB budget: they are
-// meant to catch a dependency slipping in or an asset landing in the bundle,
-// not to punish ordinary growth. Raising them is fine — knowingly.
+// The JavaScript ceiling covers the Italian entry (~57 KB) plus the English
+// catalogue chunk (~18 KB), loaded only on /en/ (ADR-060). The combined gate
+// stays far under the documented 150 KB budget and catches a dependency or
+// asset slipping into either route.
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 
 const distDir = new URL("../dist/assets/", import.meta.url).pathname;
 const ceilings = new Map([
-  [".js", 60_000],
+  [".js", 80_000],
   [".css", 10_000],
 ]);
 

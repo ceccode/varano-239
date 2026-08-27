@@ -3,7 +3,8 @@ import type { FocusTarget, GameAction, GameEffect } from "../core/actions";
 import { createInitialState, type GameState } from "../core/game-state";
 import type { AnalyticsEvent, AnalyticsPort, SavePort } from "../core/ports";
 import { reduce } from "../core/reducer";
-import { resolveItalianMessage } from "../content/locales/it";
+import { resolveMessage } from "../content/locales";
+import type { Locale } from "../core/model";
 import { coreStoryGraph } from "../content/packs/core/pack";
 import { renderGameApp } from "../platform/dom/render-game";
 import type { GameAudio } from "../platform/audio/chiptune-audio";
@@ -22,6 +23,7 @@ export interface GameControllerDependencies {
   readonly bestScore: BestScorePort;
   /** The per-level archive behind «La Collezione» (ADR-057). */
   readonly levelRecords: LevelRecordsPort;
+  readonly initialLocale?: Locale | undefined;
 }
 
 export interface GameController {
@@ -64,8 +66,17 @@ function focusTarget(document: Document, target: FocusTarget): void {
 export function createGameController(
   dependencies: GameControllerDependencies,
 ): GameController {
-  let state = createInitialState();
+  let state = createInitialState(dependencies.initialLocale);
   let savedState = safeLoad(dependencies.save);
+  if (savedState !== undefined && dependencies.initialLocale !== undefined) {
+    savedState = {
+      ...savedState,
+      settings: {
+        ...savedState.settings,
+        locale: dependencies.initialLocale,
+      },
+    };
+  }
   let activeLevel: MiniGameHandle | undefined;
   let lastOutcome: LevelOutcome | undefined;
   let isRecord = false;
@@ -171,6 +182,31 @@ export function createGameController(
     } catch {
       // Audio is optional and never blocks the story.
     }
+    const message = (
+      key: Parameters<typeof resolveMessage>[1],
+      values?: Parameters<typeof resolveMessage>[2],
+    ): string => resolveMessage(state.settings.locale, key, values);
+    dependencies.document.documentElement.lang = state.settings.locale;
+    const title = `${message("core.message.title")} — ${message("core.message.subtitle")}`;
+    const description = message("core.message.meta-description");
+    dependencies.document.title = title;
+    for (const selector of [
+      'meta[name="description"]',
+      'meta[property="og:description"]',
+      'meta[name="twitter:description"]',
+    ]) {
+      dependencies.document
+        .querySelector(selector)
+        ?.setAttribute("content", description);
+    }
+    for (const selector of [
+      'meta[property="og:title"]',
+      'meta[name="twitter:title"]',
+    ]) {
+      dependencies.document
+        .querySelector(selector)
+        ?.setAttribute("content", title);
+    }
     renderGameApp({
       document: dependencies.document,
       mount: dependencies.mount,
@@ -183,7 +219,7 @@ export function createGameController(
       content: {
         story: coreStoryGraph,
         assets: assetManifest,
-        message: resolveItalianMessage,
+        message,
       },
       dispatch,
       showBriefing: briefing,
@@ -234,7 +270,7 @@ export function createGameController(
         role: state.setup.role ?? "varano",
         ...(position === undefined ? {} : { position }),
         settings: state.settings,
-        message: resolveItalianMessage,
+        message,
         audio: dependencies.audio,
         onComplete: (outcome) => {
           recordOutcome(outcome);

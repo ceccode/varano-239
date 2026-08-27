@@ -4,6 +4,7 @@ import type {
   DossierCardId,
   FlagId,
   ItemId,
+  Locale,
   MysteryId,
   NodeId,
   OptionId,
@@ -30,6 +31,7 @@ export interface CompletedSetup {
 }
 
 export interface AccessibilitySettings {
+  readonly locale: Locale;
   readonly playMode: "standard" | "story" | "calm";
   readonly textScale: "small" | "medium" | "large";
   readonly highContrast: boolean;
@@ -67,7 +69,7 @@ export interface GameState {
   readonly settings: AccessibilitySettings;
 }
 
-export function createInitialState(): GameState {
+export function createInitialState(locale: Locale = "it"): GameState {
   return {
     phase: "title",
     setup: {
@@ -75,6 +77,7 @@ export function createInitialState(): GameState {
       storyScope: "core",
     },
     settings: {
+      locale,
       playMode: "standard",
       textScale: "medium",
       highContrast: false,

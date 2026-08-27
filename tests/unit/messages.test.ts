@@ -2,8 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatMessage,
+  italianMessages,
   resolveItalianMessage,
 } from "../../src/content/locales/it";
+import { englishMessages } from "../../src/content/locales/en";
+import {
+  registerEnglishMessages,
+  resolveMessage,
+} from "../../src/content/locales";
+
+registerEnglishMessages(englishMessages);
 
 describe("message formatting", () => {
   it("fills every placeholder with its value", () => {
@@ -41,5 +49,32 @@ describe("message formatting", () => {
     expect(() => resolveItalianMessage("core.message.nope")).toThrow(
       /Missing Italian message/,
     );
+  });
+
+  it("keeps the English catalogue complete and placeholder-compatible", () => {
+    expect(Object.keys(englishMessages)).toEqual(Object.keys(italianMessages));
+    const placeholders = (message: string): string[] =>
+      [...message.matchAll(/\{\w+\}/g)].map(([value]) => value).sort();
+
+    for (const key of Object.keys(
+      italianMessages,
+    ) as (keyof typeof italianMessages)[]) {
+      expect(englishMessages[key], key).toBeTypeOf("string");
+      expect(placeholders(englishMessages[key]), key).toEqual(
+        placeholders(italianMessages[key]),
+      );
+    }
+  });
+
+  it("resolves English without falling back to Italian", () => {
+    expect(resolveMessage("en", "core.message.ui.role-select.heading")).toBe(
+      "Who are you tonight?",
+    );
+    expect(
+      resolveMessage("en", "core.message.level.briefing.position", {
+        index: 3,
+        total: 10,
+      }),
+    ).toBe("Level 3 of 10");
   });
 });

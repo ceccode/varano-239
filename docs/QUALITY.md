@@ -81,7 +81,7 @@ Veloci, senza DOM e senza rete:
 - ogni fonte usa HTTPS e date valide;
 - ogni nodo giocabile è LEGGENDA e mantiene il banner; la fotografia attendibile e l'orario 2:39 restano due schede distinte, FATTO e TESTIMONIANZA;
 - ogni `LevelNode` risolve una coppia `levelId`/`configId` registrata, con le sue chiavi di messaggio;
-- ogni testo italiano, asset e testo alternativo esiste;
+- ogni testo italiano e inglese, asset e testo alternativo esiste; i due cataloghi hanno chiavi e segnaposto identici;
 - ogni sorpresa ha un `hostSceneNodeId` valido e nessun popup compare in una scena `noSurprise`;
 - esiste il finale di fallback `core.outcome.open-mystery`.
 
