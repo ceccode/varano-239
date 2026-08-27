@@ -3,6 +3,18 @@
 > Il mistero dei Sei Colli  
 > Quattro punti di vista. Sei colli. Una sola foto.
 
+<p align="center">
+  <a href="https://app.varano239.it">
+    <img src="https://varano239.it/og-image.png" alt="VARANO 2:39 — Il mistero dei Sei Colli, ricostruzione inventata in pixel art" width="960" />
+  </a>
+</p>
+
+<p align="center">
+  <strong><a href="https://app.varano239.it">GIOCA ORA</a></strong><br />
+  10 livelli · 4 ruoli · 6 finali · circa 20 minuti<br />
+  Gratis · Nel browser · Nessuna installazione · Nessun account
+</p>
+
 **VARANO 2:39** è un videogioco narrativo gratuito e open-source, consigliato a un pubblico **12+**, liberamente ispirato al misterioso rettile avvistato nelle campagne di Montichiari nel luglio 2026.
 
 Il gioco mescola cronaca documentata, testimonianze contraddittorie e una leggenda pixel-art. Il Varano è sempre il protagonista: può essere inseguito, protetto, interpretato dal giocatore o incoronato improbabile Conte del Castello Bonoris.
