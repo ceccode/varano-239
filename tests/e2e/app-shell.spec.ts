@@ -178,6 +178,24 @@ test("publishes canonical and social metadata for the complete game", async ({
   );
 });
 
+test("serves robots and a sitemap for both language routes", async ({
+  page,
+}) => {
+  const robotsResponse = await page.request.get("robots.txt");
+  expect(robotsResponse.ok()).toBe(true);
+  expect(await robotsResponse.text()).toContain(
+    "Sitemap: https://app.varano239.it/sitemap.xml",
+  );
+
+  const sitemapResponse = await page.request.get("sitemap.xml");
+  expect(sitemapResponse.ok()).toBe(true);
+  const sitemap = await sitemapResponse.text();
+  expect(sitemap).toContain("https://app.varano239.it/");
+  expect(sitemap).toContain("https://app.varano239.it/en/");
+  expect(sitemap).toContain('hreflang="it"');
+  expect(sitemap).toContain('hreflang="en"');
+});
+
 test("publishes and boots the complete English edition", async ({ page }) => {
   const englishConfig = appConfigForLocale("en");
   await page.goto("en/");
