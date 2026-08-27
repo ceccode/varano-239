@@ -1,7 +1,7 @@
 import { assetManifest } from "../assets/manifest";
 import type { FocusTarget, GameAction, GameEffect } from "../core/actions";
 import { createInitialState, type GameState } from "../core/game-state";
-import type { AnalyticsPort, SavePort } from "../core/ports";
+import type { AnalyticsEvent, AnalyticsPort, SavePort } from "../core/ports";
 import { reduce } from "../core/reducer";
 import { resolveItalianMessage } from "../content/locales/it";
 import { coreStoryGraph } from "../content/packs/core/pack";
@@ -29,6 +29,24 @@ export interface GameController {
   readonly getState: () => GameState;
 }
 
+/** Fixed funnel checkpoints: no level id or narrative value reaches analytics. */
+export function analyticsMilestoneForLevel(
+  index: number,
+): AnalyticsEvent["name"] | undefined {
+  switch (index) {
+    case 1:
+      return "level_1_complete";
+    case 3:
+      return "level_3_complete";
+    case 6:
+      return "level_6_complete";
+    case 10:
+      return "level_10_complete";
+    default:
+      return undefined;
+  }
+}
+
 function safeLoad(save: SavePort): GameState | undefined {
   try {
     return save.load();
@@ -52,6 +70,14 @@ export function createGameController(
   let lastOutcome: LevelOutcome | undefined;
   let isRecord = false;
   let briefingClearedNodeId: string | undefined;
+
+  const trackAnalytics = (name: AnalyticsEvent["name"]): void => {
+    try {
+      dependencies.analytics.track({ name });
+    } catch {
+      // Analytics is optional and never blocks the story.
+    }
+  };
 
   /**
    * Every level opens with its briefing, except the very first one of a brand
@@ -188,6 +214,12 @@ export function createGameController(
               activeLevel?.restart();
             }
           : undefined,
+      onShareAttempt: () => {
+        trackAnalytics("share_attempt");
+      },
+      onReplayStart: () => {
+        trackAnalytics("replay_start");
+      },
     });
 
     const currentNode = node;
@@ -206,6 +238,12 @@ export function createGameController(
         audio: dependencies.audio,
         onComplete: (outcome) => {
           recordOutcome(outcome);
+          if (position !== undefined) {
+            const milestone = analyticsMilestoneForLevel(position.index);
+            if (milestone !== undefined) {
+              trackAnalytics(milestone);
+            }
+          }
           // The level's own archive entry (ADR-057), kept best-of so a run
           // that finally spots the cameo keeps the star of an earlier one.
           try {
@@ -255,11 +293,7 @@ export function createGameController(
         isRecord = false;
         return;
       case "analytics":
-        try {
-          dependencies.analytics.track({ name: effect.event });
-        } catch {
-          // Analytics is optional and never blocks the story.
-        }
+        trackAnalytics(effect.event);
         return;
       case "focus":
         focusTarget(dependencies.document, effect.target);
@@ -308,9 +342,18 @@ export function createGameController(
       isRecord = false;
     }
 
+    const previousPhase = state.phase;
     const keepLevelMounted = isPresentationOnlySettingsChange(action);
     const transition = reduce(state, action, coreStoryGraph);
     state = transition.state;
+
+    if (
+      action.type !== "RUN_RESUMED" &&
+      previousPhase !== "ending" &&
+      state.phase === "ending"
+    ) {
+      trackAnalytics("game_complete");
+    }
 
     for (const effect of transition.effects) {
       if (effect.type !== "focus") {

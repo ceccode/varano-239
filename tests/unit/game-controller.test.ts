@@ -3,7 +3,10 @@
 import { fireEvent, getByRole, queryByRole } from "@testing-library/dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createGameController } from "../../src/app/controller";
+import {
+  analyticsMilestoneForLevel,
+  createGameController,
+} from "../../src/app/controller";
 import { createInitialState, type GameState } from "../../src/core/game-state";
 import type { AnalyticsPort, SavePort } from "../../src/core/ports";
 import { reduce } from "../../src/core/reducer";
@@ -142,6 +145,25 @@ describe("full-screen game controller", () => {
       configurable: true,
       value: vi.fn(),
     });
+  });
+
+  it("exposes only the four aggregate level milestones", () => {
+    expect(
+      Array.from({ length: 10 }, (_, index) =>
+        analyticsMilestoneForLevel(index + 1),
+      ),
+    ).toEqual([
+      "level_1_complete",
+      undefined,
+      "level_3_complete",
+      undefined,
+      undefined,
+      "level_6_complete",
+      undefined,
+      undefined,
+      undefined,
+      "level_10_complete",
+    ]);
   });
 
   it("never puts a briefing between a new run and its first level", () => {
@@ -489,9 +511,15 @@ describe("full-screen game controller", () => {
       }),
     ).toBeNull();
     expect(save.save).toHaveBeenCalled();
+    expect(track).toHaveBeenCalledWith({ name: "game_complete" });
+    expect(track).not.toHaveBeenCalledWith({ name: "level_1_complete" });
+    expect(track).not.toHaveBeenCalledWith({ name: "level_3_complete" });
+    expect(track).not.toHaveBeenCalledWith({ name: "level_6_complete" });
+    expect(track).not.toHaveBeenCalledWith({ name: "level_10_complete" });
 
     // "Rigioca" clears the save and returns to the role selection.
     clickMessage("core.message.ui.ending.restart");
+    expect(track).toHaveBeenCalledWith({ name: "replay_start" });
     expect(save.clear).toHaveBeenCalledOnce();
     expect(controller.getState().phase).toBe("title");
     expect(mount.textContent).toContain(
@@ -1083,8 +1111,10 @@ describe("full-screen game controller", () => {
       value: share,
     });
 
-    renderEndingWithScore(mount);
+    const onShareAttempt = vi.fn();
+    renderEndingWithScore(mount, { onShareAttempt });
     clickMessage("core.message.ui.score.share");
+    expect(onShareAttempt).toHaveBeenCalledOnce();
     await vi.waitFor(() => {
       expect(share).toHaveBeenCalledOnce();
     });

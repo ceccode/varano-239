@@ -3,6 +3,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GoatCounterAnalytics } from "../../src/platform/analytics/goatcounter-analytics";
+import type { AnalyticsEvent } from "../../src/core/ports";
 
 const endpoint = "https://varano239.goatcounter.com/count";
 
@@ -93,30 +94,38 @@ describe("GoatCounter analytics adapter", () => {
     ).toHaveLength(1);
   });
 
-  it("counts every explicit game start as a session-less event", () => {
+  it("counts every allowlisted funnel event without a payload", () => {
     const calls: CountVars[] = [];
     const analytics = new GoatCounterAnalytics(window, endpoint);
+    const events = [
+      "game_start",
+      "level_1_complete",
+      "level_3_complete",
+      "level_6_complete",
+      "level_10_complete",
+      "game_complete",
+      "share_attempt",
+      "replay_start",
+    ] as const satisfies readonly Exclude<
+      AnalyticsEvent["name"],
+      "page_view"
+    >[];
 
-    analytics.track({ name: "game_start" });
+    analytics.track({ name: events[0] });
     resolveScript(calls);
-    analytics.track({ name: "game_start" });
+    for (const name of events.slice(1)) {
+      analytics.track({ name });
+    }
 
-    expect(calls).toEqual([
-      {
-        path: "game_start",
-        title: "game_start",
+    expect(calls).toEqual(
+      events.map((name) => ({
+        path: name,
+        title: name,
         referrer: "",
         event: true,
         no_session: true,
-      },
-      {
-        path: "game_start",
-        title: "game_start",
-        referrer: "",
-        event: true,
-        no_session: true,
-      },
-    ]);
+      })),
+    );
   });
 
   it("reduces an external referrer to its origin and drops internal ones", () => {

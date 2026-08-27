@@ -3,16 +3,15 @@ import type { AnalyticsEvent, AnalyticsPort } from "../../core/ports";
 /**
  * Minimal GoatCounter adapter (ADR-009, ADR-025).
  *
- * It only ever reports two things: one aggregate visit and the explicit start
- * of a game. Paths and titles are fixed strings, so the dashboard can never
- * reveal the chosen role, the narrative path or any local setting. The referrer
- * is reduced to its origin, never the full URL.
+ * It reports one aggregate visit and a closed allowlist of funnel events.
+ * Paths and titles are the fixed event names, so the dashboard can never reveal
+ * the chosen role, narrative path, score, ending or any local setting. The
+ * referrer is reduced to its origin for the visit and omitted for every event.
  */
 
 const scriptUrl = "https://gc.zgo.at/count.js";
 const visitPath = "/";
 const fixedTitle = "VARANO 2:39";
-const gameStartEvent = "game_start";
 
 interface GoatCounterVars {
   readonly path: string;
@@ -79,8 +78,8 @@ export class GoatCounterAnalytics implements AnalyticsPort {
             referrer: referrerOrigin(this.view),
           }
         : {
-            path: gameStartEvent,
-            title: gameStartEvent,
+            path: event.name,
+            title: event.name,
             referrer: "",
             event: true,
             // Every explicit start counts, even several in one session.

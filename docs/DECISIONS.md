@@ -93,6 +93,7 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Stato: **Accettata nel modello; provider proposto**
 - Data: 1 agosto 2026
 - Decisione: soltanto `page_view` e `game_start`, senza payload. `NoopAnalytics` di default. GoatCounter hosted è la proposta per il lancio; l'adapter usa percorsi fissi e `no_session: true` soltanto per contare ogni nuova partita.
+- Superata in parte da ADR-059, che estende l'allowlist al funnel aggregato mantenendo il divieto di payload.
 - Perché: risponde alle sole domande «quante visite?» e «quanti avvii?» senza analizzare il comportamento di gioco.
 - Alternative: Plausible Cloud, Umami self-hosted, nessun analytics.
 - Conseguenza: il proprietario deve approvare provider, endpoint e informativa prima di M6. DNT/GPC e toggle locale disattivano il tracker; pageview individuali e dimensioni opzionali restano disabilitate.
@@ -247,6 +248,7 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Decisione: il proprietario ha creato l'istanza `https://varano239.goatcounter.com`. L'adapter `GoatCounterAnalytics` implementa `AnalyticsPort` e invia soltanto i due eventi già approvati:
   - `page_view` → `count({ path: "/", title: "VARANO 2:39" })`, con percorso e titolo **fissi**;
   - `game_start` → `count({ path: "game_start", event: true, no_session: true })`, così ogni avvio esplicito è contato anche più volte nella stessa sessione.
+- Superata in parte da ADR-059: lo stesso adapter ora accetta anche le sette milestone/intenzioni fisse del funnel, sempre senza proprietà.
 - L'endpoint è configurato in `netlify.toml` (`VITE_GOATCOUNTER_ENDPOINT`): senza quella variabile l'app usa `NoopAnalytics`, quindi build locali, `npm run check` e i test end-to-end non fanno **nessuna** richiesta a terzi e il test «tutte le richieste sono same-origin» resta valido.
 - `count.js` è caricato dinamicamente dall'adapter con `no_onload` e `no_events`, così non parte alcun pageview automatico né tracciamento dei click. La Content-Security-Policy è generata in `vite.config.ts` e apre `https://gc.zgo.at` e l'host GoatCounter **solo** quando l'endpoint è configurato.
 - Privacy: DNT e Global Privacy Control disattivano l'adapter prima di caricare lo script. Il referrer è ridotto alla sola **origine** (`https://esempio.it`), mai URL completi, query o referrer interni. Non vengono inviati ruolo, scelte, punteggio, impostazioni, dimensioni schermo o identificatori.
@@ -702,3 +704,15 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Rimozione di codice: `dialectTextKey` esce da `DialogueLine` e dal validatore. Era l'ultimo residuo di ADR-053: nessun contenuto lo usava, nessuna impostazione lo attivava, e restava a suggerire una funzione inesistente a chi leggeva il modello.
 - Correzione sostanziale, non solo redazionale: l'informativa privacy pubblica elencava fra i dati locali soltanto «personaggio, audio» e ometteva scala del testo, contrasto e l'archivio della Collezione; ora li nomina. L'unico opt-out dagli analytics è oggi il segnale Do Not Track / Global Privacy Control, ed è scritto così. **Se il proprietario vuole un interruttore in-app, è una feature da costruire, non una riga da riscrivere.**
 - Conseguenza: `docs/FORMAT_SCOUTING.md` diventa esplicitamente un documento storico, con in testa l'esito che lo ha superato. Il criterio da qui in avanti è quello della Definition of Done che già c'era, applicato davvero: una modifica non è completa finché i documenti che tocca non dicono ciò che è vero.
+
+## ADR-059 — Il funnel di lancio resta aggregato e senza payload
+
+- Stato: **Accettata**
+- Data: 27 agosto 2026
+- Contesto: `page_view` e `game_start` distinguono una visita da un avvio, ma non mostrano dove il pubblico abbandona una campagna di dieci livelli né se il finale genera condivisioni o replay. Il proprietario ha approvato esplicitamente l'estensione degli eventi per il lancio, mantenendo la minimizzazione già scelta con ADR-009 e ADR-025.
+- Decisione: l'allowlist remota è chiusa a `page_view`, `game_start`, `level_1_complete`, `level_3_complete`, `level_6_complete`, `level_10_complete`, `game_complete`, `share_attempt` e `replay_start`. Ogni evento contiene soltanto il nome fisso: nessuna proprietà, identificatore o valore dinamico.
+- Confine semantico: le quattro milestone partono solo dopo un completamento arcade reale; «Salta il livello» non conta. `game_complete` indica l'ingresso in un finale senza rivelarne l'esito. Condivisione e replay misurano il clic intenzionale, non il contenuto né il successo dell'API. Una ripresa da un salvataggio già concluso non genera un nuovo completamento.
+- Confine di privacy: ruolo, scelte, condizione, sigilli, finale, punteggio, tempo, record, lingua, dispositivo e impostazioni non lasciano il browser. Il referrer è ridotto alla sola origine per la visita e vuoto per tutti gli eventi. DNT/GPC e configurazione assente continuano a disabilitare il provider prima del caricamento.
+- Implementazione: il dominio emette soltanto `game_start`; il controller applicativo conosce i quattro indici di funnel e gli intenti UI. GoatCounter riceve nomi fissi con `event: true` e `no_session: true`; `NoopAnalytics` resta il default.
+- Verifica: test dell'allowlist completa e delle variabili GoatCounter, dei quattro soli checkpoint, dell'assenza di milestone sui salti, del completamento senza esito, degli intenti share/replay e del comportamento silenzioso con provider indisponibile.
+- Conseguenza: questa ADR sostituisce il limite a due soli eventi di ADR-009 e ADR-025. Aggiungere un altro evento, una proprietà o una dimensione resta una decisione del proprietario.

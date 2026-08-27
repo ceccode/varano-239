@@ -41,7 +41,7 @@ Prima di scrivere codice, dichiarare gli acceptance criteria che si intendono so
 - Un soggetto inventato deve anche essere non riconoscibile: niente edifici, mestieri, veicoli, percorsi o biografie che puntino a persone o attività reali.
 - Nessun contenuto classificato `fact` senza almeno una fonte registrata.
 - Nessun account, classifica, pubblicità, testo libero inviato a server o identificatore persistente.
-- Analytics consentiti: visite aggregate e `game_start`, senza proprietà aggiuntive. Il provider è disabilitato se manca una configurazione esplicita.
+- Analytics consentiti: visita, `game_start`, milestone aggregate dei livelli 1/3/6/10, completamento, tentativo di condivisione e replay, sempre senza proprietà aggiuntive (ADR-059). Il provider è disabilitato se manca una configurazione esplicita.
 - Il gioco deve essere completabile senza suono, mouse, riflessi rapidi o mini-giochi obbligatori. Le vite e il game over di livello (ADR-041) valgono per chi gioca la sfida arcade: «Salta il livello» resta sempre disponibile con lo stesso esito narrativo, un game over non cancella mai i progressi della storia e non viene mai rappresentato come morte grafica. La parte arcade è il default per tutti (ADR-046): nessun segnale di sistema la nasconde; il percorso assistito resta nel dominio dietro le modalità `story`/`calm`.
 - Capitoli e livelli sono contenuti dichiarativi compilati a build time. Un livello usa un `LevelNode` e, se introduce una meccanica, un adapter isolato nel registro compilato; niente script remoto, callback arbitrarie o modifica dei capitoli già scritti.
 
