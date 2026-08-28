@@ -21,6 +21,10 @@ export interface MemeCardData {
   readonly caption: string;
   readonly accessory: MemeAccessory;
   readonly siteLabel: string;
+  /** The ending's numbered position, e.g. «FINALE 2/6» (FASE 4). */
+  readonly endingLabel?: string;
+  /** The role and clues line, e.g. «Custode · 8/10 indizi» (FASE 4). */
+  readonly detailLine?: string;
 }
 
 /**
@@ -224,12 +228,26 @@ export function drawMemeCard(
   context.font = `700 38px ui-monospace, monospace`;
   context.fillText(data.header, size / 2, size * 0.12);
 
+  // The numbered ending (FASE 4), small and bright, above the portrait.
+  if (data.endingLabel !== undefined && data.endingLabel !== "") {
+    context.fillStyle = palette.accent;
+    context.font = `800 44px ui-monospace, monospace`;
+    context.fillText(data.endingLabel, size / 2, size * 0.17);
+  }
+
   // The meme line, in the meme voice: uppercase, loud, centred.
   const caption = data.caption.toUpperCase();
   const captionSize = caption.length > 18 ? 72 : 96;
   context.fillStyle = palette.accent;
   context.font = `800 ${String(captionSize)}px ui-monospace, monospace`;
   context.fillText(caption, size / 2, size * 0.8);
+
+  // The role and clue count (FASE 4), the quiet fact under the joke.
+  if (data.detailLine !== undefined && data.detailLine !== "") {
+    context.fillStyle = palette.text;
+    context.font = `700 40px ui-monospace, monospace`;
+    context.fillText(data.detailLine, size / 2, size * 0.855);
+  }
 
   context.fillStyle = "rgb(8 18 14 / 82%)";
   context.fillRect(46, size * 0.882, size - 92, size * 0.062);

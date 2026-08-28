@@ -10,6 +10,7 @@ import { renderGameApp } from "../platform/dom/render-game";
 import type { GameAudio } from "../platform/audio/chiptune-audio";
 import type { BestScorePort } from "../platform/storage/best-score";
 import type { LevelRecordsPort } from "../platform/storage/level-records";
+import type { DiscoveredEndingsPort } from "../platform/storage/discovered-endings";
 import type { LevelOutcome, MiniGameHandle } from "../levels/contract";
 import { mountRegisteredLevel } from "../levels/registry";
 import { levelPosition } from "../content/level-position";
@@ -23,6 +24,8 @@ export interface GameControllerDependencies {
   readonly bestScore: BestScorePort;
   /** The per-level archive behind «La Collezione» (ADR-057). */
   readonly levelRecords: LevelRecordsPort;
+  /** The endings reached across runs, for the «FINALE X/6» progress (FASE 4). */
+  readonly discoveredEndings: DiscoveredEndingsPort;
   readonly initialLocale?: Locale | undefined;
 }
 
@@ -112,6 +115,16 @@ export function createGameController(
       return dependencies.bestScore.load();
     } catch {
       return undefined;
+    }
+  };
+
+  const safeDiscoveredEndings = (): ReturnType<
+    DiscoveredEndingsPort["load"]
+  > => {
+    try {
+      return dependencies.discoveredEndings.load();
+    } catch {
+      return [];
     }
   };
 
@@ -216,6 +229,7 @@ export function createGameController(
       bestScore: safeBestScore(),
       isRecord,
       levelRecords: safeLevelRecords(),
+      discoveredEndings: safeDiscoveredEndings(),
       content: {
         story: coreStoryGraph,
         assets: assetManifest,
@@ -321,6 +335,7 @@ export function createGameController(
           dependencies.save.clear();
           dependencies.bestScore.clear();
           dependencies.levelRecords.clear();
+          dependencies.discoveredEndings.clear();
         } catch {
           // Clearing storage must not block a new local session.
         }
@@ -389,6 +404,14 @@ export function createGameController(
       state.phase === "ending"
     ) {
       trackAnalytics("game_complete");
+      const outcomeId = state.run?.outcomeId;
+      if (outcomeId !== undefined) {
+        try {
+          dependencies.discoveredEndings.record(outcomeId);
+        } catch {
+          // The ending progress is optional; the session continues.
+        }
+      }
     }
 
     for (const effect of transition.effects) {

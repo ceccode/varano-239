@@ -219,6 +219,14 @@ export const uiMessages = {
   "core.message.ui.surprise.dismiss": "Lascia passare la coda",
   "core.message.ui.choice.heading": "La prima scelta",
   "core.message.ui.ending.restart": "Rigioca dall’inizio",
+  "core.message.ui.ending.number": "FINALE {number}/{total}",
+  "core.message.ui.ending.progress":
+    "Hai scoperto {discovered} dei {total} finali.",
+  "core.message.ui.ending.role.varano": "Varano",
+  "core.message.ui.ending.role.hunter": "Cacciatore",
+  "core.message.ui.ending.role.guardian": "Custode",
+  "core.message.ui.ending.role.mayor": "Sindaco",
+  "core.message.ui.ending.detail": "{role} · {clues}/{totalClues} indizi",
   "core.message.ui.unavailable-node":
     "Questa parte della storia non è disponibile. Torna al titolo e ricomincia.",
 } as const;

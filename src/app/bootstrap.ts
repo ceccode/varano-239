@@ -6,6 +6,7 @@ import type { SavePort } from "../core/ports";
 import type { GameAudio } from "../platform/audio/chiptune-audio";
 import type { BestScorePort } from "../platform/storage/best-score";
 import type { LevelRecordsPort } from "../platform/storage/level-records";
+import type { DiscoveredEndingsPort } from "../platform/storage/discovered-endings";
 import { renderBootstrapError } from "../platform/dom/render-app";
 import { createGameController, type GameController } from "./controller";
 
@@ -16,6 +17,7 @@ export interface BootstrapDependencies {
   readonly audio: GameAudio;
   readonly bestScore: BestScorePort;
   readonly levelRecords: LevelRecordsPort;
+  readonly discoveredEndings: DiscoveredEndingsPort;
   readonly initialLocale?: Locale | undefined;
 }
 
@@ -26,6 +28,7 @@ export function bootstrapApp({
   audio,
   bestScore,
   levelRecords,
+  discoveredEndings,
   initialLocale = "it",
 }: BootstrapDependencies): GameController {
   const mount = document.querySelector<HTMLElement>("[data-app-root]");
@@ -51,6 +54,7 @@ export function bootstrapApp({
     audio,
     bestScore,
     levelRecords,
+    discoveredEndings,
     initialLocale,
   });
 }

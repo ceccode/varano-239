@@ -556,6 +556,26 @@
   color: var(--color-accent);
 }
 
+/* The ending card's numbered position and replay progress (FASE 4). */
+.ending__number {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  padding: 0.25rem 0.6rem;
+  justify-self: start;
+}
+
+.ending__progress {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
 .game-screen {
   display: grid;
   gap: var(--space-2);

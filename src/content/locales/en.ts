@@ -207,6 +207,14 @@ export const englishMessages = {
   "core.message.ui.surprise.dismiss": "Let the tail pass",
   "core.message.ui.choice.heading": "The first choice",
   "core.message.ui.ending.restart": "Restart from the beginning",
+  "core.message.ui.ending.number": "ENDING {number}/{total}",
+  "core.message.ui.ending.progress":
+    "You have discovered {discovered} of {total} endings.",
+  "core.message.ui.ending.role.varano": "Monitor Lizard",
+  "core.message.ui.ending.role.hunter": "Hunter",
+  "core.message.ui.ending.role.guardian": "Wildlife Guardian",
+  "core.message.ui.ending.role.mayor": "Hero Mayor",
+  "core.message.ui.ending.detail": "{role} · {clues}/{totalClues} clues",
   "core.message.ui.unavailable-node":
     "This part of the story isn’t available. Return to the title and start over.",
   "core.message.chapter.prologue.title": "Act 0 — 2:39 AM",
