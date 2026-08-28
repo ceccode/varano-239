@@ -23,6 +23,7 @@
     "aida": "aida collect --since 90d && aida analyze && aida report",
     "aida:hooks": "aida install-hooks",
     "dist": "node scripts/build-dist.mjs",
+    "marketing": "node scripts/render-brand-assets.mjs && node scripts/capture-gameplay-assets.mjs",
     "size": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {},
