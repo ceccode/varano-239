@@ -505,6 +505,18 @@ test("completes the whole story with the keyboard and restarts", async ({
   await expect(page.locator("[data-app-root]")).not.toContainText(
     /morte|morto|uccid|abbatt|sparare/i,
   );
+  // The numbered ending and its progress (FASE 4): this run reached the
+  // rescue ending, the first of the six, and nothing else so far.
+  await expect(
+    page.getByText(
+      message("core.message.ui.ending.number", { number: 1, total: 6 }),
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      message("core.message.ui.ending.progress", { discovered: 1, total: 6 }),
+    ),
+  ).toBeVisible();
   // The game is concluded (ADR-049): no next-episode promise, and the
   // completion meme card is there to be shared instead.
   await expect(

@@ -59,4 +59,19 @@ describe("completion meme card", () => {
     const { texts } = draw("mystery");
     expect(texts).toContain("?");
   });
+
+  it("stamps the numbered ending and the role detail when present (FASE 4)", () => {
+    const stub = stubCanvasContext();
+    const canvas = document.createElement("canvas");
+    drawMemeCard(canvas, {
+      header: "VARANO 2:39 · LEGGENDA",
+      caption: "Il trasportino aperto",
+      accessory: "bowtie",
+      siteLabel: "app.varano239.it",
+      endingLabel: "FINALE 1/6",
+      detailLine: "Varano · 8/10 indizi",
+    });
+    expect(stub.texts).toContain("FINALE 1/6");
+    expect(stub.texts).toContain("Varano · 8/10 indizi");
+  });
 });

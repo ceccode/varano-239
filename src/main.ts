@@ -9,6 +9,7 @@ import { ChiptuneAudio } from "./platform/audio/chiptune-audio";
 import { LocalBestScore } from "./platform/storage/best-score";
 import { LocalSave } from "./platform/storage/local-save";
 import { LocalLevelRecords } from "./platform/storage/level-records";
+import { LocalDiscoveredEndings } from "./platform/storage/discovered-endings";
 import type { Locale } from "./core/model";
 import { loadLocale } from "./content/locales";
 
@@ -34,6 +35,7 @@ void loadLocale(initialLocale)
       audio: new ChiptuneAudio(window, true, true),
       bestScore: new LocalBestScore(window.localStorage),
       levelRecords: new LocalLevelRecords(window.localStorage),
+      discoveredEndings: new LocalDiscoveredEndings(window.localStorage),
       initialLocale,
     });
   })

@@ -14,6 +14,7 @@ import {
   type LevelRecord,
   type LevelRecordsPort,
 } from "../../src/platform/storage/level-records";
+import type { DiscoveredEndingsPort } from "../../src/platform/storage/discovered-endings";
 import { renderBootstrapError } from "../../src/platform/dom/render-app";
 import { stubCanvasContext } from "./helpers/canvas-stub";
 
@@ -49,6 +50,14 @@ function createLevelRecords(): LevelRecordsPort {
   };
 }
 
+function createDiscoveredEndings(): DiscoveredEndingsPort {
+  return {
+    load: vi.fn(() => []),
+    record: vi.fn(),
+    clear: vi.fn(),
+  };
+}
+
 describe("application bootstrap", () => {
   beforeEach(() => {
     document.body.innerHTML = `<main data-app-root></main>`;
@@ -77,6 +86,7 @@ describe("application bootstrap", () => {
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
 
     expect(controller.getState().phase).toBe("title");
@@ -107,6 +117,7 @@ describe("application bootstrap", () => {
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
 
     expect(
@@ -137,6 +148,7 @@ describe("application bootstrap", () => {
       audio: new NoopGameAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
 
     const alert = getByRole(document.body, "alert", {

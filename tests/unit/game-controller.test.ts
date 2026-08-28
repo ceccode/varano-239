@@ -24,6 +24,7 @@ import {
   type LevelRecord,
   type LevelRecordsPort,
 } from "../../src/platform/storage/level-records";
+import type { DiscoveredEndingsPort } from "../../src/platform/storage/discovered-endings";
 import { renderGameApp } from "../../src/platform/dom/render-game";
 import { assetManifest } from "../../src/assets/manifest";
 import { stubCanvasContext } from "./helpers/canvas-stub";
@@ -140,6 +141,21 @@ function createLevelRecords(): LevelRecordsPort {
   };
 }
 
+function createDiscoveredEndings(): DiscoveredEndingsPort {
+  let outcomes: string[] = [];
+  return {
+    load: () => outcomes,
+    record: (outcomeId) => {
+      if (!outcomes.includes(outcomeId)) {
+        outcomes = [...outcomes, outcomeId];
+      }
+    },
+    clear: () => {
+      outcomes = [];
+    },
+  };
+}
+
 describe("full-screen game controller", () => {
   beforeEach(() => {
     document.body.replaceChildren();
@@ -184,6 +200,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
 
     pickRole();
@@ -209,6 +226,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
       initialLocale: "en",
     });
 
@@ -269,6 +287,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
     // The same card, with «Continua la storia» in place of «Gioca».
     expect(mount.textContent).toContain(
@@ -303,6 +322,7 @@ describe("full-screen game controller", () => {
       audio,
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
 
     // First boot: role selection instead of an immediate run.
@@ -640,6 +660,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
     void mount;
 
@@ -703,6 +724,7 @@ describe("full-screen game controller", () => {
       audio,
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
 
     const menu = mount.querySelector<HTMLElement>("[data-menu]");
@@ -780,6 +802,7 @@ describe("full-screen game controller", () => {
       audio,
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
     pickRole();
 
@@ -811,6 +834,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
     pickRole();
     const host = mount.querySelector<HTMLElement>("[data-level-host]");
@@ -851,6 +875,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
     pickRole();
     const host = mount.querySelector<HTMLElement>("[data-level-host]");
@@ -871,6 +896,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
     pickRole();
 
@@ -898,6 +924,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
     pickRole();
     const host = mount.querySelector<HTMLElement>("[data-level-host]");
@@ -938,6 +965,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords,
+      discoveredEndings: createDiscoveredEndings(),
     });
     pickRole();
 
@@ -974,6 +1002,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
 
     expect(controller.getState()).toBe(savedState);
@@ -1015,6 +1044,7 @@ describe("full-screen game controller", () => {
       audio: createAudio(),
       bestScore: createBestScore(),
       levelRecords: createLevelRecords(),
+      discoveredEndings: createDiscoveredEndings(),
     });
 
     controller.dispatch({

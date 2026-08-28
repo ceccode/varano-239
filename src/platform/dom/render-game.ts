@@ -9,6 +9,7 @@ import { checkForUpdates, type ContainerLike } from "../pwa/sw-update";
 import { levelPowerLabelKey } from "../../levels/registry";
 import type { LevelRecord } from "../storage/level-records";
 import { matchesConditions } from "../../core/conditions";
+import { endingCount, endingNumber } from "../../core/endings";
 import { levelPosition } from "../../content/level-position";
 import { completeSetup, type GameState } from "../../core/game-state";
 import type {
@@ -40,6 +41,8 @@ export interface RenderGameAppOptions {
   readonly isRecord?: boolean | undefined;
   /** The per-level archive behind «La Collezione» (ADR-057). */
   readonly levelRecords?: Readonly<Record<string, LevelRecord>> | undefined;
+  /** The endings already reached, for the «FINALE X/6» progress (FASE 4). */
+  readonly discoveredEndings?: readonly string[] | undefined;
   readonly content: GameContent;
   readonly dispatch: (action: GameAction) => void;
   readonly onMenuToggled?: (open: boolean) => void;
@@ -73,6 +76,14 @@ const roleObjectiveKeys: Readonly<Record<Role, MessageKey>> = {
   guardian: "core.message.scene.objective.guardian",
   mayor: "core.message.scene.objective.mayor",
   varano: "core.message.scene.objective.varano",
+};
+
+/** Short role names for the shareable cards, where the full title is too long. */
+const roleShortKeys: Readonly<Record<Role, MessageKey>> = {
+  varano: "core.message.ui.ending.role.varano",
+  hunter: "core.message.ui.ending.role.hunter",
+  guardian: "core.message.ui.ending.role.guardian",
+  mayor: "core.message.ui.ending.role.mayor",
 };
 
 function element<K extends keyof HTMLElementTagNameMap>(
@@ -800,11 +811,32 @@ function renderMemePanel(
   const siteLabel =
     view === null ? "" : view.location.host.replace(/^www\./, "");
   const caption = context.content.message(node.titleKey);
+  const number = endingNumber(node.outcomeId);
+  const endingLabel =
+    number === undefined
+      ? undefined
+      : context.content.message("core.message.ui.ending.number", {
+          number,
+          total: endingCount,
+        });
+  const role = context.state.setup.role ?? "varano";
+  const roleShort = context.content.message(roleShortKeys[role]);
+  const outcome = context.lastOutcome;
+  const detailLine =
+    outcome === undefined
+      ? roleShort
+      : context.content.message("core.message.ui.ending.detail", {
+          role: roleShort,
+          clues: outcome.clues,
+          totalClues: outcome.totalClues,
+        });
   drawMemeCard(canvas, {
     header: `${context.content.message("core.message.title")} · ${context.content.message("core.message.ui.legend-stamp")}`,
     caption,
     accessory,
     siteLabel,
+    ...(endingLabel === undefined ? {} : { endingLabel }),
+    detailLine,
   });
 
   const share = element(
@@ -853,6 +885,16 @@ function renderEnding(
 ): void {
   const card = overlayCard(context);
   const cardContext: RenderContext = { ...context, screen: card };
+  const number = endingNumber(node.outcomeId);
+  if (number !== undefined) {
+    const badge = element(context.document, "p");
+    badge.className = "ending__number";
+    badge.textContent = context.content.message(
+      "core.message.ui.ending.number",
+      { number, total: endingCount },
+    );
+    card.append(badge);
+  }
   heading(cardContext, node.titleKey);
   card.append(
     element(context.document, "p", context.content.message(node.bodyKey)),
@@ -867,6 +909,14 @@ function renderEnding(
   if (scorePanel !== undefined) {
     card.append(scorePanel);
   }
+  const discovered = context.discoveredEndings?.length ?? 0;
+  const progress = element(context.document, "p");
+  progress.className = "ending__progress";
+  progress.textContent = context.content.message(
+    "core.message.ui.ending.progress",
+    { discovered, total: endingCount },
+  );
+  card.append(progress);
   const restart = element(
     context.document,
     "button",
