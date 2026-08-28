@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200" width="760" height="200" role="img" aria-label="VARANO 2:39">
+  <g fill="#ffcf5a" transform="translate(36 50) scale(5)" shape-rendering="crispEdges">
+    <rect x="0" y="8" width="4" height="4"/>
+    <rect x="4" y="6" width="4" height="4"/>
+    <rect x="8" y="4" width="8" height="4"/>
+    <rect x="12" y="8" width="20" height="6"/>
+    <rect x="32" y="4" width="8" height="8"/>
+    <rect x="40" y="2" width="6" height="4"/>
+    <rect x="14" y="14" width="4" height="6"/>
+    <rect x="26" y="14" width="4" height="6"/>
+  </g>
+  <g font-family="Menlo, 'DejaVu Sans Mono', 'Courier New', ui-monospace, monospace" font-weight="bold">
+    <text x="300" y="120" fill="#f4f1df" font-size="64" letter-spacing="-4">VARANO 2:39</text>
+    <text x="302" y="158" fill="#ffcf5a" font-size="22" letter-spacing="6">IL MISTERO DEI SEI COLLI</text>
+  </g>
+</svg>

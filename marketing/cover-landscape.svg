@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="VARANO 2:39 - The Mystery of the Six Hills">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0f26"/>
+      <stop offset="45%" stop-color="#10203f"/>
+      <stop offset="78%" stop-color="#1c3350"/>
+      <stop offset="100%" stop-color="#132731"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#sky)"/>
+  <g fill="#ffcf5a" opacity="0.85">
+    <rect x="150" y="96" width="4" height="4"/>
+    <rect x="340" y="160" width="4" height="4"/>
+    <rect x="600" y="76" width="4" height="4"/>
+    <rect x="830" y="140" width="4" height="4"/>
+    <rect x="1040" y="88" width="4" height="4"/>
+    <rect x="1150" y="190" width="4" height="4"/>
+    <rect x="490" y="210" width="4" height="4"/>
+    <rect x="930" y="230" width="4" height="4"/>
+  </g>
+  <rect x="0" y="596" width="1280" height="124" fill="#0d1713"/>
+  <g fill="#14261f">
+    <rect x="0" y="572" width="1280" height="24"/>
+  </g>
+  <g fill="#ffcf5a" opacity="0.9" transform="translate(960 536) scale(4)" shape-rendering="crispEdges">
+    <rect x="0" y="8" width="4" height="4"/>
+    <rect x="4" y="6" width="4" height="4"/>
+    <rect x="8" y="4" width="8" height="4"/>
+    <rect x="12" y="8" width="20" height="6"/>
+    <rect x="32" y="4" width="8" height="8"/>
+    <rect x="40" y="2" width="6" height="4"/>
+    <rect x="14" y="14" width="4" height="6"/>
+    <rect x="26" y="14" width="4" height="6"/>
+  </g>
+  <g font-family="Menlo, 'DejaVu Sans Mono', 'Courier New', ui-monospace, monospace" font-weight="bold">
+    <text x="80" y="330" fill="#f4f1df" font-size="116" letter-spacing="-6">VARANO 2:39</text>
+    <text x="84" y="396" fill="#ffcf5a" font-size="44" letter-spacing="-1">The Mystery of the Six Hills</text>
+    <text x="84" y="452" fill="#c8d1c9" font-size="28">10 levels · 4 roles · 6 endings · ~20 minutes</text>
+    <text x="84" y="494" fill="#c8d1c9" font-size="24">Free · in your browser · no download</text>
+  </g>
+  <rect x="80" y="108" width="330" height="52" fill="none" stroke="#ffcf5a" stroke-width="4"/>
+  <text x="100" y="144" fill="#ffcf5a" font-family="Menlo, 'DejaVu Sans Mono', 'Courier New', ui-monospace, monospace" font-size="28" letter-spacing="2">LEGEND</text>
+</svg>

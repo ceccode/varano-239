@@ -30,3 +30,26 @@ I quattro SVG restano nel manifest ma **oggi nessuna schermata li mostra**: sono
 **Tutto ciò che il giocatore vede davvero è generato dal codice**: i dieci livelli, i loro fondali, gli sprite, gli ostacoli, i veicoli, le card condivisibili e l'audio chiptune sono disegnati o sintetizzati proceduralmente (canvas 2D e WebAudio), senza file esterni. Rientrano qui i curiosi e la troupe del Livello 8, l'acqua del fossato e il furgoncino dei gadget del Livello 9, le mura del Livello 10, e per la lunga notte i droni, le transenne, la zattera, le nutrie in costume, lo stendibiancheria e le terrazze all'alba. Il furgoncino è un veicolo generico inventato, senza marchio, targa o livrea riconducibili a mezzi reali. Nessun elemento riproduce fotografie, loghi, stemmi, marchi di emittenti, persone, edifici, percorsi reali o materiale di altri videogiochi.
 
 Ogni livello dichiara il proprio fondale (ADR-033): cielo, ora del giorno, strato lontano e strato vicino sono dati, non codice, e `tests/unit/backdrop.test.ts` verifica che due livelli vicini non si somiglino.
+
+## Asset di marketing
+
+La cartella `marketing/` (FASE 12 del piano di lancio) contiene l'asset pack per landing, itch.io e stampa: logo, cover, screenshot e clip di gameplay. Tutto originale, derivato dall'identità visiva del gioco (palette notturna, varano pixel-art giallo su cielo blu, tipografia monospace).
+
+| Percorso                                  | Tipo                             | Generato da / fonte                                      |
+| ----------------------------------------- | -------------------------------- | -------------------------------------------------------- |
+| `marketing/logo.svg` + `logo.png`         | Logo 760×200, PNG trasparente    | SVG originale, rasterizzato da `render-brand-assets.mjs` |
+| `marketing/cover-landscape.svg` + `.png`  | Cover 1280×720                   | SVG originale                                            |
+| `marketing/cover-square.svg` + `.png`     | Cover 1200×1200                  | SVG originale                                            |
+| `marketing/cover-portrait.svg` + `.png`   | Cover 1080×1350                  | SVG originale                                            |
+| `marketing/og-image.svg` + `.png`         | Open Graph 1200×630              | Uguale all'anteprima social della landing                |
+| `marketing/screenshot-role-selection.png` | Screenshot 1280×720              | Catturato dal gioco (`capture-gameplay-assets.mjs`)      |
+| `marketing/screenshot-gameplay-1.png`     | Screenshot 1280×720 (corsa)      | Catturato dal gioco                                      |
+| `marketing/screenshot-gameplay-2.png`     | Screenshot 1280×720 (salto)      | Catturato dal gioco                                      |
+| `marketing/screenshot-narrative.png`      | Screenshot 1280×720 (dialogo)    | Catturato dal gioco                                      |
+| `marketing/screenshot-ending.png`         | Screenshot 1280×720 (finale)     | Catturato dal gioco                                      |
+| `marketing/share-card.png`                | Esempio card finale 1080×1080    | Estratta dal canvas della meme card                      |
+| `marketing/gameplay.gif`                  | GIF 640×360, 8s                  | Da registrazione Playwright + ffmpeg                     |
+| `marketing/gameplay-15s.mp4`              | Video 1280×720, 15s, senza audio | Da registrazione Playwright + ffmpeg                     |
+| `marketing/gameplay-30s.mp4`              | Video 1280×720, 30s, senza audio | Da registrazione Playwright + ffmpeg                     |
+
+Tutti gli asset di marketing sono originali, di Francesco Falanga, sotto CC BY-NC-SA 4.0 (come il resto dei contenuti). Si rigenerano con `npm run marketing` (richiede Chromium per Playwright e ffmpeg nel `PATH`).
