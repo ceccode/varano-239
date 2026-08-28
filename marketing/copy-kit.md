@@ -83,7 +83,7 @@ Real report, invented legend. The documented facts and their sources remain in t
 - **Classificazione** — Platform: Web · Languages: Italiano, English · Accessibility: no keyboard required, no sound required, high contrast mode.
 - **Link** — Homepage: `https://varano239.it` · Source code: `https://github.com/ceccode/varano-239`
 
-## Stampa locale
+## Press
 
 - **Titolo** — `Il varano di Montichiari ora è diventato un videogioco.`
 - **Sottotitolo** — `Gratuito, giocabile dal browser e open source.`
