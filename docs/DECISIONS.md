@@ -738,3 +738,17 @@ Una nuova ADR può introdurre Phaser soltanto se:
 - Verifica: parità esatta delle chiavi e dei segnaposto; walkthrough inglese; controlli tastiera, focus e nomi accessibili; metadata e fallback delle due route; pagine privacy/termini; build e test completi su entrambi i repository.
 - Performance: il catalogo inglese è un chunk separato caricato soltanto da `/en/`; l'italiano mantiene il bundle iniziale sotto 60 KB gzip. Il budget combinato degli asset JavaScript sale consapevolmente da 60 a 80 KB per includere i circa 18 KB gzip della seconda lingua, ancora molto sotto i 150 KB documentati.
 - Conseguenza: landing e gioco possono essere distribuiti su portali internazionali senza mantenere fork di codice o contenuto. Una terza lingua richiede un catalogo completo e la stessa disciplina di route, metadata, legal e test.
+
+## ADR-061 — AIDA Metrics si chiama evidtrail: stesso strumento, stesso trailer
+
+- Stato: **Accettata**
+- Data: 4 settembre 2026
+- Contesto: `@aida-dev/cli`, adottata con ADR-038, è deprecata su npm con l'avviso «Renamed to @evidtrail/cli — same tool, every old name keeps working for one release». Il nome AIDA collideva con il funnel di marketing e con un'opera, e l'espansione «AI Development Accounting» prometteva una lettura costo/valore che il contratto 1.0 dello strumento rifiuta esplicitamente. L'alias `aida` sparisce alla prossima major: restare sul vecchio nome significa un `npm ci` che stampa un avviso oggi e un workflow rotto domani.
+- Decisione: rinominare tutto in una volta, seguendo la tabella di migrazione del progetto.
+  1. `@evidtrail/cli` **pinnata esatta** (1.2.0) al posto di `@aida-dev/cli`; script `npm run evidtrail` e `npm run evidtrail:hooks`.
+  2. `.aida.json` → `.evidtrail.json`, contenuto identico (`defaultMode: "agent"`); `aida-output/` → `evidtrail-output/` in `.gitignore`.
+  3. Il workflow diventa `.github/workflows/evidtrail.yml`, stessi tre passi (`collect --redact-authors` → `analyze` → `report`, più `comment` sulle PR); il marcatore del commento cambia, ma lo strumento trova e sostituisce i vecchi commenti invece di duplicarli.
+  4. Hook `prepare-commit-msg` reinstallato con `evidtrail install-hooks` nel clone locale — e, su suggerimento di `evidtrail doctor`, uno script npm `prepare` (`evidtrail install-hooks --if-git`) lo installa da solo a ogni `npm ci`. **Questo chiude il limite dichiarato in ADR-038**: l'hook non è più volontario per clone, e la copertura non degrada più in silenzio quando qualcuno clona e committa senza pensarci. `npm run evidtrail:hooks` resta per chi vuole reinstallarlo a mano.
+- Ciò che **non** cambia, ed è il motivo per cui la migrazione è indolore: il trailer `AI-Mode: agent` non ha mai portato il nome dello strumento, quindi tutta la provenienza già scritta nella storia resta valida senza riscrivere un commit. Regola del progetto invariata: **ogni commit dell'agente porta `AI-Mode: agent`**.
+- Verifica: `evidtrail doctor` verde sul clone (hook, config, CI, storia completa); `npm run evidtrail` produce il report locale con la stessa copertura del run precedente; `npm run check` verde.
+- Conseguenza: ADR-038 resta il perché dell'adozione; questa ADR è solo il cambio di nome. I riferimenti storici ad «AIDA» nelle ADR precedenti non vengono riscritti.
