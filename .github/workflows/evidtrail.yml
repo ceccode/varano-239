@@ -1,12 +1,13 @@
-name: AIDA Metrics
+name: evidtrail
 
-# AI Development Accounting (ADR-038): measures how much of the repository is
-# AI-built and how that code holds up. Read-only over git history; the report
-# is informative, never a gate — a metrics run must not block a merge.
+# evidtrail (ADR-038, renamed by ADR-061; formerly AIDA Metrics): an auditable
+# evidence ledger of how much of the repository is AI-built and how that code
+# holds up. Read-only over git history; the report is informative, never a
+# gate — a metrics run must not block a merge.
 #
-# Since the 1.0 CLI (@aida-dev/cli >= 1.0.2) the workflow also covers pull
-# requests: the change set is measured on its own and the report is posted as a
-# comment, created once and updated in place. Author identities stay redacted.
+# On pull requests the change set is measured on its own and the report is
+# posted as a comment, created once and updated in place. Author identities
+# stay redacted.
 
 on:
   push:
@@ -20,7 +21,7 @@ permissions:
 
 jobs:
   report:
-    name: aida collect · analyze · report
+    name: evidtrail collect · analyze · report
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,27 +39,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate AIDA report (default branch)
+      - name: Generate evidtrail report (default branch)
         if: github.event_name == 'push'
-        run: npx aida collect --since 90d --redact-authors && npx aida analyze && npx aida report
+        run: npx evidtrail collect --since 90d --redact-authors && npx evidtrail analyze && npx evidtrail report
 
-      - name: Generate AIDA report (pull request)
+      - name: Generate evidtrail report (pull request)
         if: github.event_name == 'pull_request'
-        run: npx aida collect --pr --redact-authors && npx aida analyze && npx aida report
+        run: npx evidtrail collect --pr --redact-authors && npx evidtrail analyze && npx evidtrail report
 
-      - name: Post AIDA report comment (pull request)
+      - name: Post evidtrail report comment (pull request)
         # Fork pull requests get a read-only token and cannot comment.
         if: >-
           github.event_name == 'pull_request' &&
           github.event.pull_request.head.repo.full_name == github.repository
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx aida comment
+        run: npx evidtrail comment
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v7
         with:
-          name: aida-report
-          path: aida-output/
+          name: evidtrail-report
+          path: evidtrail-output/
           if-no-files-found: ignore
           retention-days: 30

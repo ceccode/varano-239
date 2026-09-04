@@ -10,7 +10,7 @@ coverage/
 .cache/
 playwright-report/
 test-results/
-aida-output/
+evidtrail-output/
 *.tsbuildinfo
 .eslintcache
 
