@@ -9,7 +9,8 @@ Game design, trattamento della storia, specifica narrativa e roadmap **non sono 
 - `docs/private/GAME_DESIGN.md` — loop, ruoli, finali e profondità del mistero;
 - `docs/private/STORY_TREATMENT.md` — trama completa ed epiloghi;
 - `docs/private/NARRATIVE.md` — personaggi, tono, testi approvati e regole sulla morte;
-- `docs/private/ROADMAP.md` — milestone, priorità e acceptance criteria.
+- `docs/private/ROADMAP.md` — stato del progetto e cosa resta;
+- `docs/private/LAUNCH.md` — piano di lancio, contatti e testi per le comunicazioni.
 
 Non essendo versionati, il proprietario li conserva a parte. Chi contribuisce dall'esterno lavora sui documenti pubblici e concorda i contenuti narrativi nella issue o nella pull request.
 

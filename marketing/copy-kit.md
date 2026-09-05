@@ -82,6 +82,7 @@ Real report, invented legend. The documented facts and their sources remain in t
 - **Description** — usa la «Descrizione lunga» in EN qui sopra, aprendo con il sottotitolo `The Mystery of the Six Hills` e i quattro ruoli come elenco.
 - **Classificazione** — Platform: Web · Languages: Italiano, English · Accessibility: no keyboard required, no sound required, high contrast mode.
 - **Link** — Homepage: `https://varano239.it` · Source code: `https://github.com/ceccode/varano-239`
+- **Pagina pubblicata** — `https://ceccode.itch.io/varano-239`. La pagina rimanda alla landing con «Play now → varano239.it» invece di ospitare la build: il gioco vive su un solo dominio, gli aggiornamenti arrivano dal service worker e i numeri restano in un posto solo. Lo zip di `npm run dist` resta per i portali che esigono l'hosting.
 
 ## Press
 
