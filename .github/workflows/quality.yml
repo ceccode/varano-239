@@ -1,9 +1,11 @@
 name: Quality
 
+# Every pull request, and every push to main: the merge result is verified
+# too, even though Netlify publishes main on its own (see README).
 on:
   pull_request:
   push:
-    branches-ignore:
+    branches:
       - main
 
 permissions:

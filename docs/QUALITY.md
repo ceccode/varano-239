@@ -15,6 +15,8 @@
 
 Il repository non è pronto per il merge se uno di questi comandi fallisce. La CI usa una versione LTS di Node fissata in `.nvmrc` e il lockfile viene committato.
 
+Il gate gira su ogni pull request e su ogni push a `main`; Netlify pubblica `main` per conto suo, quindi un run rosso su `main` è un allarme sul sito live, non un blocco.
+
 Ogni livello e ogni feature arrivano come **draft PR**: il proprietario la prova prima che diventi Ready for review, e il merge su `main` pubblica su Netlify.
 
 ## Strumenti di sviluppo

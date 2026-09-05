@@ -349,14 +349,14 @@ export function decodeSave(value: unknown): GameState | undefined;
 ```
 
 - Adapter: `localStorage`, fallback in memoria.
-- Tre chiavi namespaced, tutte locali: `varano-239.save` (partita e impostazioni), `varano-239.best-score` (record personale) e `varano-239.level-records` (l'archivio della Collezione, ADR-057). «Cancella progressi e preferenze» le azzera tutte e tre.
+- Quattro chiavi namespaced, tutte locali: `varano-239.save` (partita e impostazioni), `varano-239.best-score` (record personale), `varano-239.level-records` (l'archivio della Collezione, ADR-057) e `varano-239.discovered-endings` (i finali già raggiunti, per la card «FINALE X/6»). «Cancella progressi e preferenze» le azzera tutte e quattro.
 - Decodifica **tollerante sulle impostazioni** e **severa sul run** (ADR-053): un campo di impostazione mancante o invalido torna al proprio default invece di invalidare tutta la partita; un run malformato resta il caso in cui scartare è giusto. Grazie a questo, aggiungere o togliere una preferenza è retrocompatibile per costruzione — prima cancellava la partita di chiunque stesse giocando.
 - Salvataggio a checkpoint, scelta e uscita dalle impostazioni; non a ogni render.
 - Un checkpoint aggiorna sia `checkpointNodeId` sia `coreCheckpointNodeId`; la distinzione esiste per un eventuale capitolo opzionale, che oggi non c'è.
 - Migrazioni pure e testate: `renamedNodeIds` in `save.ts` mappa gli ID rinominati da un refactor di contenuto, così un run salvato su un ID vecchio riprende invece di finire su «questa parte della storia non è disponibile».
 - Dato corrotto: nessun crash, si riparte da una nuova partita.
 - Aggiungere un capitolo in coda non richiede migrazione; rinominare o rimuovere un ID di nodo sì, con il suo test.
-- Pulsante unico «Cancella progressi e preferenze», che azzera tutte e tre le chiavi.
+- Pulsante unico «Cancella progressi e preferenze», che azzera tutte e quattro le chiavi.
 - Nessun nome, email, posizione, data di salvataggio o ID analitico.
 
 ## Analytics

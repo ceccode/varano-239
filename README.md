@@ -108,7 +108,7 @@ The build uses base `/` (Netlify, ADR-020). The configuration accepts `VITE_BASE
 
 `npm run marketing` writes the distribution assets used by the landing page, itch.io and the press into `marketing/`: a transparent logo, covers (landscape/square/portrait), the Open Graph image, screenshots captured from the running game, an example share card, a short gameplay GIF and two silent preview videos. The brand SVGs are the source of truth and are rasterized to PNG; the screenshots, GIF and videos are driven through the real game with Playwright and assembled with ffmpeg. See `docs/ASSETS.md` for the full registry. Ready-to-use copy for itch.io, press, Reddit, Hacker News and LinkedIn lives in `marketing/copy-kit.md`.
 
-Pull requests produce a downloadable preview artifact after the quality gate. Pushes on `main` re-run `npm run check` and publish the static artifact to **Netlify** at [app.varano239.it](https://app.varano239.it). The landing page is at [varano239.it](https://varano239.it).
+Pull requests produce a downloadable preview artifact after the quality gate, and pushes on `main` re-run `npm run check` on the merge result. Publishing is separate: **Netlify** builds `main` on its own and serves it at [app.varano239.it](https://app.varano239.it), so the gate is the signal, not the lock — a red run on `main` means the live build needs a look. The landing page is at [varano239.it](https://varano239.it).
 
 ## Game direction
 
